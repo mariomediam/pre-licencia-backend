@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'app_deploy',
     'app_usuario',
+    'app_licfunc',
     "rest_framework",
     'corsheaders',
 ]
@@ -160,7 +161,7 @@ REST_FRAMEWORK = {
 # encargada de la configuracion de mi libreria de DRF SIMPLE JWT
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'username',
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=12),
 }
 
 
