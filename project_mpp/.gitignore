@@ -1,0 +1,4 @@
+django-backend/
+__pycache__/
+.env
+deploy1.rar
