@@ -1,6 +1,37 @@
 from django.db import models
 
 # Create your models here.
+class WebContribuyenteModel(models.Model):
+    webContribId =  models.AutoField(
+        primary_key=True, null=False, db_column='IdContribuyente', unique=True)
+    
+    webContribTipPersona = models.IntegerField(
+        db_column='TipoPersona', null=False, default=0)    
+
+    webContribTipDocumento = models.CharField(
+        max_length=1, db_column='TipoDocumento', null=False)
+
+    webContribNroDocumento = models.CharField(
+        max_length=20, db_column='NumeroDocumento', null=False)
+
+    webContribNomCompleto = models.CharField(
+        max_length=250, db_column='NombreCompleto', null=False)
+
+    webContribDireccion = models.CharField(
+        max_length=500, db_column='Direccion', null=False)
+
+    webContribCorreo = models.CharField(
+        max_length=100, db_column='CorreoElectronico', null=False)
+
+    webContribTelefono = models.CharField(
+        max_length=15, db_column='TelefonoCelular', null=False)
+
+    webContribCodigo = models.CharField(
+        max_length=11, db_column='CodigoContribuyente', null=False)
+
+    class Meta:
+        db_table = 's17Web_Contribuyente'
+
 class PrecalificacionModel(models.Model):
 
     precalId = models.AutoField(
@@ -52,8 +83,12 @@ class PrecalificacionModel(models.Model):
     precalCompatDL = models.IntegerField(
         db_column='fkCompatibilidadDL', null=False, default=0)
 
-    precalSolicitanteId = models.IntegerField(
-        db_column='idContribuyente', null=False, default=0)
+
+    precalSolicitante = models.ForeignKey(
+        to=WebContribuyenteModel, related_name='webContribPrecalif', db_column='idContribuyente', on_delete=models.PROTECT)
+
+    # precalSolicitanteId = models.IntegerField(
+    #     db_column='idContribuyente', null=False, default=0)
 
     precalDescripcion = models.TextField(db_column='descripcion', null=True)        
 
@@ -86,4 +121,22 @@ class EvalUsuModel(models.Model):
 
     class Meta:
         db_table = 'S17Web_LIC_EvalUsu'
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

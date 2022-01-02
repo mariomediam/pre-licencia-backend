@@ -4,7 +4,9 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import PrecalificacionModel, EvalUsuModel
-from .serializers import PrecalificacionSerializer, EvalUsuSerializer
+from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer
+from django.db.models import F, Q
+
 
 
 # Create your views here.
@@ -41,13 +43,6 @@ class EvalUsuController(RetrieveAPIView):
     serializer_class = EvalUsuSerializer
     queryset = EvalUsuModel.objects.all()
 
-    # def get(self, request):
-    #     data = self.serializer_class(instance=self.get_queryset(), many=True)
-    #     return Response(data = {
-    #         "message":None,
-    #         "content":data.data
-    #     })
-
     def get(self, request, login):
         evaluacion_usuario = self.get_queryset().filter(userLogin=login)
         data = self.serializer_class(instance=evaluacion_usuario, many=True)
@@ -59,28 +54,36 @@ class EvalUsuController(RetrieveAPIView):
 
 class PrecalifUserEstadoController(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = PrecalificacionSerializer
-    
+    serializer_class = PrecalifUserEstadoSerializer
+        
     def get(self, request: Request):
 
         login_buscado = request.query_params.get('login')
         estado_buscado = request.query_params.get('estado')
 
-        tipo_evaluaciones = EvalUsuModel.objects.filter(userLogin=login_buscado)
+        tipo_evaluaciones = EvalUsuModel.objects.filter(userLogin=login_buscado).values()
         precalificaciones = []
+        filtros = []
 
         if tipo_evaluaciones:            
-            for tipo_eval in tipo_evaluaciones:                
-                if tipo_eval.tipoEval.tipoEvalId == 1:
-                    precalificacionesTmp = PrecalificacionModel.objects.filter(precalRiesgoEval=estado_buscado).all()
-                elif tipo_eval.tipoEval.tipoEvalId == 2:
-                    precalificacionesTmp = PrecalificacionModel.objects.filter(precalCompatCU=estado_buscado).filter(precalRiesgoEval=1).all()
-                elif tipo_eval.tipoEval.tipoEvalId == 3:
-                    precalificacionesTmp = PrecalificacionModel.objects.filter(precalCompatDL=estado_buscado).filter(precalCompatCU=1).all()
-                if precalificacionesTmp:
-                    precalificaciones.extend(precalificacionesTmp)
-                            
-        data = self.serializer_class(instance=precalificaciones, many=True)
+            for tipo_eval in tipo_evaluaciones:   
+                         
+                if tipo_eval['tipoEval_id'] == 1:
+                    filtros.append(Q(precalRiesgoEval=estado_buscado))
+                elif tipo_eval['tipoEval_id'] == 2:
+                    filtros.append(Q(precalCompatCU=estado_buscado) & Q(precalRiesgoEval=1))
+                elif tipo_eval['tipoEval_id'] == 3:
+                    filtros.append(Q(precalCompatDL=estado_buscado) & Q(precalCompatCU=1))
+
+            query = filtros.pop()
+
+            for item in filtros:
+                query |= item
+
+            precalificaciones = PrecalificacionModel.objects.select_related('precalSolicitante').values('precalId', 'precalDireccion', 'precalRiesgoEval', 'precalCompatCU', 'precalCompatDL', webContribNomCompleto=F('precalSolicitante__webContribNomCompleto')).filter(query).order_by('precalId')    
+                                    
+        # data = self.serializer_class(instance= list({v['precalId']:v for v in precalificaciones}.values()), many=True)
+        data = self.serializer_class(instance= precalificaciones, many=True)
         return Response(data = {
             "message":None,
             "content":data.data
