@@ -1,9 +1,23 @@
 from django.db.models import fields
 from rest_framework import serializers
-from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel
+from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel
+
+class WebContribuyenteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = WebContribuyenteModel
+        fields = '__all__'
+
 
 class PrecalificacionSerializer(serializers.ModelSerializer):
     
+    class Meta:
+        model = PrecalificacionModel
+        fields = '__all__'
+
+class PrecalifContribSerializer(serializers.ModelSerializer):
+    precalSolicitante = WebContribuyenteSerializer(read_only = True)
+
     class Meta:
         model = PrecalificacionModel
         fields = '__all__'

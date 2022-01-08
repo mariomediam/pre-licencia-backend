@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import PrecalificacionModel, EvalUsuModel
-from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer
+from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer
 from django.db.models import F, Q
 
 
@@ -67,13 +67,21 @@ class PrecalifUserEstadoController(RetrieveAPIView):
 
         if tipo_evaluaciones:            
             for tipo_eval in tipo_evaluaciones:   
-                         
-                if tipo_eval['tipoEval_id'] == 1:
-                    filtros.append(Q(precalRiesgoEval=estado_buscado))
-                elif tipo_eval['tipoEval_id'] == 2:
-                    filtros.append(Q(precalCompatCU=estado_buscado) & Q(precalRiesgoEval=1))
-                elif tipo_eval['tipoEval_id'] == 3:
-                    filtros.append(Q(precalCompatDL=estado_buscado) & Q(precalCompatCU=1))
+                if estado_buscado:
+                    if tipo_eval['tipoEval_id'] == 1:
+                        filtros.append(Q(precalRiesgoEval=estado_buscado))
+                    elif tipo_eval['tipoEval_id'] == 2:
+                        filtros.append(Q(precalCompatCU=estado_buscado) & Q(precalRiesgoEval=1))
+                    elif tipo_eval['tipoEval_id'] == 3:
+                        filtros.append(Q(precalCompatDL=estado_buscado) & Q(precalCompatCU=1))
+                else:
+                    if tipo_eval['tipoEval_id'] == 1:
+                        filtros.append(Q(precalRiesgoEval__isnull=False))
+                    elif tipo_eval['tipoEval_id'] == 2:
+                        filtros.append(Q(precalRiesgoEval=1))
+                    elif tipo_eval['tipoEval_id'] == 3:
+                        filtros.append(Q(precalCompatCU=1))
+
 
             query = filtros.pop()
 
@@ -89,4 +97,16 @@ class PrecalifUserEstadoController(RetrieveAPIView):
             "content":data.data
         })
 
-    
+class PrecalifContribController(RetrieveAPIView):
+    #permission_classes = [IsAuthenticated]
+    serializer_class = PrecalifContribSerializer
+    queryset = PrecalificacionModel.objects.all()
+
+    def get(self, request, id):
+        precalificaciones = self.get_queryset().get(pk=id)
+        data = self.serializer_class(instance=precalificaciones)
+
+        return Response(data={
+            "message":None,
+            "content": data.data
+        })
