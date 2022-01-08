@@ -3,8 +3,8 @@ from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
-from .models import PrecalificacionModel, EvalUsuModel
-from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer
+from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel
+from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer
 from django.db.models import F, Q
 
 
@@ -105,6 +105,37 @@ class PrecalifContribController(RetrieveAPIView):
     def get(self, request, id):
         precalificaciones = self.get_queryset().get(pk=id)
         data = self.serializer_class(instance=precalificaciones)
+
+        return Response(data={
+            "message":None,
+            "content": data.data
+        })
+
+class PrecalifGiroNegController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PrecalifGiroNegSerializer
+    queryset = PrecalGiroNegModel.objects.all()
+
+    def get(self, request, precalId):
+        precalif_giro_neg = self.get_queryset().select_related('precalificacion').select_related('giroNegocio').filter(precalificacion=precalId)
+        data = self.serializer_class(instance=precalif_giro_neg, many=True)
+
+        # precalif_giro_neg = self.get_queryset().filter(precalificacion=precalId)
+        # data = self.serializer_class(instance=precalif_giro_neg, many=True)
+
+        return Response(data={
+            "message":None,
+            "content": data.data
+        })
+
+class PrecalifCuestionarioController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PrecalifCuestionarioSerializer
+    queryset = PrecalCuestionarioModel.objects.all()
+
+    def get(self, request, precalId):
+        precalif_cuestionario = self.get_queryset().filter(precalificacion=precalId)
+        data = self.serializer_class(instance=precalif_cuestionario, many=True)
 
         return Response(data={
             "message":None,

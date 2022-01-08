@@ -1,6 +1,12 @@
 from django.db.models import fields
 from rest_framework import serializers
-from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel
+from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel
+
+class GiroNegocioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GiroNegocioModel
+        fields = '__all__'
+
 
 class WebContribuyenteSerializer(serializers.ModelSerializer):
 
@@ -21,7 +27,22 @@ class PrecalifContribSerializer(serializers.ModelSerializer):
     class Meta:
         model = PrecalificacionModel
         fields = '__all__'
-        
+
+class PrecalifGiroNegSerializer(serializers.ModelSerializer):
+    precalificacion = PrecalificacionSerializer(read_only = True)
+    giroNegocio = GiroNegocioSerializer(read_only = True)
+
+    class Meta:
+        model = PrecalGiroNegModel
+        fields = '__all__'
+
+class PrecalifCuestionarioSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PrecalCuestionarioModel
+        fields = '__all__'
+
+
 
 class TipoEvalSerializer(serializers.ModelSerializer):
     

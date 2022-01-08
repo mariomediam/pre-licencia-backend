@@ -1,6 +1,33 @@
 from django.db import models
 
 # Create your models here.
+
+class GiroNegocioModel(models.Model):
+    giroNegId = models.CharField(primary_key=True, null=False, db_column='C_GiroNeg', unique=True, max_length=6)
+
+    giroNegNombre = models.CharField(max_length=200, null=False, db_column='N_GirNeg')
+
+    giroNegActiv = models.CharField(max_length=2, null=False, db_column='C_Activi')
+
+    giroNegPadre = models.CharField(max_length=6, null=False, db_column='C_GirNeg_Padre')
+
+    giroNegHoraIni = models.IntegerField(
+        db_column='Q_GirNeg_HraIni', null=False, default=0)
+
+    giroNegHoraFin = models.IntegerField(
+        db_column='Q_GirNeg_HraFin', null=False, default=0)
+
+    giroNegLogin = models.CharField(max_length=20, null=False, db_column='C_Usuari_Login')
+
+    giroNegDigitFecha = models.DateTimeField(auto_now=True, db_column='D_GirNeg_FecDig')
+
+    giroNegActivo = models.BooleanField(null=False, db_column='F_GirNeg_Activo')
+
+    giroNegCIIU = models.CharField(max_length=20, null=False, db_column='C_GirNeg_CIIU')
+
+    class Meta:
+        db_table = 'S02GIRONEGOCIO'
+
 class WebContribuyenteModel(models.Model):
     webContribId =  models.AutoField(
         primary_key=True, null=False, db_column='IdContribuyente', unique=True)
@@ -31,6 +58,30 @@ class WebContribuyenteModel(models.Model):
 
     class Meta:
         db_table = 's17Web_Contribuyente'
+
+class TipoEvalModel(models.Model):
+    tipoEvalId = models.AutoField(
+        primary_key=True, null=False, db_column='C_TipEval', unique=True)
+
+    tipoEvalNombre = models.CharField(
+        max_length=50, db_column='N_TipEval', null=False)
+
+    class Meta:
+        db_table = 'S17Web_LIC_TipoEval'
+
+class EvalUsuModel(models.Model):
+    evalUsulId = models.AutoField(
+        primary_key=True, null=False, db_column='C_EvalUsu', unique=True)
+
+    tipoEval = models.ForeignKey(
+        to=TipoEvalModel, related_name='evaluacionUsuarios', db_column='C_TipEval', on_delete=models.PROTECT)
+
+    userLogin = models.CharField(
+        max_length=20, db_column='C_Usuari_Login', null=False)
+
+    class Meta:
+        db_table = 'S17Web_LIC_EvalUsu'
+
 
 class PrecalificacionModel(models.Model):
 
@@ -99,44 +150,58 @@ class PrecalificacionModel(models.Model):
         db_table = 'S17Web_LIC_PreCalificacion'
 
 
-class TipoEvalModel(models.Model):
-    tipoEvalId = models.AutoField(
-        primary_key=True, null=False, db_column='C_TipEval', unique=True)
+class PrecalGiroNegModel(models.Model):
+    precalGiroNegId = models.AutoField(primary_key=True, null=False, db_column='idCiiuRiesgo', unique=True)
 
-    tipoEvalNombre = models.CharField(
-        max_length=50, db_column='N_TipEval', null=False)
+    precalGiroNegCIIU =  models.IntegerField(
+        db_column='codigoCiiu', null=False, default=0)
+
+    precalificacion = models.ForeignKey(
+        to=PrecalificacionModel, related_name='precalificacionCIIU', db_column='fkPreCalificacion', on_delete=models.PROTECT)
+
+    precalGiroNegEstado = models.CharField(
+        max_length=1, db_column='estado', null=False)    
+
+    giroNegocio =  models.ForeignKey(
+        to=GiroNegocioModel, related_name='precalificacionGiroNeg', db_column='C_GiroNeg', on_delete=models.PROTECT)
+
+    precalGiroNegDigitFecha = models.DateTimeField(auto_now=True, db_column='RecordCreateDate')
+
+    precalGiroNegDigitUser = models.CharField(
+        max_length=100, db_column='RecordCreateUser', null=False)
+
+    precalGiroNegRecordEstado = models.CharField(
+        max_length=1, db_column='RecordState', null=False)
 
     class Meta:
-        db_table = 'S17Web_LIC_TipoEval'
+        db_table = 'S17Web_LIC_CiiuRiesgo'
 
-class EvalUsuModel(models.Model):
-    evalUsulId = models.AutoField(
-        primary_key=True, null=False, db_column='C_EvalUsu', unique=True)
 
-    tipoEval = models.ForeignKey(
-        to=TipoEvalModel, related_name='evaluacionUsuarios', db_column='C_TipEval', on_delete=models.PROTECT)
+class PrecalCuestionarioModel(models.Model):
+    precalCuestId = models.AutoField(primary_key=True, null=False, db_column='idCuestionario', unique=True)
 
-    userLogin = models.CharField(
-        max_length=20, db_column='C_Usuari_Login', null=False)
+    precalificacion = models.ForeignKey(
+        to=PrecalificacionModel, related_name='precalificacionCuest', db_column='fkPreCalificacion', on_delete=models.PROTECT)
+
+    precalCuestPreguntaId =  models.IntegerField(
+        db_column='fkpregunta', null=False, default=0)
+    
+    precalCuestPreguntaNombre = models.CharField(
+        max_length=200, db_column='pregunta', null=False)    
+
+    precalCuestRpta = models.CharField(
+        max_length=100, db_column='respuesta', null=False)    
+
+    precalCuestEstado = models.CharField(
+        max_length=1, db_column='estado', null=False) 
+
+    precalCuestDigitFecha = models.DateTimeField(auto_now=True, db_column='RecordCreateDate')
+
+    precalCuestDigitUser = models.CharField(
+        max_length=100, db_column='RecordCreateUser', null=False)
+
+    precalCuestRecordEstado = models.CharField(
+        max_length=1, db_column='RecordState', null=False)
 
     class Meta:
-        db_table = 'S17Web_LIC_EvalUsu'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        db_table = 'S17Web_LIC_Cuestionario'
