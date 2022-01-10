@@ -205,3 +205,48 @@ class PrecalCuestionarioModel(models.Model):
 
     class Meta:
         db_table = 'S17Web_LIC_Cuestionario'
+
+
+class PrecalTipoDocumModel(models.Model):
+    precalTipDocId = models.AutoField(primary_key=True, null=False, db_column='C_TipoDocum', unique=True)
+
+    precalTipDocNombre = models.CharField(
+        max_length=200, db_column='N_TipoDocum', null=False)    
+
+    class Meta:
+        db_table = 'S17Web_LIC_TipoDocum'
+
+
+class PrecalEvaluacionModel(models.Model):
+    precalEvalId = models.AutoField(primary_key=True, null=False, db_column='C_Evaluacion', unique=True)
+
+    precalificacion = models.ForeignKey(
+        to=PrecalificacionModel, related_name='precalificacionEval', db_column='idPreCalificacion', on_delete=models.PROTECT)
+
+    tipoEval = models.ForeignKey(
+        to=TipoEvalModel, related_name='evaluacionTipo', db_column='C_TipEval', on_delete=models.PROTECT)
+
+    precalEvalComent =  models.TextField(db_column='T_Eval_Coment', null=False, default='')
+
+    precalEvalDigitUser = models.CharField(
+        max_length=20, db_column='C_Usuari_Login', null=False)
+        
+    precalEvalDigitFecha = models.DateTimeField(auto_now=True, db_column='D_Usuari_FecDig')
+
+    precalEvalDigitPC = models.CharField(
+        max_length=20, db_column='N_Usuari_PC', null=False)
+
+    class Meta:
+        db_table = 'S17Web_LIC_Evaluacion'
+
+class PrecalDocumentacionModel(models.Model):
+    precalDocumId = models.AutoField(primary_key=True, null=False, db_column='C_Documentac', unique=True)
+
+    evaluacion = models.ForeignKey(
+        to=PrecalEvaluacionModel, related_name='documentacionEval', db_column='C_Evaluacion', on_delete=models.PROTECT)
+
+    tipoDocum = models.ForeignKey(
+        to=PrecalTipoDocumModel, related_name='documentacionTipo', db_column='C_TipoDocum', on_delete=models.PROTECT)
+
+    class Meta:
+        db_table = 'S17Web_LIC_Documentacion'

@@ -3,8 +3,8 @@ from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
-from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel
-from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer
+from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel
+from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer
 from django.db.models import F, Q
 
 
@@ -141,3 +141,54 @@ class PrecalifCuestionarioController(RetrieveAPIView):
             "message":None,
             "content": data.data
         })
+
+
+class PrecalEvaluacionController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PrecalEvaluacionSerializer
+    queryset = PrecalEvaluacionModel.objects.all()
+
+    def get(self, request, precalId):
+        precalif_eval = self.get_queryset().filter(precalificacion=precalId)
+        data = self.serializer_class(instance=precalif_eval, many=True)
+
+        return Response(data={
+            "message":None,
+            "content": data.data
+        })        
+
+
+class PrecalEvaluacionTipoController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PrecalEvaluacionTipoSerializer
+    queryset = PrecalEvaluacionModel.objects.all()
+
+    def get(self, request, precalId, tipoEvalId):
+        precalif_eval = self.get_queryset().select_related('precalificacion').filter(precalificacion=precalId).filter(tipoEval = tipoEvalId).first()
+
+        if precalif_eval:
+            data = self.serializer_class(instance=precalif_eval)
+
+            return Response(data={
+                "message":None,
+                "content": data.data
+            })
+        else:
+            return Response(data={
+                "message":None,
+                "content": None
+            })
+
+class PrecalDocumentacionController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PrecalDocumentacionSerializer
+    queryset = PrecalDocumentacionModel.objects.all()
+
+    def get(self, request, precalId, tipoEvalId):
+        documentacion = self.get_queryset().select_related('evaluacion').select_related('tipoDocum').filter(evaluacion__precalificacion=precalId).filter(evaluacion__tipoEval=tipoEvalId)
+        data = self.serializer_class(instance=documentacion, many=True)
+
+        return Response(data={
+            "message":None,
+            "content": data.data
+        })        

@@ -1,6 +1,6 @@
 from django.db.models import fields
 from rest_framework import serializers
-from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel
+from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel
 
 class GiroNegocioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,7 +43,6 @@ class PrecalifCuestionarioSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
 class TipoEvalSerializer(serializers.ModelSerializer):
     
     class Meta:
@@ -78,5 +77,43 @@ class PrecalifUserEstadoSerializer(serializers.Serializer):
             estado_nombre = "PENDIENTE"
         
         return estado_nombre
+
+
+class PrecalTipoDocumSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrecalTipoDocumModel
+        fields = '__all__'
+
+class PrecalEvaluacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrecalEvaluacionModel
+        fields = '__all__'
+
+class PrecalEvaluacionTipoSerializer(serializers.ModelSerializer):
+    precalificacion = PrecalificacionSerializer(read_only = True)
+    precalEvalEstado = serializers.SerializerMethodField(method_name='calcular_estado')
+
+    def calcular_estado(self, instance):       
+        estado = 9
+
+        if instance.tipoEval_id == 1:
+            estado = instance.precalificacion.precalRiesgoEval
+        elif instance.tipoEval_id == 2:
+            estado = instance.precalificacion.precalCompatCU
+        elif instance.tipoEval_id == 3:
+            estado = instance.precalificacion.precalCompatDL
+        
+        return estado
+    
+    class Meta:
+        model = PrecalEvaluacionModel
+        fields = '__all__'
+
+class PrecalDocumentacionSerializer(serializers.ModelSerializer):
+    tipoDocum = PrecalTipoDocumSerializer(read_only = True)
+
+    class Meta:
+        model = PrecalDocumentacionModel
+        fields = '__all__'
 
 
