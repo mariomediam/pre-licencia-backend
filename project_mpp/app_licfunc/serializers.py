@@ -91,7 +91,8 @@ class PrecalEvaluacionSerializer(serializers.ModelSerializer):
 
 class PrecalEvaluacionTipoSerializer(serializers.ModelSerializer):
     precalificacion = PrecalificacionSerializer(read_only = True)
-    precalEvalEstado = serializers.SerializerMethodField(method_name='calcular_estado')
+    precalEvalEstadoId = serializers.SerializerMethodField(method_name='calcular_estado')
+    precalEvalEstadoNombre = serializers.SerializerMethodField(method_name='calcular_estado_nombre')
 
     def calcular_estado(self, instance):       
         estado = 9
@@ -102,6 +103,27 @@ class PrecalEvaluacionTipoSerializer(serializers.ModelSerializer):
             estado = instance.precalificacion.precalCompatCU
         elif instance.tipoEval_id == 3:
             estado = instance.precalificacion.precalCompatDL
+        
+        return estado
+
+    def calcular_estado_nombre(self, instance):       
+        estado = 'Pendiente'
+
+        if instance.tipoEval_id == 1:
+            if instance.precalificacion.precalRiesgoEval == 1:
+                estado = 'Aprobado'
+            elif instance.precalificacion.precalRiesgoEval == 2:
+                estado = 'Rechazado'
+        elif instance.tipoEval_id == 2:
+            if instance.precalificacion.precalCompatCU == 1:
+                estado = 'Compatible'
+            elif instance.precalificacion.precalCompatCU == 2:
+                estado = 'No compatible'
+        elif instance.tipoEval_id == 3:
+            if instance.precalificacion.precalCompatDL == 1:
+                estado = 'Aprobado'
+            elif instance.precalificacion.precalCompatDL == 2:
+                estado = 'Rechazado'
         
         return estado
     
