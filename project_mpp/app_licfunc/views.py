@@ -1,11 +1,12 @@
 from django.shortcuts import render
+from django.db import transaction
+from django.db.models import F, Q
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel
 from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer
-from django.db.models import F, Q
 
 
 
@@ -155,7 +156,72 @@ class PrecalEvaluacionController(RetrieveAPIView):
         return Response(data={
             "message":None,
             "content": data.data
-        })        
+        })   
+
+    def post(self, request: Request, precalId):
+        data = self.serializer_class(data=request.data)
+        result_eval = request.data.get("resultEval")
+        precal_riesgo = request.data.get("precalRiesgo")
+
+        if data.is_valid():
+
+            try:
+                if not result_eval:
+                    raise Exception("El campo resultEval es requerido")
+
+                with transaction.atomic():                    
+            
+                    data.save()
+
+                    precalificacion_id = data.data["precalificacion"]
+                    tipo_eval = data.data["tipoEval"]
+
+                    precalificacion = PrecalificacionModel.objects.get(pk=precalificacion_id)
+                    if tipo_eval == 1:                        
+                        if precalificacion.precalRiesgoEval != 0:
+                            raise Exception("El nivel de riesgo ya ha sido evaluado")
+                        if not precal_riesgo:
+                            raise Exception("El campo precalRiesgo es requerido")
+                        
+                        precalificacion.precalRiesgoEval = result_eval
+                        precalificacion.precalRiesgo = precal_riesgo
+
+                    elif tipo_eval == 2:
+                        if precalificacion.precalCompatCU != 0:
+                            raise Exception("La compatibilidad ya ha sido evaluada")
+                        if precalificacion.precalRiesgoEval != 1:
+                            raise Exception("El resultado de la evaluación del nivel de riesgo debe ser aprobado")
+
+                        precalificacion.precalCompatCU = result_eval
+
+                    elif tipo_eval == 3:
+                        if precalificacion.precalCompatDL != 0:
+                            raise Exception("Ya existe evaluación previa")
+                        if precalificacion.precalCompatCU != 1:
+                            raise Exception("El resultado de la evaluación de Control Urbano debe ser compatible")
+
+                        precalificacion.precalCompatDL = result_eval
+
+                    else:
+                        raise Exception("resultEval no reconocido")
+
+                    precalificacion.save()
+
+                    return Response(data={
+                        'content': data.data,
+                        'message': 'Evaluacion creada exitosamente'
+                    })
+
+            except Exception as e:
+                return Response(data={
+                    'message': e.args,
+                    'content': None
+                }, status=400)
+        else:
+            return Response(data={
+                'message': 'Error creando evaluacion',
+                'content': data.errors
+            }, status=400)     
 
 
 class PrecalEvaluacionTipoController(RetrieveAPIView):

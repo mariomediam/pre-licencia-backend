@@ -84,10 +84,11 @@ class PrecalTipoDocumSerializer(serializers.ModelSerializer):
         model = PrecalTipoDocumModel
         fields = '__all__'
 
-class PrecalEvaluacionSerializer(serializers.ModelSerializer):
+class PrecalEvaluacionSerializer(serializers.ModelSerializer):    
     class Meta:
         model = PrecalEvaluacionModel
         fields = '__all__'
+        
 
 class PrecalEvaluacionTipoSerializer(serializers.ModelSerializer):
     precalificacion = PrecalificacionSerializer(read_only = True)
