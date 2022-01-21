@@ -140,3 +140,14 @@ class PrecalDocumentacionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class DocumentacionSerializer(serializers.Serializer):
+    precalDocumId = serializers.IntegerField(required=False)
+
+    evaluacion = serializers.IntegerField()
+
+    tipoDocum = serializers.IntegerField()
+
+class ListDocumentacionSerializer(serializers.Serializer):
+    documentos = DocumentacionSerializer(many=True)
+
+

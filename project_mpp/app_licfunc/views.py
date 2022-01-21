@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel
-from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer
+from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer
 
 
 
@@ -258,3 +258,26 @@ class PrecalDocumentacionController(RetrieveAPIView):
             "message":None,
             "content": data.data
         })        
+
+    def post(self, request: Request, precalId, tipoEvalId):
+        # print(request.data)
+        documentacion = ListDocumentacionSerializer(data=request.data)
+        if documentacion.is_valid():
+            print("Data valida")
+            # print(documentacion.validated_data.get("documentos"))
+            documentos = documentacion.validated_data.get("documentos")
+            list_documento_model = []
+            for documento in documentos:
+                documento_model = PrecalDocumentacionModel(evaluacion=documento.get("evaluacion"), tipoDocum=documento.get("tipoDocum"))
+                list_documento_model.append(documento_model)
+
+            PrecalDocumentacionModel.objects.bulk_create(list_documento_model)
+        else:
+            print("Data invalida")
+
+        # documentacion = PrecalDocumentacionModel(evaluacion = precalDocumId)
+
+        return Response(data={
+            "message":None,
+            "content": "Se ejecuto"
+        })  
