@@ -141,10 +141,6 @@ class PrecalDocumentacionSerializer(serializers.ModelSerializer):
 
 
 class DocumentacionSerializer(serializers.Serializer):
-    precalDocumId = serializers.IntegerField(required=False)
-
-    evaluacion = serializers.IntegerField()
-
     tipoDocum = serializers.IntegerField()
 
 class ListDocumentacionSerializer(serializers.Serializer):

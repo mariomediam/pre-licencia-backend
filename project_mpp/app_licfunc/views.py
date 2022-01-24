@@ -252,6 +252,7 @@ class PrecalDocumentacionController(RetrieveAPIView):
 
     def get(self, request, precalId, tipoEvalId):
         documentacion = self.get_queryset().select_related('evaluacion').select_related('tipoDocum').filter(evaluacion__precalificacion=precalId).filter(evaluacion__tipoEval=tipoEvalId)
+        
         data = self.serializer_class(instance=documentacion, many=True)
 
         return Response(data={
@@ -260,24 +261,34 @@ class PrecalDocumentacionController(RetrieveAPIView):
         })        
 
     def post(self, request: Request, precalId, tipoEvalId):
-        # print(request.data)
-        documentacion = ListDocumentacionSerializer(data=request.data)
-        if documentacion.is_valid():
-            print("Data valida")
-            # print(documentacion.validated_data.get("documentos"))
-            documentos = documentacion.validated_data.get("documentos")
+        
+        data = ListDocumentacionSerializer(data=request.data)        
+
+        if data.is_valid():
+            evaluacion = PrecalEvaluacionModel.objects.filter(precalificacion_id=precalId).filter(tipoEval_id=tipoEvalId).first()
+            
+            documentos = data.validated_data.get("documentos")
             list_documento_model = []
-            for documento in documentos:
-                documento_model = PrecalDocumentacionModel(evaluacion=documento.get("evaluacion"), tipoDocum=documento.get("tipoDocum"))
+            for documento in documentos:                
+                
+                documento_model = PrecalDocumentacionModel(evaluacion_id=evaluacion.precalEvalId, tipoDocum_id=documento.get("tipoDocum"))
+
                 list_documento_model.append(documento_model)
 
-            PrecalDocumentacionModel.objects.bulk_create(list_documento_model)
+            data2 = PrecalDocumentacionModel.objects.bulk_create(list_documento_model)
+            print(data2)
+
+            return Response(data={
+                "message":None,
+                "content": "Registros creados con exito"
+            })  
+
         else:
-            print("Data invalida")
+            return Response(data={
+                'message': 'Error grabando documentos',
+                'content': data.errors
+            }, status=400)
 
-        # documentacion = PrecalDocumentacionModel(evaluacion = precalDocumId)
+        
 
-        return Response(data={
-            "message":None,
-            "content": "Se ejecuto"
-        })  
+        
