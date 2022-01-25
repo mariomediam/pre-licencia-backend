@@ -185,7 +185,7 @@ class PrecalEvaluacionController(RetrieveAPIView):
                             list_documento_model = []
                             for documento in documentos:                
                                 
-                                documento_model = PrecalDocumentacionModel(evaluacion_id=precalEvalId, tipoDocum_id=documento.get("tipoDocum"))
+                                documento_model = PrecalDocumentacionModel(evaluacion_id=precalEvalId, tipoDocum_id=documento.get("precalTipDocId"))
 
                                 list_documento_model.append(documento_model)
 
