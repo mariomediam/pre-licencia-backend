@@ -1,6 +1,6 @@
 from django.db.models import fields
 from rest_framework import serializers
-from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel
+from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel, PrecalTipoDocumModel
 
 class GiroNegocioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -147,3 +147,7 @@ class ListDocumentacionSerializer(serializers.Serializer):
     documentos = DocumentacionSerializer(many=True)
 
 
+class PrecalTipoDocumSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrecalTipoDocumModel
+        fields = '__all__'

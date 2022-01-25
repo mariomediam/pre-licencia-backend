@@ -5,8 +5,8 @@ from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
-from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel
-from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer
+from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, TipoEvalModel, PrecalTipoDocumModel
+from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer
 
 
 
@@ -162,6 +162,7 @@ class PrecalEvaluacionController(RetrieveAPIView):
         data = self.serializer_class(data=request.data)
         result_eval = request.data.get("resultEval")
         precal_riesgo = request.data.get("precalRiesgo")
+        request_documentos = request.data.get("documentos")
 
         if data.is_valid():
 
@@ -172,7 +173,24 @@ class PrecalEvaluacionController(RetrieveAPIView):
                 with transaction.atomic():                    
             
                     data.save()
+                    precalEvalId = data.data["precalEvalId"]
 
+                    if request_documentos:                                          
+                        data_documentos = ListDocumentacionSerializer(data=request.data)  
+                        
+                        if not data_documentos.is_valid(): 
+                            raise Exception("Documentos invalidos")
+                        else:
+                            documentos = data_documentos.validated_data.get("documentos")
+                            list_documento_model = []
+                            for documento in documentos:                
+                                
+                                documento_model = PrecalDocumentacionModel(evaluacion_id=precalEvalId, tipoDocum_id=documento.get("tipoDocum"))
+
+                                list_documento_model.append(documento_model)
+
+                            PrecalDocumentacionModel.objects.bulk_create(list_documento_model)
+                            
                     precalificacion_id = data.data["precalificacion"]
                     tipo_eval = data.data["tipoEval"]
 
@@ -252,7 +270,7 @@ class PrecalDocumentacionController(RetrieveAPIView):
 
     def get(self, request, precalId, tipoEvalId):
         documentacion = self.get_queryset().select_related('evaluacion').select_related('tipoDocum').filter(evaluacion__precalificacion=precalId).filter(evaluacion__tipoEval=tipoEvalId)
-        
+
         data = self.serializer_class(instance=documentacion, many=True)
 
         return Response(data={
@@ -263,6 +281,7 @@ class PrecalDocumentacionController(RetrieveAPIView):
     def post(self, request: Request, precalId, tipoEvalId):
         
         data = ListDocumentacionSerializer(data=request.data)        
+        print(data)
 
         if data.is_valid():
             evaluacion = PrecalEvaluacionModel.objects.filter(precalificacion_id=precalId).filter(tipoEval_id=tipoEvalId).first()
@@ -289,6 +308,27 @@ class PrecalDocumentacionController(RetrieveAPIView):
                 'content': data.errors
             }, status=400)
 
-        
 
-        
+class TipoEvalController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TipoEvalSerializer
+    queryset = TipoEvalModel.objects.all()
+
+    def get(self, request):
+        data = self.serializer_class(instance=self.get_queryset(), many=True)
+        return Response(data = {
+            "message":None,
+            "content":data.data
+        })
+
+class PrecalTipoDocumController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PrecalTipoDocumSerializer
+    queryset = PrecalTipoDocumModel.objects.all()
+
+    def get(self, request):
+        data = self.serializer_class(instance=self.get_queryset(), many=True)
+        return Response(data = {
+            "message":None,
+            "content":data.data
+        })

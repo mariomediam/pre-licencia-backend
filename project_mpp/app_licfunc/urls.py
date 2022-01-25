@@ -7,7 +7,9 @@ from .views import (PrecalificacionController,
                 PrecalifCuestionarioController,
                 PrecalEvaluacionController,
                 PrecalEvaluacionTipoController,
-                PrecalDocumentacionController,)
+                PrecalDocumentacionController,
+                TipoEvalController,
+                PrecalTipoDocumController,)
 
 urlpatterns = [
     path('precalificacion', PrecalificacionController.as_view()),    
@@ -19,4 +21,6 @@ urlpatterns = [
     path('precal-eval/<int:precalId>', PrecalEvaluacionController.as_view()),
     path('precal-eval/<int:precalId>/<int:tipoEvalId>', PrecalEvaluacionTipoController.as_view()),
     path('precal-eval-docum/<int:precalId>/<int:tipoEvalId>', PrecalDocumentacionController.as_view()),
+    path('tipo-eval', TipoEvalController.as_view()),
+    path('tipo-docum', PrecalTipoDocumController.as_view()),
 ]
