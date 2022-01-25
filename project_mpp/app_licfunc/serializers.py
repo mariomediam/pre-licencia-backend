@@ -141,7 +141,7 @@ class PrecalDocumentacionSerializer(serializers.ModelSerializer):
 
 
 class DocumentacionSerializer(serializers.Serializer):
-    tipoDocum = serializers.IntegerField()
+    precalTipDocId = serializers.IntegerField()
 
 class ListDocumentacionSerializer(serializers.Serializer):
     documentos = DocumentacionSerializer(many=True)
