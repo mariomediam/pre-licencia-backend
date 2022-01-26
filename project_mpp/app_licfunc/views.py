@@ -1,12 +1,15 @@
 from django.shortcuts import render
 from django.db import transaction
 from django.db.models import F, Q
+from django.conf import settings
+from django.template.loader import get_template
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, TipoEvalModel, PrecalTipoDocumModel
 from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer
+from app_deploy.general.enviarEmail import enviarEmail
 
 
 
@@ -200,9 +203,23 @@ class PrecalEvaluacionController(RetrieveAPIView):
                             raise Exception("El nivel de riesgo ya ha sido evaluado")
                         if not precal_riesgo:
                             raise Exception("El campo precalRiesgo es requerido")
-                        
+                                                 
                         precalificacion.precalRiesgoEval = result_eval
                         precalificacion.precalRiesgo = precal_riesgo
+
+                        if result_eval == 2: 
+                            print("aaaaaaaaa")                           
+                            subject = 'MPP - Observaciones en solicitud de licencia de funcionamiento N° ' + f'{precalificacion.precalId:04}'
+                            body = data.validated_data.get("precalEvalComent")
+                            # print(get_template("templates/preLicenciaRechazado.html"))
+                            body =  get_template("templates/preLicenciaRechazado.html")
+                            to = ['mmedina@munipiura.gob.pe']   
+                            attachments = []
+                            attachments.append(str(settings.MEDIA_ROOT) +'/app_licfunc/0001.pdf')
+                            attachments.append(str(settings.MEDIA_ROOT) +'/app_licfunc/0002.pdf')
+
+                            print(enviarEmail(subject=subject, body=body, to=to, attachments=attachments))
+
 
                     elif tipo_eval == 2:
                         if precalificacion.precalCompatCU != 0:
