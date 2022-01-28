@@ -5,11 +5,11 @@ from django.conf import settings
 def enviarEmail(subject, body, to, from_email = 'piurabonita@munipiura.gob.pe', bcc = None, attachments = None, contentHTML = True ):
     
     email = EmailMessage(
-    subject,
-    body,
-    from_email,
-    to,
-    bcc,
+    subject = subject,
+    body = body,
+    from_email = from_email,
+    to = to,
+    bcc = bcc,
     )
 
     if contentHTML:

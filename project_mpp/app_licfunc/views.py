@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.db import transaction
 from django.db.models import F, Q
 from django.conf import settings
-from django.template.loader import get_template
+from django.template.loader import get_template, render_to_string
+from django.template import loader
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -208,11 +209,12 @@ class PrecalEvaluacionController(RetrieveAPIView):
                         precalificacion.precalRiesgo = precal_riesgo
 
                         if result_eval == 2: 
-                            print("aaaaaaaaa")                           
+                            
                             subject = 'MPP - Observaciones en solicitud de licencia de funcionamiento N° ' + f'{precalificacion.precalId:04}'
-                            body = data.validated_data.get("precalEvalComent")
-                            # print(get_template("templates/preLicenciaRechazado.html"))
-                            body =  get_template("templates/preLicenciaRechazado.html")
+                            # body = data.validated_data.get("precalEvalComent")
+                            context = {'precalId': f'{precalificacion.precalId:04}'}
+                            body =  render_to_string("preLicenciaRechazado.html", context = context)
+                            
                             to = ['mmedina@munipiura.gob.pe']   
                             attachments = []
                             attachments.append(str(settings.MEDIA_ROOT) +'/app_licfunc/0001.pdf')
