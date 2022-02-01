@@ -178,6 +178,7 @@ class PrecalEvaluacionController(RetrieveAPIView):
             
                     data.save()
                     precalEvalId = data.data["precalEvalId"]
+                    
 
                     if request_documentos:                                          
                         data_documentos = ListDocumentacionSerializer(data=request.data)  
@@ -196,9 +197,9 @@ class PrecalEvaluacionController(RetrieveAPIView):
                             PrecalDocumentacionModel.objects.bulk_create(list_documento_model)
                             
                     precalificacion_id = data.data["precalificacion"]
-                    tipo_eval = data.data["tipoEval"]
-
                     precalificacion = PrecalificacionModel.objects.get(pk=precalificacion_id)
+                    tipo_eval = data.data["tipoEval"]                    
+
                     if tipo_eval == 1:                        
                         if precalificacion.precalRiesgoEval != 0:
                             raise Exception("El nivel de riesgo ya ha sido evaluado")
@@ -206,21 +207,7 @@ class PrecalEvaluacionController(RetrieveAPIView):
                             raise Exception("El campo precalRiesgo es requerido")
                                                  
                         precalificacion.precalRiesgoEval = result_eval
-                        precalificacion.precalRiesgo = precal_riesgo
-
-                        if result_eval == 2: 
-                            
-                            subject = 'MPP - Observaciones en solicitud de licencia de funcionamiento N° ' + f'{precalificacion.precalId:04}'
-                            # body = data.validated_data.get("precalEvalComent")
-                            context = {'precalId': f'{precalificacion.precalId:04}'}
-                            body =  render_to_string("preLicenciaRechazado.html", context = context)
-                            
-                            to = ['mmedina@munipiura.gob.pe']   
-                            attachments = []
-                            attachments.append(str(settings.MEDIA_ROOT) +'/app_licfunc/0001.pdf')
-                            attachments.append(str(settings.MEDIA_ROOT) +'/app_licfunc/0002.pdf')
-
-                            print(enviarEmail(subject=subject, body=body, to=to, attachments=attachments))
+                        precalificacion.precalRiesgo = precal_riesgo                        
 
 
                     elif tipo_eval == 2:
@@ -237,10 +224,67 @@ class PrecalEvaluacionController(RetrieveAPIView):
                         if precalificacion.precalCompatCU != 1:
                             raise Exception("El resultado de la evaluación de Control Urbano debe ser compatible")
 
-                        precalificacion.precalCompatDL = result_eval
+                        precalificacion.precalCompatDL = result_eval                    
 
                     else:
                         raise Exception("resultEval no reconocido")
+
+                    if result_eval == 2: 
+
+                        mi_tipo_eval = TipoEvalModel.objects.get(pk=tipo_eval)
+                        
+                        subject = 'MPP - Observaciones en Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
+                        
+                        context = {'precalId': f'{precalificacion.precalId:04}', 'nombre_completo': precalificacion.precalSolicitante.webContribNomCompleto, 'tipo_evaluacion' : mi_tipo_eval.tipoEvalNombre, 'eval_comentario': data.data["precalEvalComent"], 'email_usuario': precalificacion.precalCorreo}
+
+                        body =  render_to_string("preLicenciaRechazado.html", context = context)
+                        
+                        to = [precalificacion.precalCorreo]
+                        attachments = []
+                        # attachments.append(str(settings.MEDIA_ROOT) +'/app_licfunc/0001.pdf')
+                        # attachments.append(str(settings.MEDIA_ROOT) +'/app_licfunc/0002.pdf')
+
+                        print(enviarEmail(subject=subject, body=body, to=to, attachments=attachments))
+
+                    elif result_eval == 1 and tipo_eval == 3:
+
+                        tipos_evaluaciones = TipoEvalModel.objects.all()
+
+                        evaluaciones = PrecalEvaluacionModel.objects.filter(precalificacion_id=precalificacion_id).order_by("precalEvalDigitPC")
+
+                        html_evaluaciones = []
+
+                        for evaluacion in evaluaciones:
+
+                            tipo_eval_nombre = ""
+                            for tipo_evaluacion in tipos_evaluaciones:                                
+                                if tipo_evaluacion.tipoEvalId == evaluacion.tipoEval_id:
+                                    tipo_eval_nombre = tipo_evaluacion.tipoEvalNombre
+                                
+                            if evaluacion.tipoEval_id == 2:
+                                resultado_evaluacion = 'Compatible'
+                            else:
+                                resultado_evaluacion = 'Aceptado'
+                            
+                            observaciones_evaluacion = evaluacion.precalEvalComent
+
+                            html_evaluaciones.append({'tipo_eval_nombre': tipo_eval_nombre, 'resultado_evaluacion': resultado_evaluacion, 'observaciones_evaluacion' : observaciones_evaluacion })
+
+                        subject = 'MPP - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
+
+                        print(html_evaluaciones)
+                        
+                        context = {'precalId': f'{precalificacion.precalId:04}', 'nombre_completo': precalificacion.precalSolicitante.webContribNomCompleto, 'html_evaluaciones' : html_evaluaciones, 'eval_comentario': data.data["precalEvalComent"], 'email_usuario': precalificacion.precalCorreo}
+
+                        body =  render_to_string("preLicenciaAceptado.html", context = context)
+                        
+                        to = [precalificacion.precalCorreo]
+
+                        print(precalificacion.precalCorreo)
+                        
+                        print(enviarEmail(subject=subject, body=body, to=to))
+
+
 
                     precalificacion.save()
 

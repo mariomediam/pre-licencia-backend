@@ -143,6 +143,12 @@ class PrecalificacionModel(models.Model):
 
     precalDescripcion = models.TextField(db_column='descripcion', null=True)        
 
+    precalCorreo = models.CharField(
+        max_length=150, db_column='correo', null=False)       
+
+    precalTelefono = models.CharField(
+        max_length=15, db_column='telefono', null=False)       
+
     def __str__(self):
         return str(self.precalId)
 
