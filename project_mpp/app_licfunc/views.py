@@ -266,25 +266,33 @@ class PrecalEvaluacionController(RetrieveAPIView):
                             else:
                                 resultado_evaluacion = 'Aceptado'
                             
-                            observaciones_evaluacion = evaluacion.precalEvalComent
+                            observaciones_evaluacion = evaluacion.precalEvalComent                            
 
-                            html_evaluaciones.append({'tipo_eval_nombre': tipo_eval_nombre, 'resultado_evaluacion': resultado_evaluacion, 'observaciones_evaluacion' : observaciones_evaluacion })
+                            html_evaluaciones.append({'tipo_eval_id':evaluacion.tipoEval_id, 
+                                'tipo_eval_nombre': tipo_eval_nombre, 'resultado_evaluacion': resultado_evaluacion, 'observaciones_evaluacion' : observaciones_evaluacion })
+
+                        array_documentos = []
+                        if request_documentos:
+                            mis_documentos_selecc = PrecalDocumentacionModel.objects.select_related('tipoDocum').filter(evaluacion_id = precalEvalId).values('tipoDocum_id', precalTipDocNombre=F('tipoDocum__precalTipDocNombre'))
+                            for documento_selecc in mis_documentos_selecc:
+                               array_documentos.append(documento_selecc['precalTipDocNombre'])
+                                
+
+
 
                         subject = 'MPP - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
 
-                        print(html_evaluaciones)
+                        # print(html_evaluaciones)
                         
-                        context = {'precalId': f'{precalificacion.precalId:04}', 'nombre_completo': precalificacion.precalSolicitante.webContribNomCompleto, 'html_evaluaciones' : html_evaluaciones, 'eval_comentario': data.data["precalEvalComent"], 'email_usuario': precalificacion.precalCorreo}
+                        context = {'precalId': f'{precalificacion.precalId:04}', 'nombre_completo': precalificacion.precalSolicitante.webContribNomCompleto, 'html_evaluaciones' : html_evaluaciones, 'eval_comentario': data.data["precalEvalComent"], 'email_usuario': precalificacion.precalCorreo, 'documentos': array_documentos}
 
                         body =  render_to_string("preLicenciaAceptado.html", context = context)
                         
                         to = [precalificacion.precalCorreo]
 
-                        print(precalificacion.precalCorreo)
+                        # print(precalificacion.precalCorreo)
                         
-                        print(enviarEmail(subject=subject, body=body, to=to))
-
-
+                        enviarEmail(subject=subject, body=body, to=to)
 
                     precalificacion.save()
 

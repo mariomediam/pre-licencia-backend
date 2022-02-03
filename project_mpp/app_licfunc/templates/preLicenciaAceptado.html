@@ -79,6 +79,15 @@
                         </td>
                         <td style="line-height:1.3;word-break:break-word;font-family:&#39;Open Sans&#39;,&#39;Helvetica Neue&#39;,Helvetica,Arial,sans-serif;font-size:14px;margin:0;text-align:justify;padding:10px">
                             {{ evaluacion.observaciones_evaluacion }}
+                            {% if documentos|length > 0 and evaluacion.tipo_eval_id == 3 %}
+                                <br> Documentación a adjuntar: <br>
+                                <ul>                                    
+                                    {% for documento in documentos %}
+                                        <li>{{ documento }}</li>
+                                    {% endfor %}
+                                </ul>
+
+                            {% endif %}
                         </td>                    
                     </tr>
                 {% endfor %}                            
