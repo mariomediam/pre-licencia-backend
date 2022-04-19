@@ -1,6 +1,10 @@
 from django.db.models import fields
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
-from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel, PrecalTipoDocumModel
+from django.conf import settings
+from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel, PrecalTipoDocumModel, TipoLicenciaModel
 
 class GiroNegocioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -151,3 +155,35 @@ class PrecalTipoDocumSerializer(serializers.ModelSerializer):
     class Meta:
         model = PrecalTipoDocumModel
         fields = '__all__'
+
+
+class ImagenSerializer(serializers.Serializer):
+    # max_length => indica el maximo de caracteres en el nombre de un archivo
+    # use_url => si es True, el valor de la url sera usado para mostrar la ubicacion del archivo. si es False entonces se usara el nombre del archivo  (False es su valor x defecto)
+    archivo = serializers.FileField(
+        max_length=20, use_url=True)
+
+    def save(self):
+        print("1111111111111111111111")
+        archivo: InMemoryUploadedFile = self.validated_data.get('archivo')
+
+        # para ver el tipo de archivo que es
+        print("222222222222222222222222222")
+        print(archivo.content_type)
+        # para ver el nombre del archivo
+        print("333333333333333333333333333")
+        print(archivo.name)
+        # para ver el tamaño del archivo  expresado en bytes
+        print("4444444444444444444444444444")
+        print(archivo.size)
+
+        # NOTA: una vez que se usa el metodo read() se elimina la informacion de ese archivo en la memoria RAM
+
+        ruta = default_storage.save(archivo.name, ContentFile(archivo.read()))
+        return settings.MEDIA_URL + ruta
+
+
+class TipoLicenciaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TipoLicenciaModel
+        fields = '__all__'          

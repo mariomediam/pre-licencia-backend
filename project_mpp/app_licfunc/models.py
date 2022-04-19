@@ -256,3 +256,17 @@ class PrecalDocumentacionModel(models.Model):
 
     class Meta:
         db_table = 'S17Web_LIC_Documentacion'
+
+
+class TipoLicenciaModel(models.Model):
+
+    tipoLicId = models.CharField(primary_key=True, null=False, db_column='C_TIPLIC', unique=True, max_length=1)
+
+    tipoLicDescrip = models.CharField(max_length=200, null=False, db_column='C_TIPLIC_DESCRIP')
+
+    tipoLicSimula = models.BooleanField(null=False, db_column='F_TipLic_Simula')
+
+    tipoLicNombre = models.CharField(max_length=200, null=False, db_column='n_tiplic_nombre')
+    
+    class Meta:
+        db_table = 'S02TIPOLICENCIA'

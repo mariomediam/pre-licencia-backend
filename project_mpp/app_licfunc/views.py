@@ -1,15 +1,16 @@
 from django.shortcuts import render
 from django.db import transaction
-from django.db.models import F, Q
+from django.db.models import F, Q, ImageField
 from django.conf import settings
 from django.template.loader import get_template, render_to_string
 from django.template import loader
-from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
+from rest_framework import status
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
-from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, TipoEvalModel, PrecalTipoDocumModel
-from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer
+from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel
+from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, ImagenSerializer, TipoLicenciaSerializer
 from app_deploy.general.enviarEmail import enviarEmail
 
 
@@ -207,7 +208,11 @@ class PrecalEvaluacionController(RetrieveAPIView):
                             raise Exception("El campo precalRiesgo es requerido")
                                                  
                         precalificacion.precalRiesgoEval = result_eval
-                        precalificacion.precalRiesgo = precal_riesgo                        
+
+                        if result_eval == 1:
+                            precalificacion.precalRiesgo = precal_riesgo                        
+                        else:
+                            precalificacion.precalRiesgo = 0
 
 
                     elif tipo_eval == 2:
@@ -403,3 +408,38 @@ class PrecalTipoDocumController(RetrieveAPIView):
             "message":None,
             "content":data.data
         })
+
+
+class SubirImagenController(CreateAPIView):
+    serializer_class = ImagenSerializer
+
+    def post(self, request: Request):
+        print(request.FILES)
+        data = self.serializer_class(data=request.FILES)
+
+        if data.is_valid():
+            archivo = data.save()
+            url = request.META.get('HTTP_HOST')
+
+            return Response(data={
+                'message': 'Archivo subido exitosamente',
+                'content': url + archivo
+            }, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data={
+                'message': 'Error al crear el archivo',
+                'content': data.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TipoLicenciaController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TipoLicenciaSerializer
+    queryset = TipoLicenciaModel.objects.all()
+
+    def get(self, request):
+        data = self.serializer_class(instance=self.get_queryset(), many=True)
+        return Response(data = {
+            "message":None,
+            "content":data.data
+        })            
