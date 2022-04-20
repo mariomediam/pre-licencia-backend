@@ -9,8 +9,8 @@ from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, CreateAP
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
-from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel
-from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, ImagenSerializer, TipoLicenciaSerializer
+from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel
+from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, ImagenSerializer, TipoLicenciaSerializer, SectoresLicSerializer
 from app_deploy.general.enviarEmail import enviarEmail
 
 
@@ -443,3 +443,59 @@ class TipoLicenciaController(RetrieveAPIView):
             "message":None,
             "content":data.data
         })            
+
+class SectoresLicController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SectoresLicSerializer
+    queryset = SectoresLicModel.objects.all()
+
+    def get(self, request):
+        data = self.serializer_class(instance=self.get_queryset(), many=True)
+        return Response(data = {
+            "message":None,
+            "content":data.data
+        })                    
+
+class SectoresBuscarController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SectoresLicSerializer
+        
+    def get(self, request: Request):
+        sector_str = request.query_params.get('sector')
+        
+        if sector_str is None:
+            return Response(data = {
+            "message":None,
+            "content":[]
+        }) 
+
+        sectores =  SectoresLicModel.objects.filter(sectorLicId__in=sector_str.split(","))
+        data = self.serializer_class(instance= sectores, many=True)
+
+        return Response(data = {
+            "message":None,
+            "content":data.data
+        })       
+
+class SectoresPorPrecalificacionController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SectoresLicSerializer
+        
+    def get(self, request: Request):
+
+        precal_id = request.query_params.get('precalid')
+        
+        
+        if precal_id is None:
+            return Response(data = {
+            "message":None,
+            "content":[]
+        }) 
+
+        sectores =  SectoresLicModel.objects.all()
+        data = self.serializer_class(instance= sectores, many=True)
+
+        return Response(data = {
+            "message":None,
+            "content":data.data
+        }) 

@@ -270,3 +270,13 @@ class TipoLicenciaModel(models.Model):
     
     class Meta:
         db_table = 'S02TIPOLICENCIA'
+
+
+class SectoresLicModel(models.Model):
+    sectorLicId = models.AutoField(primary_key=True, null=False, db_column='C_Sector', unique=True)
+
+    sectorLicNombre = models.CharField(
+        max_length=50, db_column='N_Sector', null=False)    
+
+    class Meta:
+        db_table = 'S17Web_LIC_Sectores'
