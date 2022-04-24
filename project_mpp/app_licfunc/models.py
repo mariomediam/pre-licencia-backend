@@ -28,6 +28,22 @@ class GiroNegocioModel(models.Model):
     class Meta:
         db_table = 'S02GIRONEGOCIO'
 
+
+class TipoLicenciaModel(models.Model):
+
+    tipoLicId = models.CharField(primary_key=True, null=False, db_column='C_TIPLIC', unique=True, max_length=1)
+
+    tipoLicDescrip = models.CharField(max_length=200, null=False, db_column='C_TIPLIC_DESCRIP')
+
+    tipoLicSimula = models.BooleanField(null=False, db_column='F_TipLic_Simula')
+
+    tipoLicNombre = models.CharField(max_length=200, null=False, db_column='n_tiplic_nombre')
+    
+    class Meta:
+        db_table = 'S02TIPOLICENCIA'
+
+
+
 class WebContribuyenteModel(models.Model):
     webContribId =  models.AutoField(
         primary_key=True, null=False, db_column='IdContribuyente', unique=True)
@@ -149,6 +165,18 @@ class PrecalificacionModel(models.Model):
     precalTelefono = models.CharField(
         max_length=15, db_column='telefono', null=False)       
 
+    tipoLicencia =  models.ForeignKey(
+        to=TipoLicenciaModel, related_name='precalificacionTipoLicencia', db_column='C_TipLic', on_delete=models.PROTECT, null=True)     
+
+    tipoTramiteId = models.CharField(
+        max_length=8, db_column='C_TipTra', null=True)       
+
+    tipoTramiteOrigen = models.CharField(
+        max_length=1, db_column='F_TipTra_Origen', null=True)       
+
+    tipoTramiteAnio = models.CharField(
+        max_length=4, db_column='C_TipTra_Anio', null=True)       
+
     def __str__(self):
         return str(self.precalId)
 
@@ -257,19 +285,6 @@ class PrecalDocumentacionModel(models.Model):
     class Meta:
         db_table = 'S17Web_LIC_Documentacion'
 
-
-class TipoLicenciaModel(models.Model):
-
-    tipoLicId = models.CharField(primary_key=True, null=False, db_column='C_TIPLIC', unique=True, max_length=1)
-
-    tipoLicDescrip = models.CharField(max_length=200, null=False, db_column='C_TIPLIC_DESCRIP')
-
-    tipoLicSimula = models.BooleanField(null=False, db_column='F_TipLic_Simula')
-
-    tipoLicNombre = models.CharField(max_length=200, null=False, db_column='n_tiplic_nombre')
-    
-    class Meta:
-        db_table = 'S02TIPOLICENCIA'
 
 
 class SectoresLicModel(models.Model):

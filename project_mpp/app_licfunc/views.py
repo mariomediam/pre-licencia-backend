@@ -11,6 +11,7 @@ from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel
 from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, ImagenSerializer, TipoLicenciaSerializer, SectoresLicSerializer
+from app_licfunc.licfunc import TipoTramitePorLicencia
 from app_deploy.general.enviarEmail import enviarEmail
 
 
@@ -168,6 +169,7 @@ class PrecalEvaluacionController(RetrieveAPIView):
         result_eval = request.data.get("resultEval")
         precal_riesgo = request.data.get("precalRiesgo")
         request_documentos = request.data.get("documentos")
+        tipo_licencia = request.data.get("tipoLicencia")
 
         if data.is_valid():
 
@@ -231,6 +233,8 @@ class PrecalEvaluacionController(RetrieveAPIView):
 
                         precalificacion.precalCompatDL = result_eval                    
 
+
+
                     else:
                         raise Exception("resultEval no reconocido")
 
@@ -252,6 +256,16 @@ class PrecalEvaluacionController(RetrieveAPIView):
                         print(enviarEmail(subject=subject, body=body, to=to, attachments=attachments))
 
                     elif result_eval == 1 and tipo_eval == 3:
+
+                        # precalificacion__tipoLicencia = tipo_licencia
+
+                        precalificacion.tipoLicencia_id = tipo_licencia
+
+                        tipo_tramite = TipoTramitePorLicencia('01', '0G', '4', 1050.12)
+                        precalificacion.tipoTramiteId = tipo_tramite['C_TipTra']
+                        precalificacion.tipoTramiteOrigen = tipo_tramite['F_TipTra_Origen']
+                        precalificacion.tipoTramiteAnio = tipo_tramite['C_TipTra_Anio']
+
 
                         tipos_evaluaciones = TipoEvalModel.objects.all()
 
@@ -298,6 +312,8 @@ class PrecalEvaluacionController(RetrieveAPIView):
                         # print(precalificacion.precalCorreo)
                         
                         enviarEmail(subject=subject, body=body, to=to)
+
+                    
 
                     precalificacion.save()
 
