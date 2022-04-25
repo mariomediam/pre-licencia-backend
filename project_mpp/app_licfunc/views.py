@@ -262,7 +262,7 @@ class PrecalEvaluacionController(RetrieveAPIView):
                         precalificacion.tipoLicencia_id = tipo_licencia
 
                         tipo_tramite = TipoTramitePorLicencia('01', '0{}'.format(tipo_licencia),  precalificacion.precalRiesgo, precalificacion.precalArea)
-                        
+
                         precalificacion.tipoTramiteId = tipo_tramite['C_TipTra']
                         precalificacion.tipoTramiteOrigen = tipo_tramite['F_TipTra_Origen']
                         precalificacion.tipoTramiteAnio = tipo_tramite['C_TipTra_Anio']
@@ -516,3 +516,18 @@ class SectoresPorPrecalificacionController(RetrieveAPIView):
             "message":None,
             "content":data.data
         }) 
+
+
+class TipoLicenciaPorIdController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TipoLicenciaSerializer
+    queryset = TipoLicenciaModel.objects.all()
+
+    def get(self, request, tipoLicenciaId):
+        tipo_licencia = self.get_queryset().filter(tipoLicId=tipoLicenciaId)
+        data = self.serializer_class(instance=tipo_licencia, many=True)
+
+        return Response(data={
+            "message":None,
+            "content": data.data
+        })   

@@ -14,7 +14,8 @@ from .views import (PrecalificacionController,
                 TipoLicenciaController,
                 SectoresLicController,
                 SectoresBuscarController,
-                SectoresPorPrecalificacionController)
+                SectoresPorPrecalificacionController,
+                TipoLicenciaPorIdController)
 
 urlpatterns = [
     path('precalificacion', PrecalificacionController.as_view()),    
@@ -30,6 +31,7 @@ urlpatterns = [
     path('tipo-eval', TipoEvalController.as_view()),
     path('tipo-docum', PrecalTipoDocumController.as_view()),
     path('tipo-licencia', TipoLicenciaController.as_view()),
+    path('tipo-licencia/<str:tipoLicenciaId>', TipoLicenciaPorIdController.as_view()),    
     path('sectores', SectoresLicController.as_view()),
     path('sector-buscar', SectoresBuscarController.as_view()),
     path('sector-precal', SectoresPorPrecalificacionController.as_view()),

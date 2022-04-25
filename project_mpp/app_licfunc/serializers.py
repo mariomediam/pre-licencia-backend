@@ -11,6 +11,10 @@ class GiroNegocioSerializer(serializers.ModelSerializer):
         model = GiroNegocioModel
         fields = '__all__'
 
+class TipoLicenciaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TipoLicenciaModel
+        fields = '__all__'  
 
 class WebContribuyenteSerializer(serializers.ModelSerializer):
 
@@ -88,7 +92,7 @@ class PrecalTipoDocumSerializer(serializers.ModelSerializer):
         model = PrecalTipoDocumModel
         fields = '__all__'
 
-class PrecalEvaluacionSerializer(serializers.ModelSerializer):    
+class PrecalEvaluacionSerializer(serializers.ModelSerializer):      
     class Meta:
         model = PrecalEvaluacionModel
         fields = '__all__'
@@ -97,7 +101,7 @@ class PrecalEvaluacionSerializer(serializers.ModelSerializer):
 class PrecalEvaluacionTipoSerializer(serializers.ModelSerializer):
     precalificacion = PrecalificacionSerializer(read_only = True)
     precalEvalEstadoId = serializers.SerializerMethodField(method_name='calcular_estado')
-    precalEvalEstadoNombre = serializers.SerializerMethodField(method_name='calcular_estado_nombre')
+    precalEvalEstadoNombre = serializers.SerializerMethodField(method_name='calcular_estado_nombre')    
 
     def calcular_estado(self, instance):       
         estado = 9
@@ -181,12 +185,7 @@ class ImagenSerializer(serializers.Serializer):
 
         ruta = default_storage.save(archivo.name, ContentFile(archivo.read()))
         return settings.MEDIA_URL + ruta
-
-
-class TipoLicenciaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TipoLicenciaModel
-        fields = '__all__'          
+        
 
 class SectoresLicSerializer(serializers.ModelSerializer):
     class Meta:
