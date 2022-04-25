@@ -524,8 +524,10 @@ class TipoLicenciaPorIdController(RetrieveAPIView):
     queryset = TipoLicenciaModel.objects.all()
 
     def get(self, request, tipoLicenciaId):
-        tipo_licencia = self.get_queryset().filter(tipoLicId=tipoLicenciaId)
-        data = self.serializer_class(instance=tipo_licencia, many=True)
+
+        tipo_licencia = self.get_queryset().filter(tipoLicId=tipoLicenciaId).first()       
+
+        data = self.serializer_class(instance=tipo_licencia)
 
         return Response(data={
             "message":None,
