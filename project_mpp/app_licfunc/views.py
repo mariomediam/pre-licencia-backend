@@ -261,7 +261,8 @@ class PrecalEvaluacionController(RetrieveAPIView):
 
                         precalificacion.tipoLicencia_id = tipo_licencia
 
-                        tipo_tramite = TipoTramitePorLicencia('01', '0G', '4', 1050.12)
+                        tipo_tramite = TipoTramitePorLicencia('01', '0{}'.format(tipo_licencia),  precalificacion.precalRiesgo, precalificacion.precalArea)
+                        
                         precalificacion.tipoTramiteId = tipo_tramite['C_TipTra']
                         precalificacion.tipoTramiteOrigen = tipo_tramite['F_TipTra_Origen']
                         precalificacion.tipoTramiteAnio = tipo_tramite['C_TipTra_Anio']
