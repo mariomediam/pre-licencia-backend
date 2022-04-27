@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
 from django.conf import settings
-from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel, PrecalTipoDocumModel, TipoLicenciaModel, SectoresLicModel
+from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel, PrecalTipoDocumModel, TipoLicenciaModel, SectoresLicModel, PrecalRequisitoArchivoModel, PrecalFirmaArchivoModel, PrecalVBExpedienteModel
 
 class GiroNegocioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -191,3 +191,19 @@ class SectoresLicSerializer(serializers.ModelSerializer):
     class Meta:
         model = SectoresLicModel
         fields = '__all__'     
+
+class PrecalRequisitoArchivoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrecalRequisitoArchivoModel
+        fields = '__all__'             
+
+class PrecalFirmaArchivoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrecalFirmaArchivoModel
+        fields = '__all__'             
+
+class PrecalVBExpedienteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PrecalVBExpedienteModel
+        fields = '__all__'        
+             

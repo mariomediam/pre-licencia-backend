@@ -295,3 +295,87 @@ class SectoresLicModel(models.Model):
 
     class Meta:
         db_table = 'S17Web_LIC_Sectores'
+
+
+class PrecalRequisitoArchivoModel(models.Model):
+    precalArchivoId = models.AutoField(primary_key=True, null=False, db_column='idRequisitoArchivo', unique=True)
+
+    precalificacion = models.ForeignKey(
+        to=PrecalificacionModel, related_name='precalificacionReqArch', db_column='fkPreCalificacion', on_delete=models.PROTECT)
+
+    precalAnexo = models.CharField(
+        max_length=300, db_column='anexo', null=False)    
+
+    precalRequisito = models.CharField(
+        max_length=2, db_column='idRequisito', null=False)    
+
+    precalRuta = models.CharField(
+        max_length=150, db_column='ruta', null=False)
+
+    precalNroFolio = models.IntegerField(
+        db_column='numeroFolio', null=False, default=0)
+
+    precalEnlace = models.TextField(db_column='enlace', null=True)  
+
+    precalObserv = models.CharField(
+        max_length=300, db_column='observacion', null=False) 
+
+    precalCreate = models.DateTimeField(auto_now=True, db_column='RecordCreateDate')
+
+    precalUser = models.CharField(
+        max_length=100, db_column='RecordCreateUser', null=False) 
+
+    precalState = models.CharField(
+        max_length=1, db_column='RecordState', null=False) 
+    
+    class Meta:
+        db_table = 'S17Web_LIC_Requisito_Archivo'
+
+class PrecalFirmaArchivoModel(models.Model):
+    precalFirmaId = models.AutoField(primary_key=True, null=False, db_column='C_FileFirma', unique=True)
+
+    requisitoArchivo = models.ForeignKey(
+        to=PrecalRequisitoArchivoModel, related_name='requisitoArchivoFirma', db_column='idRequisitoArchivo', on_delete=models.PROTECT)
+
+    precalFirmaOrd = models.IntegerField(
+        db_column='C_FileFirma_Ord', null=False, default=0)
+
+    precalFirmaNombre = models.CharField(
+        max_length=100, db_column='N_FileFirma_Nombre', null=False) 
+
+    precalFirmaRuta = models.CharField(
+        max_length=150, db_column='N_FileFirma_Ruta', null=False) 
+
+    precalFirmaLogin = models.CharField(
+        max_length=20, db_column='C_Usuari_Login', null=False)
+
+    precalFirmaDigitFecha = models.DateTimeField(auto_now=True, db_column='D_FileFirma_FecDig')
+
+    precalFirmaEstado = models.CharField(
+        max_length=1, db_column='F_FileFirma_Estado', null=False) 
+    
+    class Meta:
+        db_table = 'S17Web_LIC_Firma_Archivo'
+
+class PrecalVBExpedienteModel(models.Model):
+    precalVBExp = models.AutoField(primary_key=True, null=False, db_column='C_VBExp', unique=True)
+
+    precalificacion = models.ForeignKey(
+        to=PrecalificacionModel, related_name='precalificacionVBExp', db_column='idPreCalificacion', on_delete=models.PROTECT)
+
+    tipoEval = models.ForeignKey(
+        to=TipoEvalModel, related_name='vbExpedTipoEval', db_column='C_TipEval', on_delete=models.PROTECT)
+
+    precalVBExpEval = models.CharField(
+        max_length=1, db_column='F_VBExp_Eval', null=False)
+
+    precalVBExpObs = models.CharField(
+        max_length=400, db_column='T_VBExp_Obs', null=False)
+
+    precalVBExpLogin = models.CharField(
+        max_length=20, db_column='C_Usuari_Login', null=False)
+
+    precalVBExpDigitFecha = models.DateTimeField(auto_now=True, db_column='F_VBExp_FecDig')
+
+    class Meta:
+        db_table = 'S17Web_LIC_VBExpediente'

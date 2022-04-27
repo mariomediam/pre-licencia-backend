@@ -11,7 +11,7 @@ from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel
 from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, ImagenSerializer, TipoLicenciaSerializer, SectoresLicSerializer
-from app_licfunc.licfunc import TipoTramitePorLicencia
+from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo
 from app_deploy.general.enviarEmail import enviarEmail
 
 
@@ -533,3 +533,22 @@ class TipoLicenciaPorIdController(RetrieveAPIView):
             "message":None,
             "content": data.data
         })   
+
+
+
+class BuscarRequisitoArchivoController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        opcion = request.query_params.get('opcion')
+        valor01 = request.query_params.get('valor01')
+
+        if opcion and valor01:            
+            requisito_archivo = BuscarRequisitoArchivo(opcion, valor01)
+            return Response({'data': requisito_archivo}, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar campo a buscar y valor buscado"
+                }, status=status.HTTP_404_NOT_FOUND)

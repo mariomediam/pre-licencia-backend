@@ -14,3 +14,9 @@ def TipoTramitePorLicencia(motivo_sol, tipo_sol, nivel_riesgo, area):
 
         cursor.execute(sql, (motivo_sol, tipo_sol, nivel_riesgo, area))
         return dictfetchall(cursor)[0]
+
+
+def BuscarRequisitoArchivo(opcion, valor01):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIAC.dbo.S17Web_LIC_BuscarRequisitoArchivo %s, %s', [opcion, valor01])
+        return dictfetchall(cursor)        
