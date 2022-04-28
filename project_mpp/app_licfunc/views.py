@@ -15,6 +15,16 @@ from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo
 from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.descargar import download_file
 
+from django.http import FileResponse
+import os
+from os import environ
+from dotenv import load_dotenv
+
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+
+load_dotenv(dotenv_path)
+
+
 
 
 # Create your views here.
@@ -563,3 +573,8 @@ def prelicenciaDownloadFile(request, id=''):
     ruta_file = '{}/{}.pdf'.format(requisito_archivo.precalificacion_id, requisito_archivo.precalRequisito)    
     return download_file(request, ruta_file)    
     
+
+def prelicenciaPreviewFile(request, id=''):
+    requisito_archivo = PrecalRequisitoArchivoModel.objects.get(pk=id)
+    ruta_file = environ.get('RUTA_REQUISITOS_LICENCIA')  + '{}/{}.pdf'.format(requisito_archivo.precalificacion_id, requisito_archivo.precalRequisito)    
+    return FileResponse(open(ruta_file, 'rb'), content_type='application/pdf')
