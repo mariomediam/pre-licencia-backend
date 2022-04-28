@@ -8,6 +8,34 @@ from .serializers import LoginSerializer
 from . import trabajador
 from app_deploy.seguridad.usuario import login
 from rest_framework.permissions import IsAuthenticated
+import mimetypes
+import os
+from django.http.response import HttpResponse
+from django.shortcuts import render# Define function to download pdf file using template
+
+
+def download_file(request, filename=''):
+    if filename != '':
+        # Define Django project base directory
+        # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))                   
+        BASE_DIR = "T:/467/"               
+        # Define the full file path
+        # filepath = BASE_DIR + '/app_deploy/files/' + filename
+        filepath = BASE_DIR + filename
+        print(filepath)
+        # Open the file for reading content
+        path = open(filepath, 'rb')
+        # Set the mime type
+        mime_type, _ = mimetypes.guess_type(filepath)
+        # Set the return value of the HttpResponse
+        response = HttpResponse(path, content_type=mime_type)
+        # Set the HTTP header for sending to browser
+        response['Content-Disposition'] = "attachment; filename=%s" % filename
+        # Return the response value
+        return response
+    else:
+        # Load the template
+        return render(request, 'file.html')
 
 
 # Create your views here.
@@ -48,6 +76,8 @@ class LoginController(RetrieveAPIView):
                 'message': 'No se pudo validar login',
                 'content': data.errors
             }, status=400)
+
+
 
 
 
