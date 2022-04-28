@@ -10,9 +10,10 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel
-from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, ImagenSerializer, TipoLicenciaSerializer, SectoresLicSerializer
+from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, ImagenSerializer, TipoLicenciaSerializer, SectoresLicSerializer, PrecalRequisitoArchivoModel
 from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo
 from app_deploy.general.enviarEmail import enviarEmail
+from app_deploy.general.descargar import download_file
 
 
 
@@ -552,3 +553,13 @@ class BuscarRequisitoArchivoController(RetrieveAPIView):
              return Response(data={
                     "message":"Debe de ingresar campo a buscar y valor buscado"
                 }, status=status.HTTP_404_NOT_FOUND)
+
+
+# def prelicenciaDownloadFile(request, filename=''):
+#     return download_file(request, filename)
+
+def prelicenciaDownloadFile(request, id=''):
+    requisito_archivo = PrecalRequisitoArchivoModel.objects.get(pk=id)
+    ruta_file = '{}/{}.pdf'.format(requisito_archivo.precalificacion_id, requisito_archivo.precalRequisito)    
+    return download_file(request, ruta_file)    
+    

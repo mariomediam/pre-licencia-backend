@@ -16,7 +16,8 @@ from .views import (PrecalificacionController,
                 SectoresBuscarController,
                 SectoresPorPrecalificacionController,
                 TipoLicenciaPorIdController,
-                BuscarRequisitoArchivoController)
+                BuscarRequisitoArchivoController,
+                prelicenciaDownloadFile)
 
 urlpatterns = [
     path('precalificacion', PrecalificacionController.as_view()),    
@@ -37,4 +38,5 @@ urlpatterns = [
     path('sector-buscar', SectoresBuscarController.as_view()),
     path('sector-precal', SectoresPorPrecalificacionController.as_view()),
     path('requisito-archivo', BuscarRequisitoArchivoController.as_view()),
+    path('download/requisito-archivo/<int:id>',prelicenciaDownloadFile),
 ]

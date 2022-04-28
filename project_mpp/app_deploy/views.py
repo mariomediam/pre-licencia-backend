@@ -77,8 +77,4 @@ class LoginController(RetrieveAPIView):
                 'content': data.errors
             }, status=400)
 
-
-
-
-
         
