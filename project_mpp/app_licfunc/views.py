@@ -4,27 +4,31 @@ from django.db.models import F, Q, ImageField
 from django.conf import settings
 from django.template.loader import get_template, render_to_string
 from django.template import loader
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Max
+from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
-from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel
-from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, ImagenSerializer, TipoLicenciaSerializer, SectoresLicSerializer, PrecalRequisitoArchivoModel
+from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel, PrecalFirmaArchivoModel
+from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, UploadFileSerializer, TipoLicenciaSerializer, SectoresLicSerializer, PrecalRequisitoArchivoModel
 from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo
 from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.descargar import download_file
+from app_deploy.general.cargar import upload_file
 
 from django.http import FileResponse
 import os
 from os import environ
 from dotenv import load_dotenv
+from django.core.files import File
+from django.http import HttpResponse
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 
 load_dotenv(dotenv_path)
-
-
 
 
 # Create your views here.
@@ -439,11 +443,16 @@ class PrecalTipoDocumController(RetrieveAPIView):
 
 
 class SubirImagenController(CreateAPIView):
-    serializer_class = ImagenSerializer
+    serializer_class = UploadFileSerializer
 
     def post(self, request: Request):
         print(request.FILES)
         data = self.serializer_class(data=request.FILES)
+        print("aaaaaaaaaaaa")
+        print(request.data)
+        print("bbbbbbbbbbbb")
+        print(request.data["idRequisitoArchivo"])
+        print("cccccccccccc")
 
         if data.is_valid():
             archivo = data.save()
@@ -578,3 +587,116 @@ def prelicenciaPreviewFile(request, id=''):
     requisito_archivo = PrecalRequisitoArchivoModel.objects.get(pk=id)
     ruta_file = environ.get('RUTA_REQUISITOS_LICENCIA')  + '{}/{}.pdf'.format(requisito_archivo.precalificacion_id, requisito_archivo.precalRequisito)    
     return FileResponse(open(ruta_file, 'rb'), content_type='application/pdf')
+
+# def prelicenciaPreviewFileBorrar01(request, id=''):
+#     requisito_archivo = PrecalRequisitoArchivoModel.objects.get(pk=id)
+#     ruta_file = environ.get('RUTA_REQUISITOS_LICENCIA')  + '{}/{}.pdf'.format(requisito_archivo.precalificacion_id, requisito_archivo.precalRequisito)    
+#     f = open(ruta_file, 'rb')
+#     pdfFile = File(f)
+#     response = HttpResponse(pdfFile.read())
+#     response['Content-Disposition'] = 'attachment';
+#     return response   
+
+# # @csrf_exempt
+# @api_view(['POST'])
+# def agregarPreLicenciaFirma(request, id=""):
+
+#     print("111111111111111111111111")
+#     print(request.FILES)
+#     print("111111111111111111111111")
+#     # request.FILES.location = "location_temp"
+#     # request.FILES["file_name"] = "file_name_temp"
+#     # print(request.FILES)
+#     # data = self.serializer_class(data=request.FILES)
+#     # print("aaaaaaaaaaaa")
+#     # print(request.data)
+#     # print("bbbbbbbbbbbb")
+#     # print(request.data["idRequisitoArchivo"])
+#     # print("cccccccccccc")
+#     print("entroooo")
+#     # upload_file(request.FILES, environ.get('RUTA_REQUISITOS_LICENCIA'), "prueba_funcion.pdf")
+
+#     return Response(data={
+#         "message":"Debe de ingresar campo a buscar y valor buscado"
+#         }, status=status.HTTP_404_NOT_FOUND)
+
+
+class agregarPreLicenciaFirma(CreateAPIView):
+    serializer_class = UploadFileSerializer
+    queryset = PrecalFirmaArchivoModel.objects.all()
+
+
+    def post(self, request: Request, id=''):
+        
+        # Obteniendo ruta y nombre del archivo a grabar 
+        precal_requisito_archivo = PrecalRequisitoArchivoModel.objects.all().filter(precalArchivoId=id).first()
+
+        precal_firma_archivo = PrecalFirmaArchivoModel()
+        tipo_licencia = self.get_queryset().filter(requisitoArchivo_id=id).aggregate(Max('precalFirmaOrd'))
+        
+        precal_firma_ord = 1
+        if tipo_licencia['precalFirmaOrd__max']:
+            precal_firma_ord = tipo_licencia['precalFirmaOrd__max'] + 1
+        
+        file_name = "{}-f{}.pdf".format(precal_requisito_archivo.precalRequisito, f'{precal_firma_ord:0>3}')
+        location = '{}{}/'.format(environ.get('RUTA_REQUISITOS_LICENCIA'), precal_requisito_archivo.precalificacion_id)
+
+        # Grabando archivo
+        dataArchivo= request.FILES.copy()
+        dataArchivo["location"] = location
+        dataArchivo["file_name"] = file_name
+        data = self.serializer_class(data=dataArchivo)
+
+        if data.is_valid():
+            archivo = data.save()
+
+            # Grabando registro en tabla
+            precal_firma_archivo.requisitoArchivo_id = id
+            precal_firma_archivo.precalFirmaOrd = precal_firma_ord
+            precal_firma_archivo.precalFirmaNombre = file_name
+            precal_firma_archivo.precalFirmaRuta = "\\\\192.168.100.20\\archivos2\\solicitudLicenciaTemp\\{}\\{}".format(precal_requisito_archivo.precalificacion_id, file_name)
+            precal_firma_archivo.precalFirmaLogin = "Login"
+            precal_firma_archivo.precalFirmaEstado = "1"
+
+            precal_firma_archivo.save()
+
+            return Response(data={
+                    'message': 'Archivo subido exitosamente',
+                    'content': archivo
+                }, status=status.HTTP_201_CREATED)
+
+            # print('****************** file_name **************  ')
+            # print(file_name)
+            
+            # dataArchivo= request.FILES.copy()
+            # dataArchivo["location"] = "T:/"
+            # dataArchivo["file_name"] = "abcdefghIjk.pdf"
+            # print("************* dataArchivo ***********")
+            # print(dataArchivo)
+
+            # data = self.serializer_class(data=dataArchivo)
+            
+            # print("************* request.data ***********")
+            # print(request.data)
+            # print("************* request.FILES **********")
+            # print(request.FILES)
+            # print("cccccccccccc")
+
+            # if data.is_valid():
+            #     archivo = data.save()
+                
+
+                # return Response(data={
+                #     'message': 'Archivo subido exitosamente',
+                #     'content': archivo
+                # }, status=status.HTTP_201_CREATED)
+        else:
+            return Response(data={
+                'message': 'Error al crear el archivo',
+                'content': data.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+            # return Response(data={
+            #         'message': 'Archivo subido exitosamente',
+            #         'content': "content"
+            #     }, status=status.HTTP_201_CREATED)

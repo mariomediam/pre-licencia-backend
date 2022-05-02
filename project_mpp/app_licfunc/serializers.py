@@ -1,5 +1,5 @@
 from django.db.models import fields
-from django.core.files.storage import default_storage
+from django.core.files.storage import default_storage, FileSystemStorage
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
@@ -161,30 +161,57 @@ class PrecalTipoDocumSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ImagenSerializer(serializers.Serializer):
+class UploadFileSerializer(serializers.Serializer):
     # max_length => indica el maximo de caracteres en el nombre de un archivo
     # use_url => si es True, el valor de la url sera usado para mostrar la ubicacion del archivo. si es False entonces se usara el nombre del archivo  (False es su valor x defecto)
-    archivo = serializers.FileField(
-        max_length=20, use_url=True)
+    archivo = serializers.FileField(max_length=200, use_url=True)
+    location = serializers.CharField(max_length=200)
+    file_name = serializers.CharField(max_length=200)
+
+    def validate(self, data):
+        """
+        Valida que el archivo no exista en la carpeta a crear
+        """
+        fs = FileSystemStorage(data['location'])
+        if fs.exists(data['file_name']):
+            raise serializers.ValidationError("El archivo {} ya existe".format(data['file_name']))
+
+        return data
+
+    def validate_archivo(self, value):
+        """
+        Valida que solo se puedan cargar archivos PDF
+        """
+        archivo: InMemoryUploadedFile = value
+        
+        if archivo.content_type != "application/pdf":
+            raise serializers.ValidationError("Solo se pueden cargar archivos en formato PDF")
+
+        """
+        Valida tamaño máximo del archivo 10Mb
+        """    
+        if archivo.size > 1250000:
+            raise serializers.ValidationError("El tamaño máximo del archivo es de 10Mb")
+
+        return value
 
     def save(self):
-        print("1111111111111111111111")
         archivo: InMemoryUploadedFile = self.validated_data.get('archivo')
-
+       
         # para ver el tipo de archivo que es
-        print("222222222222222222222222222")
-        print(archivo.content_type)
-        # para ver el nombre del archivo
-        print("333333333333333333333333333")
-        print(archivo.name)
-        # para ver el tamaño del archivo  expresado en bytes
-        print("4444444444444444444444444444")
-        print(archivo.size)
-
+        # print(archivo.content_type)
+        # # para ver el nombre del archivo
+        # print(archivo.name)
+        # # para ver el tamaño del archivo  expresado en bytes
+        # print(archivo.size)
         # NOTA: una vez que se usa el metodo read() se elimina la informacion de ese archivo en la memoria RAM
+        # ruta = default_storage.save(archivo.name, ContentFile(archivo.read()))
+        # return settings.MEDIA_URL + ruta
+        fs = FileSystemStorage(self.validated_data.get('location'))
+        file = fs.save(self.validated_data.get('file_name'), archivo)            
+        fileurl = fs.generate_filename(file)
+        return fileurl
 
-        ruta = default_storage.save(archivo.name, ContentFile(archivo.read()))
-        return settings.MEDIA_URL + ruta
         
 
 class SectoresLicSerializer(serializers.ModelSerializer):
