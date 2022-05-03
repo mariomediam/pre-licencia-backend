@@ -588,37 +588,12 @@ def prelicenciaPreviewFile(request, id=''):
     ruta_file = environ.get('RUTA_REQUISITOS_LICENCIA')  + '{}/{}.pdf'.format(requisito_archivo.precalificacion_id, requisito_archivo.precalRequisito)    
     return FileResponse(open(ruta_file, 'rb'), content_type='application/pdf')
 
-# def prelicenciaPreviewFileBorrar01(request, id=''):
-#     requisito_archivo = PrecalRequisitoArchivoModel.objects.get(pk=id)
-#     ruta_file = environ.get('RUTA_REQUISITOS_LICENCIA')  + '{}/{}.pdf'.format(requisito_archivo.precalificacion_id, requisito_archivo.precalRequisito)    
-#     f = open(ruta_file, 'rb')
-#     pdfFile = File(f)
-#     response = HttpResponse(pdfFile.read())
-#     response['Content-Disposition'] = 'attachment';
-#     return response   
 
-# # @csrf_exempt
-# @api_view(['POST'])
-# def agregarPreLicenciaFirma(request, id=""):
-
-#     print("111111111111111111111111")
-#     print(request.FILES)
-#     print("111111111111111111111111")
-#     # request.FILES.location = "location_temp"
-#     # request.FILES["file_name"] = "file_name_temp"
-#     # print(request.FILES)
-#     # data = self.serializer_class(data=request.FILES)
-#     # print("aaaaaaaaaaaa")
-#     # print(request.data)
-#     # print("bbbbbbbbbbbb")
-#     # print(request.data["idRequisitoArchivo"])
-#     # print("cccccccccccc")
-#     print("entroooo")
-#     # upload_file(request.FILES, environ.get('RUTA_REQUISITOS_LICENCIA'), "prueba_funcion.pdf")
-
-#     return Response(data={
-#         "message":"Debe de ingresar campo a buscar y valor buscado"
-#         }, status=status.HTTP_404_NOT_FOUND)
+def prelicenciaPreviewFirmaFile(request, id=''):    
+    firma_archivo = PrecalFirmaArchivoModel.objects.get(pk=id)
+    requisito_archivo = PrecalRequisitoArchivoModel.objects.get(pk=firma_archivo.requisitoArchivo_id)
+    ruta_file = environ.get('RUTA_REQUISITOS_LICENCIA')  + '{}/{}'.format(requisito_archivo.precalificacion_id, firma_archivo.precalFirmaNombre)    
+    return FileResponse(open(ruta_file, 'rb'), content_type='application/pdf')
 
 
 class agregarPreLicenciaFirma(CreateAPIView):

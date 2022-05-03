@@ -190,7 +190,7 @@ class UploadFileSerializer(serializers.Serializer):
         """
         Valida tamaño máximo del archivo 10Mb
         """    
-        if archivo.size > 1250000:
+        if archivo.size > 10485760:
             raise serializers.ValidationError("El tamaño máximo del archivo es de 10Mb")
 
         return value
