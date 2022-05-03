@@ -21,6 +21,7 @@ from .views import (PrecalificacionController,
                 prelicenciaPreviewFile,
                 agregarPreLicenciaFirma,
                 prelicenciaPreviewFirmaFile,
+                EliminarPreLicenciaFirma,
                 )
 
 urlpatterns = [
@@ -44,6 +45,7 @@ urlpatterns = [
     path('requisito-archivo', BuscarRequisitoArchivoController.as_view()),
     path('download/requisito-archivo/<int:id>',prelicenciaDownloadFile),
     path('view/requisito-archivo/<int:id>',prelicenciaPreviewFile),    
-    path('agregar-requisito-archivo/<int:id>',agregarPreLicenciaFirma.as_view()),
+    path('agregar-firma-archivo/<int:id>',agregarPreLicenciaFirma.as_view()),
+    path('eliminar-firma-archivo/<int:id>',EliminarPreLicenciaFirma.as_view()),
     path('view/firma-archivo/<int:id>',prelicenciaPreviewFirmaFile),    
 ]

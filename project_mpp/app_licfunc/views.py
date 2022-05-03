@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Max
 from rest_framework.decorators import api_view
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, CreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
@@ -640,38 +640,23 @@ class agregarPreLicenciaFirma(CreateAPIView):
                     'content': archivo
                 }, status=status.HTTP_201_CREATED)
 
-            # print('****************** file_name **************  ')
-            # print(file_name)
-            
-            # dataArchivo= request.FILES.copy()
-            # dataArchivo["location"] = "T:/"
-            # dataArchivo["file_name"] = "abcdefghIjk.pdf"
-            # print("************* dataArchivo ***********")
-            # print(dataArchivo)
-
-            # data = self.serializer_class(data=dataArchivo)
-            
-            # print("************* request.data ***********")
-            # print(request.data)
-            # print("************* request.FILES **********")
-            # print(request.FILES)
-            # print("cccccccccccc")
-
-            # if data.is_valid():
-            #     archivo = data.save()
-                
-
-                # return Response(data={
-                #     'message': 'Archivo subido exitosamente',
-                #     'content': archivo
-                # }, status=status.HTTP_201_CREATED)
         else:
             return Response(data={
                 'message': 'Error al crear el archivo',
                 'content': data.errors
             }, status=status.HTTP_400_BAD_REQUEST)
 
-            # return Response(data={
-            #         'message': 'Archivo subido exitosamente',
-            #         'content': "content"
-            #     }, status=status.HTTP_201_CREATED)
+
+class EliminarPreLicenciaFirma(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, id):
+        firma_archivo = PrecalFirmaArchivoModel.objects.get(pk=id)
+        firma_archivo.precalFirmaEstado = "2"
+        firma_archivo.save()
+
+        return Response(data={
+                    'message': 'Archivo {} eliminado exitosamente'.format(firma_archivo.precalFirmaNombre),
+                    'content': None
+                }, status=status.HTTP_201_CREATED)
+
