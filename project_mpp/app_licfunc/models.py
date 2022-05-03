@@ -175,7 +175,25 @@ class PrecalificacionModel(models.Model):
         max_length=1, db_column='F_TipTra_Origen', null=True)       
 
     tipoTramiteAnio = models.CharField(
-        max_length=4, db_column='C_TipTra_Anio', null=True)       
+        max_length=4, db_column='C_TipTra_Anio', null=True)   
+
+    precalIdUsuarioContrib = models.IntegerField(db_column='idUsuarioContribuyente', null=False, default=0)    
+
+    precalNombreComercial = models.CharField(
+        max_length=16, db_column='nombreComercial', null=True)   
+
+    precalDlVbEval = models.IntegerField(db_column='DL_vbEval', null=False, default=0)    
+
+    precalSoliciSimulacion = models.CharField(
+        max_length=5, db_column='C_Solici', null=True)   
+
+    precalDlVbObs = models.CharField(
+        max_length=1000, db_column='DL_vbObs', null=True)   
+
+    precalDcVbEval = models.IntegerField(db_column='DC_vbEval', null=False, default=0)    
+
+    precalDcVbObs = models.CharField(
+        max_length=1000, db_column='DC_vbObs', null=True)   
 
     def __str__(self):
         return str(self.precalId)
