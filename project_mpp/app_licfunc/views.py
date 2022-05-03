@@ -661,3 +661,17 @@ class EliminarPreLicenciaFirma(UpdateAPIView):
                 }, status=status.HTTP_201_CREATED)
 
 
+class VistoBuenoDcPreLicencia(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, id):
+        precalificacion = PrecalificacionModel.objects.get(pk=id)
+        precalificacion.precalDcVbEval = request.data.get("precalDcVbEval")
+        precalificacion.precalDcVbObs = request.data.get("precalDcVbObs")
+        precalificacion.save()        
+
+        return Response(data={
+                    'message': 'Visto bueno de Precalificación grabado con éxito'.format(precalificacion.precalDcVbEval),
+                    'content': None
+                }, status=status.HTTP_201_CREATED)
+
