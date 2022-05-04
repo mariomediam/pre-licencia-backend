@@ -186,6 +186,7 @@ class PrecalEvaluacionController(RetrieveAPIView):
         precal_riesgo = request.data.get("precalRiesgo")
         request_documentos = request.data.get("documentos")
         tipo_licencia = request.data.get("tipoLicencia")
+        precal_monto = request.data.get("precalMonto")
 
         if data.is_valid():
 
@@ -276,13 +277,13 @@ class PrecalEvaluacionController(RetrieveAPIView):
                         # precalificacion__tipoLicencia = tipo_licencia
 
                         precalificacion.tipoLicencia_id = tipo_licencia
+                        precalificacion.precalMonto = precal_monto
 
                         tipo_tramite = TipoTramitePorLicencia('01', '0{}'.format(tipo_licencia),  precalificacion.precalRiesgo, precalificacion.precalArea)
 
                         precalificacion.tipoTramiteId = tipo_tramite['C_TipTra']
                         precalificacion.tipoTramiteOrigen = tipo_tramite['F_TipTra_Origen']
                         precalificacion.tipoTramiteAnio = tipo_tramite['C_TipTra_Anio']
-
 
                         tipos_evaluaciones = TipoEvalModel.objects.all()
 
@@ -313,9 +314,6 @@ class PrecalEvaluacionController(RetrieveAPIView):
                             for documento_selecc in mis_documentos_selecc:
                                array_documentos.append(documento_selecc['precalTipDocNombre'])
                                 
-
-
-
                         subject = 'MPP - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
 
                         # print(html_evaluaciones)
@@ -328,10 +326,8 @@ class PrecalEvaluacionController(RetrieveAPIView):
 
                         # print(precalificacion.precalCorreo)
                         
-                        enviarEmail(subject=subject, body=body, to=to)
-
-                    
-
+                        # enviarEmail(subject=subject, body=body, to=to)
+                
                     precalificacion.save()
 
                     return Response(data={
@@ -681,18 +677,17 @@ class VistoBuenoDlPreLicencia(UpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, id):
-        
-        licencia_generada = BuscarLicencGen(request.data.get("precalSoliciSimulacion"))        
-        licencia_generada[0]["Q_LicGen_TasCal"]
 
-        
         precalificacion = PrecalificacionModel.objects.get(pk=id)
-
-
         precalificacion.precalDlVbEval = request.data.get("precalDlVbEval")
-        precalificacion.precalSoliciSimulacion = request.data.get("precalSoliciSimulacion")
         precalificacion.precalDlVbObs = request.data.get("precalDlVbObs")
-        precalificacion.precalMonto = licencia_generada[0]["Q_LicGen_TasCal"]
+            
+        if request.data.get("precalDlVbEval") == 1:        
+            # licencia_generada = BuscarLicencGen(request.data.get("precalSoliciSimulacion"))        
+            # licencia_generada[0]["Q_LicGen_TasCal"]
+            # precalificacion.precalMonto = licencia_generada[0]["Q_LicGen_TasCal"]
+            precalificacion.precalSoliciSimulacion = request.data.get("precalSoliciSimulacion")
+
         precalificacion.save()        
 
         return Response(data={
