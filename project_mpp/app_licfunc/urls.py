@@ -23,6 +23,7 @@ from .views import (PrecalificacionController,
                 prelicenciaPreviewFirmaFile,
                 EliminarPreLicenciaFirma,
                 VistoBuenoDcPreLicencia,
+                VistoBuenoDlPreLicencia,
                 )
 
 urlpatterns = [
@@ -50,4 +51,5 @@ urlpatterns = [
     path('eliminar-firma-archivo/<int:id>',EliminarPreLicenciaFirma.as_view()),
     path('view/firma-archivo/<int:id>',prelicenciaPreviewFirmaFile),    
     path('precal-vb-dc/<int:id>',VistoBuenoDcPreLicencia.as_view()),
+    path('precal-vb-dl/<int:id>',VistoBuenoDlPreLicencia.as_view()),
 ]

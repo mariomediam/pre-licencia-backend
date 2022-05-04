@@ -675,3 +675,19 @@ class VistoBuenoDcPreLicencia(UpdateAPIView):
                     'content': None
                 }, status=status.HTTP_201_CREATED)
 
+
+class VistoBuenoDlPreLicencia(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, id):
+        precalificacion = PrecalificacionModel.objects.get(pk=id)
+        precalificacion.precalDlVbEval = request.data.get("precalDlVbEval")
+        precalificacion.precalSoliciSimulacion = request.data.get("precalSoliciSimulacion")
+        precalificacion.precalDlVbObs = request.data.get("precalDlVbObs")
+        precalificacion.save()        
+
+        return Response(data={
+                    'message': 'Visto bueno de Precalificación grabado con éxito'.format(precalificacion.precalDlVbEval),
+                    'content': None
+                }, status=status.HTTP_201_CREATED)
+
