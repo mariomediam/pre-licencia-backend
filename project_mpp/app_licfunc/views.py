@@ -14,7 +14,7 @@ from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel, PrecalFirmaArchivoModel
 from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, UploadFileSerializer, TipoLicenciaSerializer, SectoresLicSerializer, PrecalRequisitoArchivoModel
-from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo
+from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo, BuscarLicencGen
 from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.descargar import download_file
 from app_deploy.general.cargar import upload_file
@@ -127,9 +127,10 @@ class PrecalifContribController(RetrieveAPIView):
     def get(self, request, id):
         precalificaciones = self.get_queryset().get(pk=id)
         data = self.serializer_class(instance=precalificaciones)
+        data.data["q_tasa"] = 150.20
 
         return Response(data={
-            "message":None,
+            "message":"hollaaaa",
             "content": data.data
         })
 
@@ -680,10 +681,18 @@ class VistoBuenoDlPreLicencia(UpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, id):
+        
+        licencia_generada = BuscarLicencGen(request.data.get("precalSoliciSimulacion"))        
+        licencia_generada[0]["Q_LicGen_TasCal"]
+
+        
         precalificacion = PrecalificacionModel.objects.get(pk=id)
+
+
         precalificacion.precalDlVbEval = request.data.get("precalDlVbEval")
         precalificacion.precalSoliciSimulacion = request.data.get("precalSoliciSimulacion")
         precalificacion.precalDlVbObs = request.data.get("precalDlVbObs")
+        precalificacion.precalMonto = licencia_generada[0]["Q_LicGen_TasCal"]
         precalificacion.save()        
 
         return Response(data={

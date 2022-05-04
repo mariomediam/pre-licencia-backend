@@ -20,3 +20,8 @@ def BuscarRequisitoArchivo(opcion, valor01):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIAC.dbo.S17Web_LIC_BuscarRequisitoArchivo %s, %s', [opcion, valor01])
         return dictfetchall(cursor)        
+
+def BuscarLicencGen(c_solici):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIAC.dbo.S02SeleccionarLicencGen %s', [c_solici])
+        return dictfetchall(cursor)                
