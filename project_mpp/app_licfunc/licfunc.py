@@ -2,6 +2,8 @@ import string
 from django.db import connection
 from app_deploy.general.ejecutar import dictfetchall
 
+tipo_funciones ={"1":"COMERCIO", "2":"ENCUENTRO", "3":"HOSPEDAJE", "4":"INDUSTRIAL", "5":"OFICINAS ADMINISTRATIVAS", "6":"SALUD"}
+
 def TipoTramitePorLicencia(motivo_sol, tipo_sol, nivel_riesgo, area):
     with connection.cursor() as cursor:                
         sql = """\
@@ -24,4 +26,17 @@ def BuscarRequisitoArchivo(opcion, valor01):
 def BuscarLicencGen(c_solici):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIAC.dbo.S02SeleccionarLicencGen %s', [c_solici])
-        return dictfetchall(cursor)                
+        return dictfetchall(cursor)  
+
+
+def ListarFunciones(funciones: string):
+    dict_funciones = {}
+    for i in funciones:        
+        nombre_funcion = tipo_funciones.get(i)
+        if nombre_funcion is not None:
+            dict_funciones[i] = nombre_funcion
+
+    return dict_funciones
+
+
+

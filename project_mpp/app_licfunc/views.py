@@ -130,7 +130,7 @@ class PrecalifContribController(RetrieveAPIView):
         data.data["q_tasa"] = 150.20
 
         return Response(data={
-            "message":"hollaaaa",
+            "message":"hollaaaa2",
             "content": data.data
         })
 

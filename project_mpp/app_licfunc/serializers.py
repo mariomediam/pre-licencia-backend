@@ -5,6 +5,9 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
 from django.conf import settings
 from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel, PrecalTipoDocumModel, TipoLicenciaModel, SectoresLicModel, PrecalRequisitoArchivoModel, PrecalFirmaArchivoModel, PrecalVBExpedienteModel
+from app_licfunc.licfunc import ListarFunciones
+import json
+
 
 class GiroNegocioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,14 +27,18 @@ class WebContribuyenteSerializer(serializers.ModelSerializer):
 
 
 class PrecalificacionSerializer(serializers.ModelSerializer):
-    
+   
     class Meta:
         model = PrecalificacionModel
         fields = '__all__'
 
 class PrecalifContribSerializer(serializers.ModelSerializer):
     precalSolicitante = WebContribuyenteSerializer(read_only = True)
+    precalFunciones = serializers.SerializerMethodField()
 
+    def get_precalFunciones(self, obj):       
+        return ListarFunciones(str(obj.precalFuncion))
+    
     class Meta:
         model = PrecalificacionModel
         fields = '__all__'
