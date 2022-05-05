@@ -30,13 +30,15 @@ def BuscarLicencGen(c_solici):
 
 
 def ListarFunciones(funciones: string):
-    dict_funciones = {}
+    array_funciones = []    
     for i in funciones:        
         nombre_funcion = tipo_funciones.get(i)
         if nombre_funcion is not None:
-            dict_funciones[i] = nombre_funcion
+            dict_funciones = {'idFuncion': int(i), 'nombreFuncion': nombre_funcion}
+            array_funciones.append(dict_funciones)
+            
 
-    return dict_funciones
+    return array_funciones
 
 
 
