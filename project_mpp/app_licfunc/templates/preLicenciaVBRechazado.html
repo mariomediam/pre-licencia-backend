@@ -41,7 +41,7 @@
         <div style="line-height: 1.3; font-size: 14px; font-family: &quot;open sans&quot;, &quot;helvetica neue&quot;, helvetica, arial, sans-serif, serif, emojifont; color: rgb(85, 85, 85);">
         
         
-        <h1 align="center">Solicitud Aceptada</h1>
+        <h1 align="center">Ingreso de expediente Rechazado</h1>
 
         <span style="font-size: 14px;">
         Estimado(a):
@@ -53,48 +53,18 @@
         </p>
         <p style="line-height: 1.3; font-family: &quot;open sans&quot;, &quot;helvetica neue&quot;, helvetica, arial, sans-serif; margin: 0px;">        
         <span style="font-size: 14px;">
-        <br>
-        Su solicitud ha sido aceptada:<br>
+        El ingreso de expediente ha sido rechazado por el siguiente motivo:<br>
         </span>        
         </span>
-    
-        <h4>
-       Tipo de licencia: {{ tipo_licencia_nombre }} <br>
-       Tasa: S/.  {{ tasa }} <br><br>
-        </h4>
-        <table width="100%" border="1" cellspacing="0" cellpadding="0" style="border-color:#009cde">
-            <thead style="background-color:#4993b2">
-                <tr style="border:1px solid blue">
-                <th style="border:1px solid blue;padding:5px">Tipo de evaluación</th>
-                <th style="border:1px solid blue;padding:5px">Resultado</th>
-                <th style="border:1px solid blue;padding:5px">Observaciones</th>
-                </tr>
-            </thead>
-                       
-                {% for evaluacion in html_evaluaciones %}
-                    <tr>
-                        <td style="line-height:1.3;word-break:break-word;font-family:&#39;Open Sans&#39;,&#39;Helvetica Neue&#39;,Helvetica,Arial,sans-serif;font-size:14px;margin:0;text-align:justify;padding:10px">
-                            {{ evaluacion.tipo_eval_nombre }}
-                        </td>
-                        <td style="line-height:1.3;word-break:break-word;font-family:&#39;Open Sans&#39;,&#39;Helvetica Neue&#39;,Helvetica,Arial,sans-serif;font-size:14px;margin:0;text-align:justify;padding:10px">
-                            {{ evaluacion.resultado_evaluacion }}
-                        </td>
-                        <td style="line-height:1.3;word-break:break-word;font-family:&#39;Open Sans&#39;,&#39;Helvetica Neue&#39;,Helvetica,Arial,sans-serif;font-size:14px;margin:0;text-align:justify;padding:10px">
-                            {{ evaluacion.observaciones_evaluacion }}
-                            {% if documentos|length > 0 and evaluacion.tipo_eval_id == 3 %}
-                                <br><br> Documentación a adjuntar: 
-                                <ul>                                    
-                                    {% for documento in documentos %}
-                                        <li>{{ documento }}</li>
-                                    {% endfor %}
-                                </ul>
-
-                            {% endif %}
-
-                        </td>  
-                    </tr>
-                {% endfor %}                            
-        </table>
+        <br>        
+        <span style="font-size: 14px;">
+        <ul>                                    
+            {% for observacion in array_observaciones %}
+                <li>{{ observacion }}</li>
+            {% endfor %}
+        </ul>
+        <br>
+        </span>
         </p>
         </div>
         </div>

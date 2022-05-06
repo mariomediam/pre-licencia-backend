@@ -40,5 +40,12 @@ def ListarFunciones(funciones: string):
 
     return array_funciones
 
+def BuscarDatosTrabajador(c_usuari_login):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIAC.dbo.S17WEB_Lic_SelectDatosTrab %s', [c_usuari_login])
+        return dictfetchall(cursor)
 
-
+def BuscarTipoTramite(c_tiptra, c_tiptra_anio, f_tiptra_origen):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIAC.dbo.S01SeleccTipoTramite %s, %s, %s', [c_tiptra, c_tiptra_anio, f_tiptra_origen])
+        return dictfetchall(cursor)  

@@ -14,7 +14,7 @@ from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel, PrecalFirmaArchivoModel
 from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, UploadFileSerializer, TipoLicenciaSerializer, SectoresLicSerializer, PrecalRequisitoArchivoModel
-from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo, BuscarLicencGen
+from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo, BuscarLicencGen, BuscarDatosTrabajador, BuscarTipoTramite
 from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.descargar import download_file
 from app_deploy.general.cargar import upload_file
@@ -300,6 +300,13 @@ class PrecalEvaluacionController(RetrieveAPIView):
                                 
                             if evaluacion.tipoEval_id == 2:
                                 resultado_evaluacion = 'Compatible'
+                            elif evaluacion.tipoEval_id == 1:
+                                if precalificacion.precalRiesgo == 4:
+                                    resultado_evaluacion = 'RIESGO BAJO'
+                                elif precalificacion.precalRiesgo == 5:
+                                    resultado_evaluacion = 'RIESGO MEDIO'
+                                else:
+                                    resultado_evaluacion = ''
                             else:
                                 resultado_evaluacion = 'Aceptado'
                             
@@ -317,23 +324,46 @@ class PrecalEvaluacionController(RetrieveAPIView):
                         subject = 'MPP - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
 
                         # print(html_evaluaciones)
+
+                        # obj_tipo_licencia = TipoLicenciaModel.objects.all().filter(tipoLicId=tipo_licencia).first()
+
+
                         
-                        context = {'precalId': f'{precalificacion.precalId:04}', 'nombre_completo': precalificacion.precalSolicitante.webContribNomCompleto, 'html_evaluaciones' : html_evaluaciones, 'eval_comentario': data.data["precalEvalComent"], 'email_usuario': precalificacion.precalCorreo, 'documentos': array_documentos}
+                        context = {'precalId': f'{precalificacion.precalId:04}', 'nombre_completo': precalificacion.precalSolicitante.webContribNomCompleto, 'html_evaluaciones' : html_evaluaciones, 'eval_comentario': data.data["precalEvalComent"], 'email_usuario': precalificacion.precalCorreo, 'documentos': array_documentos, 'tipo_licencia_nombre' : precalificacion.tipoLicencia.tipoLicDescrip, 'tasa' : precalificacion.precalMonto}
 
                         body =  render_to_string("preLicenciaAceptado.html", context = context)
                         
-                        to = [precalificacion.precalCorreo]
+                        # to = [precalificacion.precalCorreo]
+
+                        to =['mmedina@munipiura.gob.pe']
 
                         # print(precalificacion.precalCorreo)
                         
-                        # enviarEmail(subject=subject, body=body, to=to)
+                        enviarEmail(subject=subject, body=body, to=to)
                 
                     precalificacion.save()
+
+                    if result_eval == 1:
+                        # ENVIAR CORREO DE ALERTA A TERMINALISTA SIGUIENTE
+                        subject = 'Evaluación pendiente - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
+                        body = '<p>Usted tiene una evaluación pendiente - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}</p>' + ' <p>Puede registrar la evaluación en el siguiente enlace: <a href="http://192.168.100.59/pre_licencia_ver/{}"> Evaluar </a></p>'.format(precalificacion.precalId)
+                        destinatarios = ""
+                        if tipo_eval == 1:
+                            destinatarios = BuscarEmailPorTipEval_toArray(2)
+                        elif tipo_eval == 2:
+                            destinatarios = BuscarEmailPorTipEval_toArray(3)
+
+                        if len(destinatarios) > 0:
+                            to = destinatarios
+                            enviarEmail(subject=subject, body=body, to=to)
+
 
                     return Response(data={
                         'content': data.data,
                         'message': 'Evaluacion creada exitosamente'
                     })
+
+                
 
             except Exception as e:
                 return Response(data={
@@ -665,7 +695,9 @@ class VistoBuenoDcPreLicencia(UpdateAPIView):
         precalificacion = PrecalificacionModel.objects.get(pk=id)
         precalificacion.precalDcVbEval = request.data.get("precalDcVbEval")
         precalificacion.precalDcVbObs = request.data.get("precalDcVbObs")
-        precalificacion.save()        
+        precalificacion.save()   
+
+        EnviarEmailVbPreLicencia(id)           
 
         return Response(data={
                     'message': 'Visto bueno de Precalificación grabado con éxito'.format(precalificacion.precalDcVbEval),
@@ -683,15 +715,97 @@ class VistoBuenoDlPreLicencia(UpdateAPIView):
         precalificacion.precalDlVbObs = request.data.get("precalDlVbObs")
             
         if request.data.get("precalDlVbEval") == 1:        
-            # licencia_generada = BuscarLicencGen(request.data.get("precalSoliciSimulacion"))        
-            # licencia_generada[0]["Q_LicGen_TasCal"]
-            # precalificacion.precalMonto = licencia_generada[0]["Q_LicGen_TasCal"]
             precalificacion.precalSoliciSimulacion = request.data.get("precalSoliciSimulacion")
 
-        precalificacion.save()        
+        precalificacion.save()  
+
+        EnviarEmailVbPreLicencia(id)      
 
         return Response(data={
                     'message': 'Visto bueno de Precalificación grabado con éxito'.format(precalificacion.precalDlVbEval),
                     'content': None
                 }, status=status.HTTP_201_CREATED)
+
+
+def BuscarEmailPorTipEval(tipo_eval_id):
+    destinatarios = []
+    usuarios_dest = EvalUsuModel.objects.all().filter(tipoEval_id = tipo_eval_id)    
+    for usuario in usuarios_dest:
+         datos_trabajador = BuscarDatosTrabajador(usuario.userLogin)
+         if len(datos_trabajador) > 0:
+             destinatarios.append({"c_usuari_login": usuario.userLogin.strip(), 'n_email':datos_trabajador[0]["n_email"].strip()})
+
+    return destinatarios
+
+def BuscarEmailPorTipEval_toArray(tipo_eval_id):
+    destinatarios = BuscarEmailPorTipEval(tipo_eval_id)
+    destinatario_array = []
+    for destinatario in destinatarios:
+        if len(destinatario["n_email"]) > 0:
+            destinatario_array.append(destinatario["n_email"]) 
+
+    # return ",".join(destinatario_array)
+    return destinatario_array
+             
+
+def EnviarEmailVbPreLicencia(precal_id):
+    precalificacion = PrecalificacionModel.objects.all().filter(precalId=precal_id).first()
+
+    if precalificacion.precalDlVbEval != 0 and precalificacion.precalDcVbEval != 0:
+        array_observaciones = []
+        if precalificacion.precalDlVbEval ==1  and precalificacion.precalDcVbEval == 1:
+            array_observaciones.append(precalificacion.precalDcVbObs)
+            array_observaciones.append(precalificacion.precalDlVbObs)
+
+            licencia_generada = BuscarLicencGen(precalificacion.precalSoliciSimulacion)
+
+            tipo_tramite = BuscarTipoTramite(precalificacion.tipoTramiteId, precalificacion.tipoTramiteAnio, precalificacion.tipoTramiteOrigen)
+
+            subject = 'MPP - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
+
+            tipo_tramite_nombre = ""
+            cod_tupa = ""
+            if len(tipo_tramite) > 0:
+                tipo_tramite_nombre = tipo_tramite[0]['N_TipTra_Nombre']
+                cod_tupa = tipo_tramite[0]['C_Tupa']
+            
+            context = {'precalId': f'{precalificacion.precalId:04}', 'nombre_completo': precalificacion.precalSolicitante.webContribNomCompleto, 'array_observaciones' : array_observaciones, 'tasa': licencia_generada[0]['Q_LicGen_TasCal'], 'tipo_tramite_nombre' : tipo_tramite_nombre, 'cod_tupa' : cod_tupa, 'email_usuario': precalificacion.precalCorreo}
+
+            body =  render_to_string("preLicenciaVBAceptado.html", context = context)
+
+            to = [precalificacion.precalCorreo]
+            # to =['mmedina@munipiura.gob.pe']      
+
+            enviarEmail(subject=subject, body=body, to=to)
+
+        else:
+            
+            if precalificacion.precalDlVbEval ==2 or precalificacion.precalDcVbEval == 2:
+                array_observaciones = []
+                if precalificacion.precalDlVbEval ==2:
+                    array_observaciones.append(precalificacion.precalDlVbObs)
+                if precalificacion.precalDcVbEval == 2:
+                    array_observaciones.append(precalificacion.precalDcVbObs)
+
+                subject = 'MPP - Observaciones en Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
+                            
+                context = {'precalId': f'{precalificacion.precalId:04}', 'nombre_completo': precalificacion.precalSolicitante.webContribNomCompleto, 'tipo_evaluacion' : 'Requisitos para ingresar expediente',  'array_observaciones' : array_observaciones, 'email_usuario': precalificacion.precalCorreo}
+
+                body =  render_to_string("preLicenciaVBRechazado.html", context = context)
+                
+                to = [precalificacion.precalCorreo]
+                # to =['mmedina@munipiura.gob.pe']            
+
+                enviarEmail(subject=subject, body=body, to=to)
+                
+
+                
+
+
+
+
+            
+
+
+        
 
