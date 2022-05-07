@@ -267,7 +267,7 @@ class PrecalEvaluacionController(RetrieveAPIView):
                         
                         to = [precalificacion.precalCorreo]
                         attachments = []
-                        # attachments.append(str(settings.MEDIA_ROOT) +'/app_licfunc/0001.pdf')
+                        # attachments.append(str(settings.MEDIA_ROOT) +'/app_licfunc/condicion_minima_seguridad.pdf')
                         # attachments.append(str(settings.MEDIA_ROOT) +'/app_licfunc/0002.pdf')
 
                         print(enviarEmail(subject=subject, body=body, to=to, attachments=attachments))
@@ -327,7 +327,7 @@ class PrecalEvaluacionController(RetrieveAPIView):
 
                         # obj_tipo_licencia = TipoLicenciaModel.objects.all().filter(tipoLicId=tipo_licencia).first()
 
-
+                        
                         
                         context = {'precalId': f'{precalificacion.precalId:04}', 'nombre_completo': precalificacion.precalSolicitante.webContribNomCompleto, 'html_evaluaciones' : html_evaluaciones, 'eval_comentario': data.data["precalEvalComent"], 'email_usuario': precalificacion.precalCorreo, 'documentos': array_documentos, 'tipo_licencia_nombre' : precalificacion.tipoLicencia.tipoLicDescrip, 'tasa' : precalificacion.precalMonto}
 
@@ -338,8 +338,11 @@ class PrecalEvaluacionController(RetrieveAPIView):
                         to =['mmedina@munipiura.gob.pe']
 
                         # print(precalificacion.precalCorreo)
+
+                        attachments = []
+                        attachments.append(str(settings.MEDIA_ROOT) +'/app_licfunc/condicion_minima_seguridad.pdf')
                         
-                        enviarEmail(subject=subject, body=body, to=to)
+                        enviarEmail(subject=subject, body=body, to=to, attachments=attachments)
                 
                     precalificacion.save()
 
@@ -797,15 +800,3 @@ def EnviarEmailVbPreLicencia(precal_id):
                 # to =['mmedina@munipiura.gob.pe']            
 
                 enviarEmail(subject=subject, body=body, to=to)
-                
-
-                
-
-
-
-
-            
-
-
-        
-
