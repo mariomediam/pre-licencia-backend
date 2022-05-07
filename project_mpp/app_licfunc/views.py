@@ -333,9 +333,9 @@ class PrecalEvaluacionController(RetrieveAPIView):
 
                         body =  render_to_string("preLicenciaAceptado.html", context = context)
                         
-                        # to = [precalificacion.precalCorreo]
+                        to = [precalificacion.precalCorreo]
 
-                        to =['mmedina@munipiura.gob.pe']
+                        # to =['mmedina@munipiura.gob.pe']
 
                         # print(precalificacion.precalCorreo)
 
