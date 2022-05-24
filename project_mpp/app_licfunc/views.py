@@ -110,7 +110,7 @@ class PrecalifUserEstadoController(RetrieveAPIView):
             for item in filtros:
                 query |= item
 
-            precalificaciones = PrecalificacionModel.objects.select_related('precalSolicitante').values('precalId', 'precalDireccion', 'precalRiesgoEval', 'precalCompatCU', 'precalCompatDL', webContribNomCompleto=F('precalSolicitante__webContribNomCompleto')).filter(query).order_by('precalId')    
+            precalificaciones = PrecalificacionModel.objects.select_related('precalSolicitante').values('precalId', 'precalDireccion', 'precalRiesgoEval', 'precalCompatCU', 'precalCompatDL', 'precalDlVbEval', 'precalDcVbEval', webContribNomCompleto=F('precalSolicitante__webContribNomCompleto')).filter(query).order_by('precalId')    
                                     
         # data = self.serializer_class(instance= list({v['precalId']:v for v in precalificaciones}.values()), many=True)
         data = self.serializer_class(instance= precalificaciones, many=True)
