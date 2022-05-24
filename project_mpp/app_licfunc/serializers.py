@@ -78,6 +78,8 @@ class PrecalifUserEstadoSerializer(serializers.Serializer):
     precalRiesgoEval = serializers.IntegerField()
     precalCompatCU = serializers.IntegerField()
     precalCompatDL = serializers.IntegerField()
+    precalDlVbEval = serializers.IntegerField()
+    precalDcVbEval = serializers.IntegerField()
     precalEstadoNom = serializers.SerializerMethodField(method_name='calcular_estado')
     webContribNomCompleto = serializers.CharField(max_length=250)
 
