@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Max
 from rest_framework.decorators import api_view
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
@@ -18,6 +18,7 @@ from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo, 
 from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.descargar import download_file
 from app_deploy.general.cargar import upload_file
+from app_deploy.general.paginations import CustomPagination
 
 from django.http import FileResponse
 import os
@@ -348,17 +349,18 @@ class PrecalEvaluacionController(RetrieveAPIView):
 
                     if result_eval == 1:
                         # ENVIAR CORREO DE ALERTA A TERMINALISTA SIGUIENTE
-                        subject = 'Evaluación pendiente - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
-                        body = '<p>Usted tiene una evaluación pendiente - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}</p>' + ' <p>Puede registrar la evaluación en el siguiente enlace: <a href="http://192.168.100.59/pre_licencia_ver/{}"> Evaluar </a></p>'.format(precalificacion.precalId)
-                        destinatarios = ""
-                        if tipo_eval == 1:
-                            destinatarios = BuscarEmailPorTipEval_toArray(2)
-                        elif tipo_eval == 2:
-                            destinatarios = BuscarEmailPorTipEval_toArray(3)
+                        # subject = 'Evaluación pendiente - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
+                        # body = '<p>Usted tiene una evaluación pendiente - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}</p>' + ' <p>Puede registrar la evaluación en el siguiente enlace: <a href="http://192.168.100.59/pre_licencia_ver/{}"> Evaluar </a></p>'.format(precalificacion.precalId)
+                        # destinatarios = ""
+                        # if tipo_eval == 1:
+                        #     destinatarios = BuscarEmailPorTipEval_toArray(2)
+                        # elif tipo_eval == 2:
+                        #     destinatarios = BuscarEmailPorTipEval_toArray(3)
 
-                        if len(destinatarios) > 0:
-                            to = destinatarios
-                            enviarEmail(subject=subject, body=body, to=to)
+                        # if len(destinatarios) > 0:
+                        #     to = destinatarios
+                        #     enviarEmail(subject=subject, body=body, to=to)
+                        EnviarCorreoTerminalista(precalId)
 
 
                     return Response(data={
@@ -800,3 +802,127 @@ def EnviarEmailVbPreLicencia(precal_id):
                 # to =['mmedina@munipiura.gob.pe']            
 
                 enviarEmail(subject=subject, body=body, to=to)
+
+
+class PrecalifUserEstadoPaginationController(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PrecalifUserEstadoSerializer
+    pagination_class = CustomPagination
+        
+    def get(self, request: Request):
+
+        print("***************************************")
+        print("****************entro aqui ***********************")
+
+        login_buscado = request.query_params.get('login')
+        estado_buscado = request.query_params.get('estado')
+
+        tipo_evaluaciones = EvalUsuModel.objects.filter(userLogin=login_buscado).values()
+        precalificaciones = []
+        filtros = []
+
+        if tipo_evaluaciones:            
+            for tipo_eval in tipo_evaluaciones:   
+                if estado_buscado:
+                    if tipo_eval['tipoEval_id'] == 1:
+                        filtros.append(Q(precalRiesgoEval=estado_buscado))
+                    elif tipo_eval['tipoEval_id'] == 2:
+                        filtros.append(Q(precalCompatCU=estado_buscado) & Q(precalRiesgoEval=1))
+                    elif tipo_eval['tipoEval_id'] == 3:
+                        filtros.append(Q(precalCompatDL=estado_buscado) & Q(precalCompatCU=1))
+                else:
+                    if tipo_eval['tipoEval_id'] == 1:
+                        filtros.append(Q(precalRiesgoEval__isnull=False))
+                    elif tipo_eval['tipoEval_id'] == 2:
+                        filtros.append(Q(precalRiesgoEval=1))
+                    elif tipo_eval['tipoEval_id'] == 3:
+                        filtros.append(Q(precalCompatCU=1))
+
+
+            query = filtros.pop()
+
+            for item in filtros:
+                query |= item
+
+            precalificaciones = PrecalificacionModel.objects.select_related('precalSolicitante').values('precalId', 'precalDireccion', 'precalRiesgoEval', 'precalCompatCU', 'precalCompatDL', 'precalDlVbEval', 'precalDcVbEval', webContribNomCompleto=F('precalSolicitante__webContribNomCompleto')).filter(query).order_by('precalId')    
+                                    
+        # data = self.serializer_class(instance= list({v['precalId']:v for v in precalificaciones}.values()), many=True)
+        data = self.serializer_class(instance= precalificaciones, many=True)
+        return Response(data = {
+            "message":None,
+            "content":data.data
+        })           
+
+def EnviarCorreoTerminalista(precalId):        
+    
+    precalificacion = PrecalificacionModel.objects.all().filter(precalId=precalId).first()
+
+    if precalificacion:
+        if precalificacion.precalRiesgoEval == 2 or precalificacion.precalCompatCU == 2 or precalificacion.precalCompatDL == 2 or precalificacion.precalDlVbEval == 2 or precalificacion.precalDcVbEval==2:
+            return {
+                "message":"La precalificación ha sido rechazada",
+                "content":[]}
+
+
+        destino = "indeterminado"
+        destinatarios=""
+        if precalificacion.precalRiesgoEval == 0:
+            destinatarios = BuscarEmailPorTipEval_toArray(1)
+            destino = "evaluar el Nivel de Riesgo"
+        elif precalificacion.precalCompatCU == 0:
+            destinatarios = BuscarEmailPorTipEval_toArray(2)
+            destino = "evaluar Compatibilidad de Uso"
+        elif precalificacion.precalCompatDL == 0:
+            destinatarios = BuscarEmailPorTipEval_toArray(3)
+            destino = "evaluar requisitos para licencia de funcionamiento"
+        else:
+            destino = ""
+            destinatariosVbNr = []
+            destinatariosVnAc = []
+            if precalificacion.precalDlVbEval == 0:
+                destinatariosVnAc = BuscarEmailPorTipEval_toArray(3)
+                destino = "evaluar visto bueno para licencia de funcionamiento"
+            if precalificacion.precalDcVbEval == 0:
+                destinatariosVbNr = BuscarEmailPorTipEval_toArray(1)
+                destino = "evaluar visto bueno para licencia de funcionamiento"
+            temp = set(destinatariosVnAc) - set(destinatariosVbNr)
+            destinatarios = destinatariosVbNr + list(temp)
+
+        if len(destinatarios) > 0:
+            subject = 'Evaluación pendiente - Solicitud Virtual de Pre Licencia N° ' + f'{precalId:04}'
+            context = {'precalId': precalId, 'evaluacion_pendiente': destino}
+            body =  render_to_string("preLicenciaAlertaTerminalista.html", context = context)            
+            enviarEmail(subject=subject, body=body, to=destinatarios)
+
+        # return {
+        # "message":"Correo enviado",
+        # "content":[",".join(destinatarios)]
+        # }
+        return {
+        "message":"Correo enviado",
+        "content":[",".join(destinatarios)]
+        }
+    else:
+        return {
+        "message":"No existe precalificación",
+        "content":[]
+        }
+
+class EnviarCorreoTerminalistaController(RetrieveAPIView):           
+    def post(self, request: Request, precalId):        
+        precalificacion = PrecalificacionModel.objects.all().filter(precalId=precalId).first()
+        id_solicitante = request.data.get("idSolicitante")
+        
+        if id_solicitante:
+            if  int(id_solicitante) ==  precalificacion.precalSolicitante_id:
+                data = EnviarCorreoTerminalista(precalId)
+                return Response(data = {
+                    "message":"1",
+                    "content":[]
+                })   
+        
+        return Response(data = {
+            "message":None,
+            "content":[]
+        })   
+

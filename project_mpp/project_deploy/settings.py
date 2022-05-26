@@ -156,7 +156,9 @@ REST_FRAMEWORK = {
     # sirve para indicar que la clase encargada de la authenticacion de las rutas de mi API REST las realizara la libreria rest_framework_simplejwt
     'DEFAULT_AUTHENTICATION_CLASSES': (            
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 2,
 }
 # encargada de la configuracion de mi libreria de DRF SIMPLE JWT
 SIMPLE_JWT = {
