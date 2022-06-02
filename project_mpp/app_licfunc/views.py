@@ -1008,11 +1008,22 @@ class GiroNegocioPaginationController(ListAPIView,mixins.ListModelMixin):
     permission_classes = [IsAuthenticated]
     serializer_class = GiroNegocioSerializer
     pagination_class = CustomPagination
-    queryset = GiroNegocioModel.objects
+    queryset = GiroNegocioModel.objects.all()
         
     def get(self, request: Request):
+
+        ciiu_buscado = request.query_params.get('ciiu')
+        nombre_buscado = request.query_params.get('nombre')
+        
+        queryset = self.get_queryset()
+        if ciiu_buscado and nombre_buscado:
+            queryset = self.get_queryset().filter(giroNegCIIU__contains=ciiu_buscado).filter(giroNegNombre__contains=nombre_buscado)
+        elif ciiu_buscado:
+            queryset = self.get_queryset().filter(giroNegCIIU__contains=ciiu_buscado)
+        elif nombre_buscado:
+            queryset = self.get_queryset().filter(giroNegNombre__contains=nombre_buscado)            
        
-        serializer = self.serializer_class(self.queryset.all(), many=True)
+        serializer = self.serializer_class(instance = queryset, many=True)
       
         return self.get_paginated_response(self.paginate_queryset(serializer.data))
             
