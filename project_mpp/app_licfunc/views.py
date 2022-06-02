@@ -12,8 +12,8 @@ from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, CreateAP
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
-from .models import PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel, PrecalFirmaArchivoModel
-from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, UploadFileSerializer, TipoLicenciaSerializer, SectoresLicSerializer, PrecalRequisitoArchivoModel
+from .models import GiroNegocioModel, PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel, PrecalFirmaArchivoModel
+from .serializers import PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, UploadFileSerializer, TipoLicenciaSerializer, SectoresLicSerializer, PrecalRequisitoArchivoModel, GiroNegocioSerializer
 from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo, BuscarLicencGen, BuscarDatosTrabajador, BuscarTipoTramite
 from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.descargar import download_file
@@ -958,22 +958,6 @@ class EnviarCorreoTerminalistaController(RetrieveAPIView):
         })   
 
 
-class ListModelMixin:
-    """
-    List a queryset.
-    """
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-
 class PrecalifUserEstadoPaginationController(ListAPIView,mixins.ListModelMixin):
     permission_classes = [IsAuthenticated]
     serializer_class = PrecalifUserEstadoSerializer
@@ -981,9 +965,6 @@ class PrecalifUserEstadoPaginationController(ListAPIView,mixins.ListModelMixin):
     queryset = PrecalificacionModel.objects.all()   
         
     def get(self, request: Request):
-
-        print("***************************************")
-        print("****************entro aqui 2 ***********************")
 
         login_buscado = request.query_params.get('login')
         estado_buscado = request.query_params.get('estado')
@@ -1022,4 +1003,16 @@ class PrecalifUserEstadoPaginationController(ListAPIView,mixins.ListModelMixin):
         serializer = self.serializer_class(queryset, many=True)
       
         return self.get_paginated_response(self.paginate_queryset(serializer.data))
+
+class GiroNegocioPaginationController(ListAPIView,mixins.ListModelMixin):
+    permission_classes = [IsAuthenticated]
+    serializer_class = GiroNegocioSerializer
+    pagination_class = CustomPagination
+    queryset = GiroNegocioModel.objects
+        
+    def get(self, request: Request):
+       
+        serializer = self.serializer_class(self.queryset.all(), many=True)
       
+        return self.get_paginated_response(self.paginate_queryset(serializer.data))
+            
