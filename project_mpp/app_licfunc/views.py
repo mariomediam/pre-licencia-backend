@@ -804,86 +804,6 @@ def EnviarEmailVbPreLicencia(precal_id):
 
                 enviarEmail(subject=subject, body=body, to=to)
 
-
-# class PrecalifUserEstadoPaginationController(ListAPIView):
-#     permission_classes = [IsAuthenticated]
-#     serializer_class = PrecalifUserEstadoSerializer
-#     pagination_class = CustomPagination
-#     queryset = PrecalificacionModel.objects.all()
-
-#     @property
-#     def paginator(self):
-#         """The paginator instance associated with the view, or `None`."""
-#         if not hasattr(self, '_paginator'):
-#             if self.pagination_class is None:
-#                 self._paginator = None
-#             else:
-#                 self._paginator = self.pagination_class()
-#         return self._paginator
-
-#     def paginate_queryset(self, queryset):
-#         """Return a single page of results, or `None` if pagination is disabled."""
-#         if self.paginator is None:
-#             return None
-#         return self.paginator.paginate_queryset(queryset, self.request, view=self)
-
-#     def get_paginated_response(self, data):
-#         """Return a paginated style `Response` object for the given output data."""
-#         assert self.paginator is not None
-#         return self.paginator.get_paginated_response(data)
-        
-#     def get(self, request: Request):
-
-#         print("***************************************")
-#         print("****************entro aqui ***********************")
-
-#         login_buscado = request.query_params.get('login')
-#         estado_buscado = request.query_params.get('estado')
-
-#         tipo_evaluaciones = EvalUsuModel.objects.filter(userLogin=login_buscado).values()
-#         precalificaciones = []
-#         filtros = []
-
-#         if tipo_evaluaciones:            
-#             for tipo_eval in tipo_evaluaciones:   
-#                 if estado_buscado:
-#                     if tipo_eval['tipoEval_id'] == 1:
-#                         filtros.append(Q(precalRiesgoEval=estado_buscado))
-#                     elif tipo_eval['tipoEval_id'] == 2:
-#                         filtros.append(Q(precalCompatCU=estado_buscado) & Q(precalRiesgoEval=1))
-#                     elif tipo_eval['tipoEval_id'] == 3:
-#                         filtros.append(Q(precalCompatDL=estado_buscado) & Q(precalCompatCU=1))
-#                 else:
-#                     if tipo_eval['tipoEval_id'] == 1:
-#                         filtros.append(Q(precalRiesgoEval__isnull=False))
-#                     elif tipo_eval['tipoEval_id'] == 2:
-#                         filtros.append(Q(precalRiesgoEval=1))
-#                     elif tipo_eval['tipoEval_id'] == 3:
-#                         filtros.append(Q(precalCompatCU=1))
-
-
-#             query = filtros.pop()
-
-#             for item in filtros:
-#                 query |= item
-
-#             precalificaciones = PrecalificacionModel.objects.select_related('precalSolicitante').values('precalId', 'precalDireccion', 'precalRiesgoEval', 'precalCompatCU', 'precalCompatDL', 'precalDlVbEval', 'precalDcVbEval', webContribNomCompleto=F('precalSolicitante__webContribNomCompleto')).filter(query).order_by('precalId')  
-#         queryset = PrecalificacionModel.objects.select_related('precalSolicitante').values('precalId', 'precalDireccion', 'precalRiesgoEval', 'precalCompatCU', 'precalCompatDL', 'precalDlVbEval', 'precalDcVbEval', webContribNomCompleto=F('precalSolicitante__webContribNomCompleto')).filter(query).order_by('precalId')  
-#         page = self.paginate_queryset(queryset)
-#         if page is not None:
-#             serializer = self.serializer_class(page, many=True)
-#             return self.get_paginated_response(serializer.data)
-
-#         serializer = self.serializer_class(queryset, many=True)
-#         return Response(serializer.data)  
-                                    
-#         # data = self.serializer_class(instance= list({v['precalId']:v for v in precalificaciones}.values()), many=True)
-#         # data = self.serializer_class(instance= precalificaciones, many=True)
-#         # return Response(data = {
-#         #     "message":None,
-#         #     "content":data.data
-#         # })           
-
 def EnviarCorreoTerminalista(precalId):        
     
     precalificacion = PrecalificacionModel.objects.all().filter(precalId=precalId).first()   
@@ -968,6 +888,8 @@ class PrecalifUserEstadoPaginationController(ListAPIView,mixins.ListModelMixin):
 
         login_buscado = request.query_params.get('login')
         estado_buscado = request.query_params.get('estado')
+        filtro_buscado = request.query_params.get('filtro')
+        
 
         tipo_evaluaciones = EvalUsuModel.objects.filter(userLogin=login_buscado).values()
         precalificaciones = []
@@ -990,16 +912,19 @@ class PrecalifUserEstadoPaginationController(ListAPIView,mixins.ListModelMixin):
                     elif tipo_eval['tipoEval_id'] == 3:
                         filtros.append(Q(precalCompatCU=1))
 
-
             query = filtros.pop()
 
             for item in filtros:
                 query |= item
 
+        if filtro_buscado:
+            if filtro_buscado.isnumeric():
+                query &= Q(precalId=filtro_buscado)
+            else:
+                query &= Q(precalSolicitante__webContribNomCompleto__contains=filtro_buscado)
+                
         queryset = PrecalificacionModel.objects.select_related('precalSolicitante').values('precalId', 'precalDireccion', 'precalRiesgoEval', 'precalCompatCU', 'precalCompatDL', 'precalDlVbEval', 'precalDcVbEval', webContribNomCompleto=F('precalSolicitante__webContribNomCompleto')).filter(query).order_by('precalId')  
        
-                                            
-      
         serializer = self.serializer_class(queryset, many=True)
       
         return self.get_paginated_response(self.paginate_queryset(serializer.data))
