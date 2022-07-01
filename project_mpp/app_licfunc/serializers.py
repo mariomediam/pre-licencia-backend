@@ -82,6 +82,7 @@ class PrecalifUserEstadoSerializer(serializers.Serializer):
     precalDcVbEval = serializers.IntegerField()
     precalEstadoNom = serializers.SerializerMethodField(method_name='calcular_estado')
     webContribNomCompleto = serializers.CharField(max_length=250)
+    farchivos = serializers.IntegerField()
 
     def calcular_estado(self, instance):       
         estado_nombre = 'INDEFINIDO'

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.db import transaction
-from django.db.models import F, Q, ImageField
+from django.db.models import F, Q, ImageField, OuterRef, Subquery
 from django.conf import settings
 from django.template.loader import get_template, render_to_string
 from django.template import loader
@@ -890,7 +890,6 @@ class PrecalifUserEstadoPaginationController(ListAPIView,mixins.ListModelMixin):
         estado_buscado = request.query_params.get('estado')
         filtro_buscado = request.query_params.get('filtro')
         
-
         tipo_evaluaciones = EvalUsuModel.objects.filter(userLogin=login_buscado).values()
         precalificaciones = []
         filtros = []
@@ -899,11 +898,11 @@ class PrecalifUserEstadoPaginationController(ListAPIView,mixins.ListModelMixin):
             for tipo_eval in tipo_evaluaciones:   
                 if estado_buscado:
                     if tipo_eval['tipoEval_id'] == 1:
-                        filtros.append(Q(precalRiesgoEval=estado_buscado))
+                        filtros.append(Q(precalRiesgoEval=estado_buscado) | Q(Q(farchivos__isnull=False) & Q(precalDcVbEval=estado_buscado)))
                     elif tipo_eval['tipoEval_id'] == 2:
                         filtros.append(Q(precalCompatCU=estado_buscado) & Q(precalRiesgoEval=1))
                     elif tipo_eval['tipoEval_id'] == 3:
-                        filtros.append(Q(precalCompatDL=estado_buscado) & Q(precalCompatCU=1))
+                        filtros.append(Q(Q(precalCompatDL=estado_buscado) & Q(precalCompatCU=1)) |  Q(Q(farchivos__isnull=False) & Q(precalDlVbEval=estado_buscado)))
                 else:
                     if tipo_eval['tipoEval_id'] == 1:
                         filtros.append(Q(precalRiesgoEval__isnull=False))
@@ -922,9 +921,11 @@ class PrecalifUserEstadoPaginationController(ListAPIView,mixins.ListModelMixin):
                 query &= Q(precalId=filtro_buscado)
             else:
                 query &= Q(precalSolicitante__webContribNomCompleto__contains=filtro_buscado)
+
+        archivos_query = PrecalRequisitoArchivoModel.objects.values('precalificacion_id').distinct().filter(precalificacion=OuterRef('pk'))
                 
-        queryset = PrecalificacionModel.objects.select_related('precalSolicitante').values('precalId', 'precalDireccion', 'precalRiesgoEval', 'precalCompatCU', 'precalCompatDL', 'precalDlVbEval', 'precalDcVbEval', webContribNomCompleto=F('precalSolicitante__webContribNomCompleto')).filter(query).order_by('precalId')  
-       
+        queryset = PrecalificacionModel.objects.select_related('precalSolicitante').values('precalId', 'precalDireccion', 'precalRiesgoEval', 'precalCompatCU', 'precalCompatDL', 'precalDlVbEval', 'precalDcVbEval', webContribNomCompleto=F('precalSolicitante__webContribNomCompleto')).annotate(farchivos=Subquery(archivos_query)).filter(query).order_by('precalId')  
+              
         serializer = self.serializer_class(queryset, many=True)
       
         return self.get_paginated_response(self.paginate_queryset(serializer.data))
