@@ -34,10 +34,11 @@ class UserMenuesController(RetrieveAPIView):
 
         usuario = request.query_params.get('usuario')
         sistema = request.query_params.get('sistema')
+        opcion= "01"
         menu_buscado= request.query_params.get('menu')
 
         select_user_menues = []
-        user_menues = leerUserMenues(usuario, sistema)
+        user_menues = leerUserMenues(usuario, sistema, opcion)
 
         if menu_buscado:
             for item_menu in user_menues:

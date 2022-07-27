@@ -22,3 +22,7 @@ class UserMenuesSerializer(serializers.Serializer):
     responsable = serializers.CharField(max_length=20, source='Responsable')
     pc = serializers.CharField(max_length=32, source='PC')
     fecDigit = serializers.DateTimeField(source='Fec_Digit')
+    menDesc = serializers.CharField(max_length=100, source='MenDesc')
+    menProg = serializers.CharField(max_length=100, source='MenProg')
+    
+

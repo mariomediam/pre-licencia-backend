@@ -11,9 +11,9 @@ def leerMenues(usuario, sistema, opcion=None):
         cursor.execute('EXEC GENERAL.dbo.S07LeerMenues %s, %s, %s', [usuario, sistema, opcion])
         return dictfetchall(cursor)            
 
-def leerUserMenues(usuario, sistema):
+def leerUserMenues(usuario, sistema, opcion=None):
     with connection.cursor() as cursor:
-        cursor.execute('EXEC GENERAL.dbo.S07LeerUserMenues %s, %s', [usuario, sistema])
+        cursor.execute('EXEC GENERAL.dbo.S07LeerUserMenues %s, %s, %s', [usuario, sistema, opcion])
         return dictfetchall(cursor)        
 
 
