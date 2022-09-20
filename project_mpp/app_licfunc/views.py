@@ -107,7 +107,7 @@ class PrecalifUserEstadoController(RetrieveAPIView):
                         filtros.append(Q(precalCompatCU=1))
 
 
-            query = filtros.pop()
+            query = filtros.pop()            
 
             for item in filtros:
                 query |= item
@@ -122,17 +122,18 @@ class PrecalifUserEstadoController(RetrieveAPIView):
         })
 
 class PrecalifContribController(RetrieveAPIView):
-    #permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     serializer_class = PrecalifContribSerializer
     queryset = PrecalificacionModel.objects.all()
 
     def get(self, request, id):
-        precalificaciones = self.get_queryset().get(pk=id)
-        data = self.serializer_class(instance=precalificaciones)
-        data.data["q_tasa"] = 150.20
+        # precalificaciones = self.get_queryset().get(pk=id)
+        precalificaciones = self.get_queryset().filter(precalId=id).filter(precalEstado="1").first()
+        data = self.serializer_class(instance=precalificaciones)        
+        # data.data["q_tasa"] = 150.20
 
         return Response(data={
-            "message":"hollaaaa2",
+            "message":"",
             "content": data.data
         })
 
@@ -191,7 +192,6 @@ class PrecalEvaluacionController(RetrieveAPIView):
         precal_monto = request.data.get("precalMonto")
 
         if data.is_valid():
-
             try:
                 if not result_eval:
                     raise Exception("El campo resultEval es requerido")
@@ -348,19 +348,7 @@ class PrecalEvaluacionController(RetrieveAPIView):
                 
                     precalificacion.save()
 
-                    if result_eval == 1:
-                        # ENVIAR CORREO DE ALERTA A TERMINALISTA SIGUIENTE
-                        # subject = 'Evaluación pendiente - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
-                        # body = '<p>Usted tiene una evaluación pendiente - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}</p>' + ' <p>Puede registrar la evaluación en el siguiente enlace: <a href="http://192.168.100.59/pre_licencia_ver/{}"> Evaluar </a></p>'.format(precalificacion.precalId)
-                        # destinatarios = ""
-                        # if tipo_eval == 1:
-                        #     destinatarios = BuscarEmailPorTipEval_toArray(2)
-                        # elif tipo_eval == 2:
-                        #     destinatarios = BuscarEmailPorTipEval_toArray(3)
-
-                        # if len(destinatarios) > 0:
-                        #     to = destinatarios
-                        #     enviarEmail(subject=subject, body=body, to=to)
+                    if result_eval == 1:                     
                         EnviarCorreoTerminalista(precalId)
 
 
@@ -800,7 +788,7 @@ def EnviarEmailVbPreLicencia(precal_id):
                 body =  render_to_string("preLicenciaVBRechazado.html", context = context)
                 
                 to = [precalificacion.precalCorreo]
-                # to =['mmedina@munipiura.gob.pe']            
+                # to = ['mmedina@munipiura.gob.pe']            
 
                 enviarEmail(subject=subject, body=body, to=to)
 
@@ -913,6 +901,8 @@ class PrecalifUserEstadoPaginationController(ListAPIView,mixins.ListModelMixin):
 
             query = filtros.pop()
 
+            # filtros.append(Q(precalEstado="1"))
+
             for item in filtros:
                 query |= item
 
@@ -924,7 +914,7 @@ class PrecalifUserEstadoPaginationController(ListAPIView,mixins.ListModelMixin):
 
         archivos_query = PrecalRequisitoArchivoModel.objects.values('precalificacion_id').distinct().filter(precalificacion=OuterRef('pk'))
                 
-        queryset = PrecalificacionModel.objects.select_related('precalSolicitante').values('precalId', 'precalDireccion', 'precalRiesgoEval', 'precalCompatCU', 'precalCompatDL', 'precalDlVbEval', 'precalDcVbEval', webContribNomCompleto=F('precalSolicitante__webContribNomCompleto')).annotate(farchivos=Subquery(archivos_query)).filter(query).order_by('precalId')  
+        queryset = PrecalificacionModel.objects.select_related('precalSolicitante').values('precalId', 'precalDireccion', 'precalRiesgoEval', 'precalCompatCU', 'precalCompatDL', 'precalDlVbEval', 'precalDcVbEval', webContribNomCompleto=F('precalSolicitante__webContribNomCompleto')).annotate(farchivos=Subquery(archivos_query)).filter(precalEstado="1").filter(query).order_by('precalId')  
               
         serializer = self.serializer_class(queryset, many=True)
       

@@ -278,7 +278,7 @@ class PrecalEvaluacionModel(models.Model):
     tipoEval = models.ForeignKey(
         to=TipoEvalModel, related_name='evaluacionTipo', db_column='C_TipEval', on_delete=models.PROTECT)
 
-    precalEvalComent =  models.TextField(db_column='T_Eval_Coment', null=False, default='')
+    precalEvalComent =  models.TextField(db_column='T_Eval_Coment', null=True, blank=True, default='')
 
     precalEvalDigitUser = models.CharField(
         max_length=20, db_column='C_Usuari_Login', null=False)

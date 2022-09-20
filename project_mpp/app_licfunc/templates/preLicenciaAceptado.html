@@ -82,19 +82,35 @@
                         <td style="line-height:1.3;word-break:break-word;font-family:&#39;Open Sans&#39;,&#39;Helvetica Neue&#39;,Helvetica,Arial,sans-serif;font-size:14px;margin:0;text-align:justify;padding:10px">
                             {{ evaluacion.observaciones_evaluacion }}
                             {% if documentos|length > 0 and evaluacion.tipo_eval_id == 3 %}
-                                <br><br> Documentación a adjuntar: 
+                                <br><br> Documentación sectorial a adjuntar: 
                                 <ul>                                    
                                     {% for documento in documentos %}
                                         <li>{{ documento }}</li>
                                     {% endfor %}
                                 </ul>
-
+                                <p>La documentación deberá adjuntarse en el requisito Nº 8</p>
                             {% endif %}
-
                         </td>  
                     </tr>
                 {% endfor %}                            
         </table>
+        </p>
+        <p>
+        Anexos para Inspecciones Técnicas De Seguridad En Edificaciones - ITSE:
+            <ul>
+                <li>Anexo 1 - Solicitud de Inspección Técnica de Seguridad en Edificaciones - ITSE y de Evaluación de Condiciones de Seguridad en Espectáculos Públicos Deportivos y No Deportivos - ECSE. Deberá adjuntarse en el requisito Nº 10.
+                    <a href="http://www2.munipiura.gob.pe/uac/anexo1_solicitud_inspeccion_tecnica_062020.pdf" target="_blank" rel="noopener noreferrer"> Descargar</a>
+                </li>
+                <li>Anexo 2 - Información proporcionada por el solicitante para la determinación del nivel de riesgo del establecimiento objeto de inspección. Deberá adjuntarse en el requisito Nº 11.
+                    <a href="http://www2.munipiura.gob.pe/uac/anexo2_determinacion_nivel_riesgo062020.pdf" target="_blank" rel="noopener noreferrer"> Descargar</a>
+                </li>
+                <li>Anexo 3 - Reporte de nivel de riesgo del establecimiento objeto de inspección. Deberá adjuntarse en el requisito Nº 12.
+                    <a href="http://www2.munipiura.gob.pe/uac/anexo3_reporte_nivel_riesgo062020.pdf" target="_blank" rel="noopener noreferrer"> Descargar</a>
+                </li>
+                <li>Anexo 4 - Declaración jurada de cumplimiento de las condiciones de seguridad en la edificación. Deberá adjuntarse en el requisito Nº 13.
+                    <a href="http://www2.munipiura.gob.pe/uac/anexo4_dj_cumplimiento_condiciones_seguridad_062020.pdf" target="_blank" rel="noopener noreferrer"> Descargar</a>
+                </li>
+            </ul>
         </p>
         <p>Se adjunta archivo indicando condiciones de seguridad que debe implementar en su local antes de ingresar su expediente, el ingeniero inspector de la Oficina de Defensa Civil verificará el cumplimiento de las mismas.
         </p>

@@ -24,5 +24,7 @@ class UserMenuesSerializer(serializers.Serializer):
     fecDigit = serializers.DateTimeField(source='Fec_Digit')
     menDesc = serializers.CharField(max_length=100, source='MenDesc')
     menProg = serializers.CharField(max_length=100, source='MenProg')
+    menKey = serializers.CharField(max_length=5, source='MenKey')
+    menTipo = serializers.CharField(max_length=1, source='MenTipo')
     
 
