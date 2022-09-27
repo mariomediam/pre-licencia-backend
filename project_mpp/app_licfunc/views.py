@@ -129,9 +129,9 @@ class PrecalifContribController(RetrieveAPIView):
     def get(self, request, id):
         # precalificaciones = self.get_queryset().get(pk=id)
         precalificaciones = self.get_queryset().filter(precalId=id).filter(precalEstado="1").first()
-        data = self.serializer_class(instance=precalificaciones)        
+        data = self.serializer_class(instance=precalificaciones)                
         # data.data["q_tasa"] = 150.20
-
+        
         return Response(data={
             "message":"",
             "content": data.data
@@ -943,3 +943,16 @@ class GiroNegocioPaginationController(ListAPIView,mixins.ListModelMixin):
       
         return self.get_paginated_response(self.paginate_queryset(serializer.data))
             
+
+class PrecalificacionPruebaController(RetrieveAPIView): 
+    # permission_classes = [IsAuthenticated]   
+    
+    serializer_class = PrecalificacionSerializer
+    queryset = PrecalificacionModel.objects.all()    
+
+    def get(self, request):
+        data = self.serializer_class(instance=self.get_queryset(), many=True)
+        return Response(data = {
+            "message":None,
+            "content":data.data
+        })            

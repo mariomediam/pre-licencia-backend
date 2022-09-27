@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
 from django.conf import settings
-from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel, PrecalTipoDocumModel, TipoLicenciaModel, SectoresLicModel, PrecalRequisitoArchivoModel, PrecalFirmaArchivoModel, PrecalVBExpedienteModel
+from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel, PrecalTipoDocumModel, TipoLicenciaModel, SectoresLicModel, PrecalRequisitoArchivoModel, PrecalFirmaArchivoModel, PrecalVBExpedienteModel, LicencGenModel
 from app_licfunc.licfunc import ListarFunciones
 import json
 
@@ -35,6 +35,16 @@ class PrecalificacionSerializer(serializers.ModelSerializer):
 class PrecalifContribSerializer(serializers.ModelSerializer):
     precalSolicitante = WebContribuyenteSerializer(read_only = True)
     precalFunciones = serializers.SerializerMethodField()
+    soliciTasaCalculada = serializers.SerializerMethodField(method_name='obtener_tasa')
+    
+    def obtener_tasa(self, instance):       
+        tasa_simulacion = 0.00  
+
+        if instance.precalSoliciSimulacion:
+            licencia_generada = LicencGenModel.objects.all().filter(soliciSimulacion = instance.precalSoliciSimulacion).first()            
+            tasa_simulacion = licencia_generada.soliciTasaCalculada
+        
+        return tasa_simulacion
 
     def get_precalFunciones(self, obj):       
         return ListarFunciones(str(obj.precalFuncion))

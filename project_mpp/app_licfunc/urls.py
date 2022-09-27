@@ -27,6 +27,7 @@ from .views import (PrecalificacionController,
                 PrecalifUserEstadoPaginationController,
                 EnviarCorreoTerminalistaController,
                 GiroNegocioPaginationController,
+                PrecalificacionPruebaController,
                 )
 
 urlpatterns = [
@@ -58,4 +59,5 @@ urlpatterns = [
     path('precal-usu-estado-p', PrecalifUserEstadoPaginationController.as_view()),
     path('precal-alerta/<int:precalId>', EnviarCorreoTerminalistaController.as_view()),
     path('giro-negocio-p', GiroNegocioPaginationController.as_view()),
+    path('prueba', PrecalificacionPruebaController.as_view()),
 ]

@@ -397,3 +397,13 @@ class PrecalVBExpedienteModel(models.Model):
 
     class Meta:
         db_table = 'S17Web_LIC_VBExpediente'
+
+
+class LicencGenModel(models.Model):
+    soliciSimulacion = models.CharField(primary_key=True, null=False, max_length=5, db_column='C_Solici')
+
+    soliciTasaCalculada = models.DecimalField(
+        db_column='Q_LicGen_TasCal', max_digits=18, decimal_places=4, null=False)
+    
+    class Meta:
+        db_table = 'S02LicencGen'        
