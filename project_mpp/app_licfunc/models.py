@@ -407,3 +407,27 @@ class LicencGenModel(models.Model):
     
     class Meta:
         db_table = 'S02LicencGen'        
+
+
+class LicencArchivoModel(models.Model):
+    licencFile = models.AutoField(primary_key=True, null=False, db_column='C_Licenc_File', unique=True)
+
+    licencNro = models.CharField(max_length=6, db_column='C_Licenc', null=False)
+
+    licencOrigen = models.CharField(max_length=1, db_column='F_Licencia_Origen', null=False)
+
+    licencOrdRenov = models.CharField(max_length=2, db_column='C_Licenc_OrdRenov', null=False)
+
+    licencFileNombre = models.CharField(max_length=100, db_column='N_Licenc_Nombre', null=False)
+
+    licencFileRuta = models.CharField(max_length=150, db_column='N_Licenc_Ruta', null=False)
+
+    licencEstado = models.CharField(max_length=1, db_column='F_Licenc_Estado', null=False, default="1")
+
+    licencFileLogin = models.CharField(max_length=20, db_column='C_Usuari_Login', null=False)
+
+    licencFileDigitFecha = models.DateTimeField(auto_now=True, db_column='D_Licenc_FecFig')
+
+
+    class Meta:
+        db_table = 'S02Licenc_Archivo'        

@@ -28,6 +28,8 @@ from .views import (PrecalificacionController,
                 EnviarCorreoTerminalistaController,
                 GiroNegocioPaginationController,
                 PrecalificacionPruebaController,
+                LicencArchivoController,
+                AgregarLicencArchivoController,
                 )
 
 urlpatterns = [
@@ -59,5 +61,7 @@ urlpatterns = [
     path('precal-usu-estado-p', PrecalifUserEstadoPaginationController.as_view()),
     path('precal-alerta/<int:precalId>', EnviarCorreoTerminalistaController.as_view()),
     path('giro-negocio-p', GiroNegocioPaginationController.as_view()),
+    path('licenc-archivo/<int:licenc_file>', LicencArchivoController.as_view()),
+    path('licenc-archivo', AgregarLicencArchivoController.as_view()),
     path('prueba', PrecalificacionPruebaController.as_view()),
 ]

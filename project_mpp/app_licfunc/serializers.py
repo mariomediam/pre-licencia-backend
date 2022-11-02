@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
 from django.conf import settings
-from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel, PrecalTipoDocumModel, TipoLicenciaModel, SectoresLicModel, PrecalRequisitoArchivoModel, PrecalFirmaArchivoModel, PrecalVBExpedienteModel, LicencGenModel
+from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel, PrecalTipoDocumModel, TipoLicenciaModel, SectoresLicModel, PrecalRequisitoArchivoModel, PrecalFirmaArchivoModel, PrecalVBExpedienteModel, LicencGenModel, LicencArchivoModel
 from app_licfunc.licfunc import ListarFunciones
 import json
 
@@ -219,11 +219,11 @@ class UploadFileSerializer(serializers.Serializer):
         archivo: InMemoryUploadedFile = self.validated_data.get('archivo')
        
         # para ver el tipo de archivo que es
-        # print(archivo.content_type)
+        print(archivo.content_type)
         # # para ver el nombre del archivo
-        # print(archivo.name)
+        print(archivo.name)
         # # para ver el tamaño del archivo  expresado en bytes
-        # print(archivo.size)
+        print(archivo.size)
         # NOTA: una vez que se usa el metodo read() se elimina la informacion de ese archivo en la memoria RAM
         # ruta = default_storage.save(archivo.name, ContentFile(archivo.read()))
         # return settings.MEDIA_URL + ruta
@@ -254,3 +254,7 @@ class PrecalVBExpedienteSerializer(serializers.ModelSerializer):
         model = PrecalVBExpedienteModel
         fields = '__all__'        
              
+class LicencArchivoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LicencArchivoModel
+        fields = '__all__'                 
