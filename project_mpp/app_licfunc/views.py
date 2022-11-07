@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import GiroNegocioModel, LicencArchivoModel, PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel, PrecalFirmaArchivoModel
-from .serializers import LicencArchivoSerializer, PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, UploadFileSerializer, TipoLicenciaSerializer, SectoresLicSerializer, PrecalRequisitoArchivoModel, GiroNegocioSerializer
+from .serializers import LicencArchivoSerializer, PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, UploadFileSerializer, TipoLicenciaSerializer, SectoresLicSerializer, PrecalRequisitoArchivoModel, GiroNegocioSerializer, LicencArchivoUploadSerializer
 from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo, BuscarLicencGen, BuscarDatosTrabajador, BuscarTipoTramite
 from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.descargar import download_file
@@ -428,7 +428,7 @@ class PrecalDocumentacionController(RetrieveAPIView):
     def post(self, request: Request, precalId, tipoEvalId):
         
         data = ListDocumentacionSerializer(data=request.data)        
-        print(data)
+        # print(data)
 
         if data.is_valid():
             evaluacion = PrecalEvaluacionModel.objects.filter(precalificacion_id=precalId).filter(tipoEval_id=tipoEvalId).first()
@@ -442,7 +442,7 @@ class PrecalDocumentacionController(RetrieveAPIView):
                 list_documento_model.append(documento_model)
 
             data2 = PrecalDocumentacionModel.objects.bulk_create(list_documento_model)
-            print(data2)
+            # print(data2)
 
             return Response(data={
                 "message":None,
@@ -485,14 +485,10 @@ class SubirImagenController(CreateAPIView):
     serializer_class = UploadFileSerializer
 
     def post(self, request: Request):
-        print(request.FILES)
+        # print(request.FILES)
         data = self.serializer_class(data=request.FILES)
-        print("aaaaaaaaaaaa")
-        print(request.data)
-        print("bbbbbbbbbbbb")
-        print(request.data["idRequisitoArchivo"])
-        print("cccccccccccc")
-
+        # print(request.data)
+        # print(request.data["idRequisitoArchivo"])        
         if data.is_valid():
             archivo = data.save()
             url = request.META.get('HTTP_HOST')
@@ -673,7 +669,7 @@ class agregarPreLicenciaFirma(CreateAPIView):
         location = '{}{}/'.format(environ.get('RUTA_REQUISITOS_LICENCIA'), precal_requisito_archivo.precalificacion_id)
 
         # Grabando archivo
-        print("****************** 1 ************************")
+        # print("****************** 1 ************************")
         # print("******** request.POST ***********")
         # print(request.POST)
         # print("******** request.content_params ***********")
@@ -682,29 +678,27 @@ class agregarPreLicenciaFirma(CreateAPIView):
         # print(request.headers)
         # print("******** request.body ***********")
         # print(request.body)
-        print("******** request.META.get('CONTENT_TYPE', '')) ***********")        
-        print(request.META.get('CONTENT_TYPE', ''))
+        # print("******** request.META.get('CONTENT_TYPE', '')) ***********")        
+        # print(request.META.get('CONTENT_TYPE', ''))
         
         # Parse the header to get the boundary to split the parts.
-        content_type = request.META.get('CONTENT_TYPE', '')
-        print(content_type.encode('ascii'))
+        # content_type = request.META.get('CONTENT_TYPE', '')
+        # print(content_type.encode('ascii'))
         
-        print("******** request.data ***********")        
-        print(request.data)
+        # print("******** request.data ***********")        
+        # print(request.data)
         # print("******** request.parsers ***********")
         # print(request.parsers)
         # print("******** request.FILES ***********")
         # print(request.FILES)
         dataArchivo= request.FILES.copy()
-        print("****************** 2 ************************")
+        # print("****************** 2 ************************")
         dataArchivo["location"] = location
         dataArchivo["file_name"] = file_name
         data = self.serializer_class(data=dataArchivo)
 
 
-        if data.is_valid():
-
-            print("****************** 3 ************************")
+        if data.is_valid():           
             archivo = data.save()
 
             # Grabando registro en tabla
@@ -894,10 +888,6 @@ def EnviarCorreoTerminalista(precalId):
             body =  render_to_string("preLicenciaAlertaTerminalista.html", context = context)            
             enviarEmail(subject=subject, body=body, to=destinatarios)
 
-        # return {
-        # "message":"Correo enviado",
-        # "content":[",".join(destinatarios)]
-        # }
         return {
         "message":"Correo enviado",
         "content":[",".join(destinatarios)]
@@ -1008,16 +998,6 @@ class GiroNegocioPaginationController(ListAPIView,mixins.ListModelMixin):
 class PrecalificacionPruebaController(RetrieveAPIView): 
     permission_classes = [IsAuthenticated]   
     
-    # serializer_class = PrecalificacionSerializer
-    # queryset = PrecalificacionModel.objects.all()    
-
-    # def get(self, request):
-    #     data = self.serializer_class(instance=self.get_queryset(), many=True)
-    #     return Response(data = {
-    #         "message":None,
-    #         "content":data.data
-    #     })            
-
     def get(self, request: Request):
         
         tiptra = request.query_params.get('tiptra')
@@ -1027,8 +1007,7 @@ class PrecalificacionPruebaController(RetrieveAPIView):
         ocultar_recpag = request.query_params.get('ocultar_recpag')
 
         if tiptra and tiptra_anio and tiptra_origen:            
-            requisito_archivo = SeleccReqTupa(tiptra, tiptra_anio, tiptra_origen, reqtup_item, ocultar_recpag)            
-            # return Response({'data': requisito_archivo}, status=status.HTTP_200_OK)
+            requisito_archivo = SeleccReqTupa(tiptra, tiptra_anio, tiptra_origen, reqtup_item, ocultar_recpag)                        
 
             return Response(data = {
             "message":None,
@@ -1054,12 +1033,13 @@ class LicencArchivoController(RetrieveAPIView):
             "content": data.data
         })
 
-class AgregarLicencArchivoController(CreateAPIView):
+class AgregarLicencArchivoController(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = LicencArchivoSerializer
     queryset = LicencArchivoModel.objects.all()
+    file_serializer_class = UploadFileSerializer
 
-    def post(self, request: Request):
+    def post(self, request: Request):        
         data = self.serializer_class(data=request.data)
         if data.is_valid():
 
@@ -1069,9 +1049,29 @@ class AgregarLicencArchivoController(CreateAPIView):
                 licenc_origen = data.validated_data.get("licencOrigen")
                 licenc_ord_renov = data.validated_data.get("licencOrdRenov")
                 
-                LicencArchivoModel.objects.filter(licencNro=licenc_nro).filter(licencOrigen=licenc_origen).filter(licencOrdRenov=licenc_ord_renov).update(licencEstado="2")
+                LicencArchivoModel.objects.filter(licencNro=licenc_nro).filter(licencOrigen=licenc_origen).filter(licencOrdRenov=licenc_ord_renov).update(licencEstado="2")                
                 
                 data.save()
+                #  Grabando archivo
+
+                file_name = "{}.pdf".format(data.data["licencFile"])
+                location = '{}licenciaFuncionamiento/'.format(environ.get('RUTA_REQUISITOS_LICENCIA'))
+
+                dataArchivo= request.FILES.copy()
+                dataArchivo["location"] = location
+                dataArchivo["file_name"] = file_name
+                data_archivo_serialized = self.file_serializer_class(data=dataArchivo)
+
+                if data_archivo_serialized.is_valid():    
+                    data_archivo_serialized.save()
+                    licencia_archivo = LicencArchivoModel.objects.get(pk=data.data["licencFile"])
+                    licencia_archivo.licencFileNombre = file_name
+                    licencia_archivo.licencFileRuta = '{}{}'.format(location, file_name)
+                    licencia_archivo.save()
+
+                else:
+                    raise Exception(data_archivo_serialized.errors)
+                
                 return Response(data={
                     'content': data.data,
                     'message': 'Registro creado exitosamente'
@@ -1082,3 +1082,20 @@ class AgregarLicencArchivoController(CreateAPIView):
                 'content': data.errors
             }, status=400)
     
+
+    
+def licenciaPreviewFile(request, id=''):
+    licencia_archivo = LicencArchivoModel.objects.get(pk=id)
+    # precalificacion = PrecalificacionModel.objects.get(pk=requisito_archivo.precalificacion_id)
+    ruta_file = '{}licenciaFuncionamiento/{}.pdf'.format(environ.get('RUTA_REQUISITOS_LICENCIA'), id)
+    # ruta_file = environ.get('RUTA_REQUISITOS_LICENCIA')  + '{}/{}.pdf'.format(requisito_archivo.precalificacion_id, requisito_archivo.precalRequisito)
+    # requisito_archivo = SeleccReqTupa(precalificacion.tipoTramiteId, precalificacion.tipoTramiteAnio, precalificacion.tipoTramiteOrigen, requisito_archivo.precalRequisito, None)       
+    file_name = 'Licencia {}.pdf'.format(licencia_archivo.licencNro)
+
+    
+    # if len(requisito_archivo) > 0:
+    #     file_name =  'Requisito {}.pdf'.format(requisito_archivo[0]["N_ReqTup_descrip"][:64])
+    # else:
+    #     file_name = 'Requisito {}_{}.pdf'.format(requisito_archivo.precalificacion_id, requisito_archivo.precalRequisito)
+
+    return FileResponse(open(ruta_file, 'rb'), content_type='application/pdf', filename=file_name)

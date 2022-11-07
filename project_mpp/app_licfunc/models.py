@@ -424,6 +424,8 @@ class LicencArchivoModel(models.Model):
 
     licencEstado = models.CharField(max_length=1, db_column='F_Licenc_Estado', null=False, default="1")
 
+    licencEmail = models.CharField(max_length=100, db_column='N_Licenc_Email', null=False, default="")
+
     licencFileLogin = models.CharField(max_length=20, db_column='C_Usuari_Login', null=False)
 
     licencFileDigitFecha = models.DateTimeField(auto_now=True, db_column='D_Licenc_FecFig')

@@ -219,11 +219,11 @@ class UploadFileSerializer(serializers.Serializer):
         archivo: InMemoryUploadedFile = self.validated_data.get('archivo')
        
         # para ver el tipo de archivo que es
-        print(archivo.content_type)
+        # print(archivo.content_type)
         # # para ver el nombre del archivo
-        print(archivo.name)
+        # print(archivo.name)
         # # para ver el tamaño del archivo  expresado en bytes
-        print(archivo.size)
+        # print(archivo.size)
         # NOTA: una vez que se usa el metodo read() se elimina la informacion de ese archivo en la memoria RAM
         # ruta = default_storage.save(archivo.name, ContentFile(archivo.read()))
         # return settings.MEDIA_URL + ruta
@@ -258,3 +258,8 @@ class LicencArchivoSerializer(serializers.ModelSerializer):
     class Meta:
         model = LicencArchivoModel
         fields = '__all__'                 
+
+class LicencArchivoUploadSerializer(serializers.Serializer):
+    archivo = UploadFileSerializer(read_only = True, many=False) 
+    licencia = LicencArchivoSerializer(read_only = True, many=False) 
+    
