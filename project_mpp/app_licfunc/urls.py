@@ -31,6 +31,7 @@ from .views import (PrecalificacionController,
                 LicencArchivoController,
                 AgregarLicencArchivoController,
                 licenciaPreviewFile,
+                licenciaDownloadFile,
                 )
 
 urlpatterns = [
@@ -66,4 +67,5 @@ urlpatterns = [
     path('licenc-archivo', AgregarLicencArchivoController.as_view()),
     path('prueba', PrecalificacionPruebaController.as_view()),
     path('view/licencia/<int:id>',licenciaPreviewFile),    
+    path('download/licencia/<int:id>',licenciaDownloadFile),
 ]

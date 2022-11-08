@@ -1043,8 +1043,7 @@ class AgregarLicencArchivoController(ListCreateAPIView):
         data = self.serializer_class(data=request.data)
         if data.is_valid():
 
-            with transaction.atomic():   
-            
+            with transaction.atomic():               
                 licenc_nro = data.validated_data.get("licencNro")
                 licenc_origen = data.validated_data.get("licencOrigen")
                 licenc_ord_renov = data.validated_data.get("licencOrdRenov")
@@ -1052,8 +1051,8 @@ class AgregarLicencArchivoController(ListCreateAPIView):
                 LicencArchivoModel.objects.filter(licencNro=licenc_nro).filter(licencOrigen=licenc_origen).filter(licencOrdRenov=licenc_ord_renov).update(licencEstado="2")                
                 
                 data.save()
+                
                 #  Grabando archivo
-
                 file_name = "{}.pdf".format(data.data["licencFile"])
                 location = '{}licenciaFuncionamiento/'.format(environ.get('RUTA_REQUISITOS_LICENCIA'))
 
@@ -1068,7 +1067,6 @@ class AgregarLicencArchivoController(ListCreateAPIView):
                     licencia_archivo.licencFileNombre = file_name
                     licencia_archivo.licencFileRuta = '{}{}'.format(location, file_name)
                     licencia_archivo.save()
-
                 else:
                     raise Exception(data_archivo_serialized.errors)
                 
@@ -1076,6 +1074,7 @@ class AgregarLicencArchivoController(ListCreateAPIView):
                     'content': data.data,
                     'message': 'Registro creado exitosamente'
                 })
+
         else:
             return Response(data={
                 'message': 'Error al crear el registro',
@@ -1085,17 +1084,12 @@ class AgregarLicencArchivoController(ListCreateAPIView):
 
     
 def licenciaPreviewFile(request, id=''):
-    licencia_archivo = LicencArchivoModel.objects.get(pk=id)
-    # precalificacion = PrecalificacionModel.objects.get(pk=requisito_archivo.precalificacion_id)
+    licencia_archivo = LicencArchivoModel.objects.get(pk=id)    
     ruta_file = '{}licenciaFuncionamiento/{}.pdf'.format(environ.get('RUTA_REQUISITOS_LICENCIA'), id)
-    # ruta_file = environ.get('RUTA_REQUISITOS_LICENCIA')  + '{}/{}.pdf'.format(requisito_archivo.precalificacion_id, requisito_archivo.precalRequisito)
-    # requisito_archivo = SeleccReqTupa(precalificacion.tipoTramiteId, precalificacion.tipoTramiteAnio, precalificacion.tipoTramiteOrigen, requisito_archivo.precalRequisito, None)       
-    file_name = 'Licencia {}.pdf'.format(licencia_archivo.licencNro)
-
-    
-    # if len(requisito_archivo) > 0:
-    #     file_name =  'Requisito {}.pdf'.format(requisito_archivo[0]["N_ReqTup_descrip"][:64])
-    # else:
-    #     file_name = 'Requisito {}_{}.pdf'.format(requisito_archivo.precalificacion_id, requisito_archivo.precalRequisito)
-
+    file_name = 'Licencia_{}.pdf'.format(licencia_archivo.licencNro)
     return FileResponse(open(ruta_file, 'rb'), content_type='application/pdf', filename=file_name)
+
+def licenciaDownloadFile(request, id=''):
+    licencia = LicencArchivoModel.objects.get(pk=id)
+    ruta_file = 'licenciaFuncionamiento/{}.pdf'.format(id)    
+    return download_file(request, ruta_file, "Licencia_{}".format(licencia.licencNro))        
