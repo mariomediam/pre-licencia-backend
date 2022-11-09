@@ -15,7 +15,7 @@ from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import GiroNegocioModel, LicencArchivoModel, PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel, PrecalFirmaArchivoModel, LicencSolModel
 from .serializers import LicencArchivoSerializer, PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, UploadFileSerializer, TipoLicenciaSerializer, SectoresLicSerializer, PrecalRequisitoArchivoModel, GiroNegocioSerializer, LicencArchivoUploadSerializer
-from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo, BuscarLicencGen, BuscarDatosTrabajador, BuscarTipoTramite
+from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo, BuscarLicencGen, BuscarDatosTrabajador, BuscarTipoTramite, ImprimirLicencia
 from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.descargar import download_file
 from app_deploy.general.cargar import upload_file
@@ -1071,7 +1071,7 @@ class AgregarLicencArchivoController(ListCreateAPIView):
                     raise Exception(data_archivo_serialized.errors)
 
                 # Enviando email
-                licenc_sol = LicencSolModel.objects.all().filter(licencNro=licenc_nro).filter(licencOrigen = licenc_origen).filter(licencOrdRenov=licenc_ord_renov).first()
+                licenc_sol = LicencSolModel.objects.all().filter(licencNro=licenc_nro).filter(licencOrigen = licenc_origen).first()
 
                 if licenc_sol:
                     solicitud = licenc_sol.soliciSimulacion
@@ -1082,15 +1082,39 @@ class AgregarLicencArchivoController(ListCreateAPIView):
                         licencia_archivo.licencEmail = precalificacion.precalCorreo
                         licencia_archivo.save()
 
+
+                        licencia_impresa = ImprimirLicencia(licenc_nro, licenc_origen)
+
+                        lic_titular = ""
+                        lic_nombre_comercial = ""
+                        lic_ubicacion = ""
+                        lic_actividad_comercial = ""
+                        lic_area = 0.00
+                        lic_horario = ""
+                        lic_tipo_licencia = ""
+                        lic_nivel_riesgo = ""
+                        lic_fecha_emision = ""
+
+                        if len(licencia_impresa) > 0:
+                            lic_titular = licencia_impresa[0]['NomTitular']
+                            lic_nombre_comercial = licencia_impresa[0]['N_LICENC_RAZONSOCIAL']
+                            lic_ubicacion = licencia_impresa[0]['T_Domic_Negocio']
+                            lic_actividad_comercial = licencia_impresa[0]['T_Giros']
+                            lic_area = licencia_impresa[0]['Q_LICENC_AREA']
+                            lic_horario = licencia_impresa[0]['T_Horario']
+                            lic_tipo_licencia = licencia_impresa[0]['n_tiplic_nombre']
+                            lic_nivel_riesgo = licencia_impresa[0]['N_NivRie']
+                            lic_fecha_emision = licencia_impresa[0]['T_FecEmi']
+
                         subject = 'MPP - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
 
-                        context = {'precalId': f'{precalificacion.precalId:04}',  'licencNro':  licenc_nro, 'nombre_completo': precalificacion.precalSolicitante.webContribNomCompleto, 'email_usuario': precalificacion.precalCorreo, 'tipo_licencia_nombre' : precalificacion.tipoLicencia.tipoLicDescrip}
+                        context = {'precalId': f'{precalificacion.precalId:04}',  'licencNro':  licenc_nro, 'nombre_completo': precalificacion.precalSolicitante.webContribNomCompleto, 'email_usuario': precalificacion.precalCorreo, 'tipo_licencia_nombre' : precalificacion.tipoLicencia.tipoLicDescrip, "lic_titular" : lic_titular, "lic_nombre_comercial" : lic_nombre_comercial, "lic_ubicacion" : lic_ubicacion, "lic_actividad_comercial" : lic_actividad_comercial, "lic_area" : lic_area, "lic_horario" : lic_horario, "lic_tipo_licencia" : lic_tipo_licencia, "lic_nivel_riesgo" : lic_nivel_riesgo, "lic_fecha_emision" : lic_fecha_emision}
 
                         body =  render_to_string("LicenciaEnviada.html", context = context)
                         
                         to = [precalificacion.precalCorreo]
 
-                        to = ['mmedina@munipiura.gob.pe']
+                        # to = ['mmedina@munipiura.gob.pe']
 
                         ruta_testino_tmp = '{}/app_licfunc/Licencia_{}.pdf'.format(str(settings.MEDIA_ROOT), licenc_nro)
 
@@ -1104,10 +1128,6 @@ class AgregarLicencArchivoController(ListCreateAPIView):
                         if os.path.exists(ruta_testino_tmp):
                             os.remove(ruta_testino_tmp)
 
-                        # ---------------------------------------
-
-                # licencia_archivo_serialized = 
-                
                 return Response(data={
                     'content': LicencArchivoSerializer(licencia_archivo).data,
                     'message': 'Licencia enviada exitosamente a {}'.format(precalificacion.precalCorreo)

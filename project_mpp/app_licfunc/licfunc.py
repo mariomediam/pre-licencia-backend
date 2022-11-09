@@ -49,3 +49,8 @@ def BuscarTipoTramite(c_tiptra, c_tiptra_anio, f_tiptra_origen):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIAC.dbo.S01SeleccTipoTramite %s, %s, %s', [c_tiptra, c_tiptra_anio, f_tiptra_origen])
         return dictfetchall(cursor)  
+
+def ImprimirLicencia(c_licenc, f_licencia_origen):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIAC.dbo.S02ImprimirLicencia %s, %s', [c_licenc, f_licencia_origen])
+        return dictfetchall(cursor)          

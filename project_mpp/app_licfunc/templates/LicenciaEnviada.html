@@ -57,95 +57,58 @@
         Se adjunta Licencia de Funcionamiento Nº {{ licencNro }}, con lo cual se da por finalizado exitosamente su solicitud.<br>
         </span>        
         </span>
+        <ul>
+            {% if lic_titular|length > 0  %} 
+                <li>
+                    Titular: <b>{{lic_titular}}</b>
+                </li>
+            {% endif %}
+            {% if lic_nombre_comercial|length > 0  %} 
+                <li>
+                    Nombre comercial: <b>{{lic_nombre_comercial}}</b>
+                </li>
+            {% endif %}
+            {% if lic_ubicacion|length > 0  %} 
+                <li>
+                    Ubicación: <b>{{lic_ubicacion}}</b>
+                </li>
+            {% endif %}
+            {% if lic_actividad_comercial|length > 0  %} 
+                <li>
+                    Actividad comercial: <b>{{lic_actividad_comercial}}</b>
+                </li>
+            {% endif %}
+            {% if lic_area > 0  %} 
+                <li>
+                    Area: <b>{{lic_area}}</b>
+                </li>
+            {% endif %}
+            {% if lic_horario|length > 0  %} 
+            <li>
+                Horario de atención: <b>{{lic_horario}}</b>
+            </li>
+            {% endif %}
+            {% if lic_tipo_licencia|length > 0  %} 
+            <li>
+                Tipo de licencia: <b>{{lic_tipo_licencia}}</b>
+            </li>
+            {% endif %}
+            {% if lic_nivel_riesgo|length > 0  %} 
+            <li>
+                Nivel de riesgo: <b>{{lic_nivel_riesgo}}</b>
+            </li>
+            {% endif %}
+            {% if lic_fecha_emision|length > 0  %} 
+            <li>
+                Fecha emisión: <b>{{lic_fecha_emision}}</b>
+            </li>
+            {% endif %}
+        </ul>>
     
         <br>
-       <!-- Tipo de licencia: {{ tipo_licencia_nombre }} <br>
-       <h2>Tasa a pagar:  S/.{{ tasa }} </h2> -->
-        
-        <!-- <table width="100%" border="1" cellspacing="0" cellpadding="0" style="border-color:#009cde">
-            <thead style="background-color:#4993b2">
-                <tr style="border:1px solid blue">
-                <th style="border:1px solid blue;padding:5px">Tipo de evaluación</th>
-                <th style="border:1px solid blue;padding:5px">Resultado</th>
-                <th style="border:1px solid blue;padding:5px">Observaciones</th>
-                </tr>
-            </thead>
-                       
-                {% for evaluacion in html_evaluaciones %}
-                    <tr>
-                        <td style="line-height:1.3;word-break:break-word;font-family:&#39;Open Sans&#39;,&#39;Helvetica Neue&#39;,Helvetica,Arial,sans-serif;font-size:14px;margin:0;text-align:justify;padding:10px">
-                            {{ evaluacion.tipo_eval_nombre }}
-                        </td>
-                        <td style="line-height:1.3;word-break:break-word;font-family:&#39;Open Sans&#39;,&#39;Helvetica Neue&#39;,Helvetica,Arial,sans-serif;font-size:14px;margin:0;text-align:justify;padding:10px">
-                            {{ evaluacion.resultado_evaluacion }}
-                        </td>
-                        <td style="line-height:1.3;word-break:break-word;font-family:&#39;Open Sans&#39;,&#39;Helvetica Neue&#39;,Helvetica,Arial,sans-serif;font-size:14px;margin:0;text-align:justify;padding:10px">
-                            {{ evaluacion.observaciones_evaluacion }}
-                        </td>  
-                    </tr>
-                {% endfor %}                            
-        </table> -->
+      
         </p>
-        <!-- <p>
-            <b>Requisitos:</b>
-            <ul>
-                {% for requisito in requisitos %}
-                    <li>{{ requisito.N_ReqTup_descrip }} 
-
-                        {% if "8 Declaración Jurada de contar con la autorización sectorial respectiva" in requisito.N_ReqTup_descrip %}
-                            <br>                                
-                            {% if documentos|length > 0  %}                                
-                                <ul>                                    
-                                    {% for documento in documentos %}
-                                        <li>{{ documento }}</li>
-                                    {% endfor %}
-                                </ul>      
-                            {% else %}                              
-                                <small>No aplica en la presente solicitud.</small>
-                            {% endif %}    
-                        {% endif %}
-                        
-                        {% if requisito.N_ReqTup_VidUrl or requisito.N_ReqTup_PdfUrl  %}
-                            <br>
-                            <small>Ver formatos e instructivos: 
-                                {% if requisito.N_ReqTup_PdfUrl  %}
-                                    <a href={{ requisito.N_ReqTup_PdfUrl }}  target="_blank" rel="noopener noreferrer">
-                                        <img alt="YouTube" height="18" width="18" src="http://tramitevirtual.munipiura.gob.pe/Content/img/pdf.png">
-                                    </a>
-                                {% endif %}  
-                                {% if requisito.N_ReqTup_VidUrl  %}
-                                    <a href={{ requisito.N_ReqTup_VidUrl }}  target="_blank">
-                                        <img alt="YouTube" height="18" width="20" src="http://tramitevirtual.munipiura.gob.pe/Content/img/youtubes.png">
-                                    </a>
-                                {% endif %}  
-                            </small>
-                        {% endif %}     
-                    </li>
-                {% endfor %}
-            </ul>
-        </p> -->
-
-        <!-- <p><b>Importante: </b>Debe ingresar al sistema y adjuntar la información solicitada para continuar con el proceso de obtención de licencia de funcionamiento.
-        </p>
-        <p>Antes de ingresar su expediente por mesa de partes deberá implementar en su local las condiciones de seguridad que se indican a continuación, el ingeniero inspector de la Oficina de Defensa Civil verificará el cumplimiento de las mismas:
-            <ul>
-                <li>Certificado de fumigación.</li>
-                <li>Certificado de operatividad de extintores.</li>
-                <li>Certificado de pozo a tierra.</li>
-                <li>Vitrinas laminadas y vidrios de puertas, ventanas, etc.</li>
-                <li>Estantes fijos sujetos a la pared.</li>
-                <li>Pasadizos libres de obstáculos.</li>
-                <li>Botiquín.</li>
-                <li>Extintores ubicados 6Kg PVS.</li>
-                <li>Luz de emergencia.</li>
-                <li>Señalización.</li>
-                <li>Sistema eléctrico empotrado, entubado o en canaleta.</li>
-                <li>Llaves termomagnéticas y llaves diferencial por circuito.</li>
-                <li>Leyenda en tablero eléctrico.</li>
-                <li>Tomacorrientes conectados a tierra.</li>
-                <li>Enchufes de equipos eléctricos 3 espigas.</li>
-            </ul>
-        </p> -->
+      
         
         <p><b>Recuerda:</b> No respondas este correo, todo registro de información deberá ser realizado en el sistema <a href="http://www.tramitevirtual.munipiura.gob.pe">www.tramitevirtual.munipiura.gob.pe</a></p>
         </div>
@@ -156,72 +119,7 @@
         </div>
         </div>
         </div>
-        <!-- <div style="background-color: transparent;">
-        <div style="margin: 0px auto; min-width: 320px; max-width: 100%; background-color: rgb(255, 255, 255);">
-        <div style="border-collapse: collapse; width: 100%; background-color: rgb(255, 255, 255);">
-        <div style="min-width: 320px; max-width: 100%; vertical-align: top; width: 100%;">
-        <div style="width: 100% !important;">
-        <div style="border-width: 0px; border-style: solid; border-color: transparent; padding: 0px;">
-        <div align="center" style="padding: 10px;">
-        <span class="Object" role="link" id="OBJ_PREFIX_DWT285_com_zimbra_url"><span class="Object" role="link" id="OBJ_PREFIX_DWT297_com_zimbra_url"><a href="http://www.munipiura.gob.pe/canes-y-felinos" rel="noopener%20noreferrer%20nofollow%20noopener%20noreferrer nofollow noopener noreferrer" style="text-decoration: none; color: rgb(255, 255, 255); background-color: rgb(73, 147, 178); border-radius: 1px; width: auto; border-width: 1px; border-style: solid; border-color: rgb(73, 147, 178); padding-top: 5px; padding-bottom: 5px; font-family: arial, &quot;helvetica neue&quot;, helvetica, sans-serif; text-align: center;" target="_blank">
-        <span style="padding-left: 20px; padding-right: 20px; font-size: 16px;">
-        <span style="font-size: 16px; margin: 0px; line-height: 2;">
-        <strong>
-        Click Aquí
-        </strong>
-        </span>
-        </span>
-        </a></span></span>
-        </div>
-        </div>
-        </div>
-        </div>
-        </div>
-        </div>
-        </div> -->
-        <!-- <div style="background-color: transparent; text-align: justify;">
-        <div style="margin: 0px auto; min-width: 320px; max-width: 100%; background-color: rgb(255, 255, 255);">
-        <div style="border-collapse: collapse; width: 100%; background-color: rgb(255, 255, 255);">
-        <div style="min-width: 320px; max-width: 100%; vertical-align: top; width: 100%;">
-        <div style="width: 100% !important;">
-        <div style="border-width: 0px; border-style: solid; border-color: transparent; padding: 0px;">
-        <div style="color: rgb(85, 85, 85); font-family: &quot;open sans&quot;, &quot;helvetica neue&quot;, helvetica, arial, sans-serif, serif, emojifont; line-height: 1.5; padding: 10px 30px 15px;">
-        <div style="line-height: 1.3; font-size: 14px; font-family: &quot;open sans&quot;, &quot;helvetica neue&quot;, helvetica, arial, sans-serif, serif, emojifont; color: rgb(85, 85, 85);">
-        <p style="line-height: 1.3; font-family: &quot;open sans&quot;, &quot;helvetica neue&quot;, helvetica, arial, sans-serif; font-size: 14px; margin: 0px;">
-        <span style="font-size: 14px;">
-        También puedes copiar y pegar este enlace en su navegador:
-        <br>
-        <br>
-        <strong style="text-decoration: underline; color: rgb(0, 51, 68);">
-        <span class="Object" role="link" id="OBJ_PREFIX_DWT286_com_zimbra_url"><span class="Object" role="link" id="OBJ_PREFIX_DWT298_com_zimbra_url"><a target="_blank" href="http://www.munipiura.gob.pe/canes-y-felinos">http://www.munipiura.gob.pe/canes-y-felinos</a></span></span>
-        </strong>
-        </span>
-        </p>
-        <p style="line-height: 1.3; font-family: &quot;open sans&quot;, &quot;helvetica neue&quot;, helvetica, arial, sans-serif; margin: 0px;">
-        <br>
-        <span style="font-size: 14px;">
-        El Token anterior
-        <span style="color: rgb(33, 150, 243);">
-        <strong>
-        expirará el ' + convert(char(10), @D_Token_FinVig, 103) + ' ' + CONVERT(varchar(5),@D_Token_FinVig, 8) + '</strong>
-        </span>
-        , pasado el tiempo deberá generar una nueva solicitud.
-        </span>
-        <br>
-        <br>
-        <span style="font-size: 14px;">
-        Si no ha solicitado el presente registro, ignore este mensaje.
-        </span>
-        </p>
-        </div>
-        </div>
-        </div>
-        </div>
-        </div>
-        </div>
-        </div>
-        </div>
-        </td></tr></tbody></table> -->
+      
             
         </td></tr><tr><td>
         <table border="0" cellpadding="0" cellspacing="0" width="100%" align="center" style="min-width: 320px;"><tbody><tr><td align="center" valign="middle" style="padding: 10px 0px;">
