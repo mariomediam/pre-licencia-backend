@@ -433,3 +433,17 @@ class LicencArchivoModel(models.Model):
 
     class Meta:
         db_table = 'S02Licenc_Archivo'        
+
+
+class LicencSolModel(models.Model):
+    soliciSimulacion = models.CharField(primary_key=True, null=False, max_length=5, db_column='C_Solici')
+
+    licencNro = models.CharField(max_length=6, db_column='C_Licenc', null=False)
+
+    licencOrigen = models.CharField(max_length=1, db_column='F_Licencia_Origen', null=False)
+
+    licencOrdRenov = models.CharField(max_length=2, db_column='C_Licenc_OrdRenov', null=False)
+    
+    class Meta:
+        db_table = 'S02LicencSol'
+

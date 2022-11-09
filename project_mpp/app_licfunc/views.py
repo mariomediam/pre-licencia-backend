@@ -13,7 +13,7 @@ from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, CreateAP
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
-from .models import GiroNegocioModel, LicencArchivoModel, PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel, PrecalFirmaArchivoModel
+from .models import GiroNegocioModel, LicencArchivoModel, PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel, PrecalFirmaArchivoModel, LicencSolModel
 from .serializers import LicencArchivoSerializer, PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, UploadFileSerializer, TipoLicenciaSerializer, SectoresLicSerializer, PrecalRequisitoArchivoModel, GiroNegocioSerializer, LicencArchivoUploadSerializer
 from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo, BuscarLicencGen, BuscarDatosTrabajador, BuscarTipoTramite
 from app_deploy.general.enviarEmail import enviarEmail
@@ -25,6 +25,7 @@ from app_tradoc.tradoc import SeleccReqTupa
 
 from django.http import FileResponse
 import os
+import shutil
 from os import environ
 from dotenv import load_dotenv
 from django.core.files import File
@@ -1065,14 +1066,50 @@ class AgregarLicencArchivoController(ListCreateAPIView):
                     data_archivo_serialized.save()
                     licencia_archivo = LicencArchivoModel.objects.get(pk=data.data["licencFile"])
                     licencia_archivo.licencFileNombre = file_name
-                    licencia_archivo.licencFileRuta = '{}{}'.format(location, file_name)
-                    licencia_archivo.save()
+                    licencia_archivo.licencFileRuta = '{}{}'.format(location, file_name)                    
                 else:
                     raise Exception(data_archivo_serialized.errors)
+
+                # Enviando email
+                licenc_sol = LicencSolModel.objects.all().filter(licencNro=licenc_nro).filter(licencOrigen = licenc_origen).filter(licencOrdRenov=licenc_ord_renov).first()
+
+                if licenc_sol:
+                    solicitud = licenc_sol.soliciSimulacion
+
+                    precalificacion = PrecalificacionModel.objects.all().filter(precalSoliciSimulacion = solicitud).first()
+
+                    if precalificacion:
+
+                        licencia_archivo.licencEmail = precalificacion.precalCorreo
+                        licencia_archivo.save()
+
+                        subject = 'MPP - Solicitud Virtual de Pre Licencia N° ' + f'{precalificacion.precalId:04}'
+
+                        context = {'precalId': f'{precalificacion.precalId:04}',  'licencNro':  licenc_nro, 'nombre_completo': precalificacion.precalSolicitante.webContribNomCompleto, 'email_usuario': precalificacion.precalCorreo, 'tipo_licencia_nombre' : precalificacion.tipoLicencia.tipoLicDescrip}
+
+                        body =  render_to_string("LicenciaEnviada.html", context = context)
+                        
+                        to = [precalificacion.precalCorreo]
+
+                        to = ['mmedina@munipiura.gob.pe']
+
+                        ruta_testino_tmp = '{}/app_licfunc/Licencia_{}.pdf'.format(str(settings.MEDIA_ROOT), licenc_nro)
+
+                        shutil.copyfile('{}/{}'.format(location, file_name), ruta_testino_tmp)
+
+                        attachments = []                        
+                        attachments.append(ruta_testino_tmp)
+
+                        enviarEmail(subject=subject, body=body, to=to, attachments=attachments)
+
+                        if os.path.exists(ruta_testino_tmp):
+                            os.remove(ruta_testino_tmp)
+
+                        # ---------------------------------------
                 
                 return Response(data={
                     'content': data.data,
-                    'message': 'Registro creado exitosamente'
+                    'message': 'Licencia enviada exitosamente a {}'.format(precalificacion.precalCorreo)
                 })
 
         else:
