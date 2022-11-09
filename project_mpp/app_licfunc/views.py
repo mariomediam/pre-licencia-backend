@@ -1079,7 +1079,6 @@ class AgregarLicencArchivoController(ListCreateAPIView):
                     precalificacion = PrecalificacionModel.objects.all().filter(precalSoliciSimulacion = solicitud).first()
 
                     if precalificacion:
-
                         licencia_archivo.licencEmail = precalificacion.precalCorreo
                         licencia_archivo.save()
 
@@ -1106,9 +1105,11 @@ class AgregarLicencArchivoController(ListCreateAPIView):
                             os.remove(ruta_testino_tmp)
 
                         # ---------------------------------------
+
+                # licencia_archivo_serialized = 
                 
                 return Response(data={
-                    'content': data.data,
+                    'content': LicencArchivoSerializer(licencia_archivo).data,
                     'message': 'Licencia enviada exitosamente a {}'.format(precalificacion.precalCorreo)
                 })
 
