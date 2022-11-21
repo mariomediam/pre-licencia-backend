@@ -23,6 +23,7 @@ urlpatterns = [
     path('api/', include('app_deploy.urls')),
     path('api/seguridad/', include('app_usuario.urls')),
     path('api/licfunc/', include('app_licfunc.urls')),
+    path('api/contribuyente/', include('app_contribuyente.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
