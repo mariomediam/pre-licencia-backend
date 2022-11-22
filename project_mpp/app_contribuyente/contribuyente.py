@@ -39,5 +39,10 @@ def ConsultaSectores():
 
 def ConsultaLugaresGeneral(codigo, nombre, tipo_lugar, sector, calificacion, dpto, prov, dist):
     with connection.cursor() as cursor:
-        cursor.execute('EXEC BDSIAT2.dbo.spmConsulta_Lugares_General %s, %s, %s, %s, %s, %s, %s, %s, %s', [codigo, nombre, tipo_lugar, sector, calificacion, dpto, prov, dist])
+        cursor.execute('EXEC BDSIAT2.dbo.spmConsulta_Lugares_General %s, %s, %s, %s, %s, %s, %s, %s', [codigo, nombre, tipo_lugar, sector, calificacion, dpto, prov, dist])
         return dictfetchall(cursor)         
+
+def ConsultaTipLugCodigo(codigo):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC BDSIAT2.dbo.spmConsulta_Tip_Lug_Codigo %s', [codigo])
+        return dictfetchall(cursor)                 

@@ -6,7 +6,9 @@ from .views import (BuscarContribNombreController,
     ConsultaDocumentoNumeroController,
     ListarTipoContribuyenteController,
     ConsultaTipoLugarController,
-    ConsultaSectoresController)
+    ConsultaSectoresController,
+    ConsultaLugarGeneralController,
+    ConsultaTipLugController)
 
 urlpatterns = [
     path('buscar-contribuyente-nombre', BuscarContribNombreController.as_view()),
@@ -16,4 +18,6 @@ urlpatterns = [
     path('tipo-contribuyente', ListarTipoContribuyenteController.as_view()),
     path('tipo-lugar', ConsultaTipoLugarController.as_view()),
     path('sector', ConsultaSectoresController.as_view()),
+    path('consultar-lugar-general', ConsultaLugarGeneralController.as_view()),
+    path('consultar-tiplug-codigo', ConsultaTipLugController.as_view()),
 ]

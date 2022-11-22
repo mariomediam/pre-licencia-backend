@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
-from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores
+from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo
 
 # Create your views here.
 
@@ -62,12 +62,11 @@ class ConsultaContribCodigoController(RetrieveAPIView):
 class ConsultaDocumentoNumeroController(RetrieveAPIView):    
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request):
-        
+    def get(self, request: Request):    
         numero_documento = request.query_params.get('numero')        
-
         if numero_documento:            
             documento = ConsultaDocumentoNumero(numero_documento)
+
             return Response({'data': documento}, status=status.HTTP_200_OK)
 
         else:
@@ -100,3 +99,36 @@ class ConsultaSectoresController(RetrieveAPIView):
         return Response({'data': sectores}, status=status.HTTP_200_OK)
 
 
+class ConsultaLugarGeneralController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):    
+        codigo = request.query_params.get('codigo', '')
+        nombre = request.query_params.get('nombre', '')
+        tipo_lugar = request.query_params.get('tiplug', '')
+        sector = request.query_params.get('sector', '')
+        calificacion = request.query_params.get('calif', '')
+        dpto = request.query_params.get('dpto', '')
+        prov = request.query_params.get('prov', '')
+        dist = request.query_params.get('dist', '')
+
+        lugar = ConsultaLugaresGeneral(codigo, nombre, tipo_lugar, sector, calificacion, dpto, prov, dist)
+
+        return Response({'data': lugar}, status=status.HTTP_200_OK)
+        
+
+class ConsultaTipLugController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        codigo = request.query_params.get('codigo')        
+
+        if codigo:            
+            tipo_lugar = ConsultaTipLugCodigo(codigo)
+            return Response({'data': tipo_lugar}, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar codigo a buscar"
+                }, status=status.HTTP_404_NOT_FOUND)   
