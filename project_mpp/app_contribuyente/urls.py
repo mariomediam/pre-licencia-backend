@@ -8,7 +8,8 @@ from .views import (BuscarContribNombreController,
     ConsultaTipoLugarController,
     ConsultaSectoresController,
     ConsultaLugarGeneralController,
-    ConsultaTipLugController)
+    ConsultaTipLugController,
+    BuscarContribPaginationController)
 
 urlpatterns = [
     path('buscar-contribuyente-nombre', BuscarContribNombreController.as_view()),
@@ -20,4 +21,5 @@ urlpatterns = [
     path('sector', ConsultaSectoresController.as_view()),
     path('consultar-lugar-general', ConsultaLugarGeneralController.as_view()),
     path('consultar-tiplug-codigo', ConsultaTipLugController.as_view()),
+    path('buscar-contribuyente-p', BuscarContribPaginationController.as_view()),
 ]

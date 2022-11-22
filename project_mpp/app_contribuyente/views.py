@@ -1,10 +1,11 @@
 from django.shortcuts import render
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, mixins
 from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo
+from app_deploy.general.paginations import CustomPagination
 
 # Create your views here.
 
@@ -132,3 +133,24 @@ class ConsultaTipLugController(RetrieveAPIView):
              return Response(data={
                     "message":"Debe de ingresar codigo a buscar"
                 }, status=status.HTTP_404_NOT_FOUND)   
+        
+
+class BuscarContribPaginationController(ListAPIView,mixins.ListModelMixin):
+    permission_classes = [IsAuthenticated]    
+    pagination_class = CustomPagination    
+        
+    def get(self, request: Request):
+
+        nombre_contrib = request.query_params.get('nombre')        
+        codigo_contrib = request.query_params.get('codigo')
+
+        if nombre_contrib or codigo_contrib:
+
+            contribuyente = BuscarContribCodigo(codigo_contrib) if codigo_contrib else  BuscarContribNombre(nombre_contrib)
+              
+            return self.get_paginated_response(self.paginate_queryset(contribuyente))        
+        
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar nombre o código a buscar"
+                }, status=status.HTTP_404_NOT_FOUND)
