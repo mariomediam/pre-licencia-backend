@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'app_deploy',
     'app_usuario',
     'app_licfunc',
+    'app_contribuyente',
     "rest_framework",
     'corsheaders',
 ]
