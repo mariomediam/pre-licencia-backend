@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status, mixins
-from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo
+from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo, ConsultaTelefonoCont, ConsultaDocumentoCont, ConsultaDirElectCont, ConsultaNacionalidadCont
+
 from app_deploy.general.paginations import CustomPagination
 
 # Create your views here.
@@ -154,3 +155,68 @@ class BuscarContribPaginationController(ListAPIView,mixins.ListModelMixin):
              return Response(data={
                     "message":"Debe de ingresar nombre o código a buscar"
                 }, status=status.HTTP_404_NOT_FOUND)
+        
+class ConsultaTelefonoContController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        codigo = request.query_params.get('codigo')        
+
+        if codigo:            
+            telefono = ConsultaTelefonoCont(codigo)
+            return Response({'data': telefono}, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar codigo de contribuyente a buscar"
+                }, status=status.HTTP_404_NOT_FOUND)           
+        
+
+class ConsultaDocumentoContController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        codigo = request.query_params.get('codigo')        
+
+        if codigo:            
+            documento = ConsultaDocumentoCont(codigo)
+            return Response({'data': documento}, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar codigo de contribuyente a buscar"
+                }, status=status.HTTP_404_NOT_FOUND)                   
+        
+class ConsultaDirElectContController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        codigo = request.query_params.get('codigo')        
+
+        if codigo:            
+            dir_elect = ConsultaDirElectCont(codigo)
+            return Response({'data': dir_elect}, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar codigo de contribuyente a buscar"
+                }, status=status.HTTP_404_NOT_FOUND)                   
+        
+class ConsultaNacionalidadController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        codigo = request.query_params.get('codigo')        
+
+        if codigo:            
+            nacionalidad = ConsultaNacionalidadCont(codigo)
+            return Response({'data': nacionalidad}, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar codigo de contribuyente a buscar"
+                }, status=status.HTTP_404_NOT_FOUND)                           

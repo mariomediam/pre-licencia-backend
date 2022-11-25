@@ -5,6 +5,7 @@ from app_deploy.general.ejecutar import dictfetchall
 def BuscarContribNombre(nombre_contrib):
     with connection.cursor() as cursor:
         cursor.execute('EXEC BDSIAT2.dbo.sp001Contrib_Nombres %s', [nombre_contrib])
+        # cursor.execute('EXEC BDSIAT2.dbo.sp001Contrib_Nombres {}'.format(nombre_contrib))
         return dictfetchall(cursor) 
 
 def BuscarContribCodigo(codigo_contrib):
@@ -45,4 +46,24 @@ def ConsultaLugaresGeneral(codigo, nombre, tipo_lugar, sector, calificacion, dpt
 def ConsultaTipLugCodigo(codigo):
     with connection.cursor() as cursor:
         cursor.execute('EXEC BDSIAT2.dbo.spmConsulta_Tip_Lug_Codigo %s', [codigo])
-        return dictfetchall(cursor)                 
+        return dictfetchall(cursor)
+    
+def ConsultaTelefonoCont(codigo_contrib):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC BDSIAT2.dbo.spConsulta_Telef_Cont %s', [codigo_contrib])
+        return dictfetchall(cursor)    
+
+def ConsultaDocumentoCont(codigo_contrib):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC BDSIAT2.dbo.spConsulta_Doc_Cont %s', [codigo_contrib])
+        return dictfetchall(cursor)        
+    
+def ConsultaDirElectCont(codigo_contrib):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC BDSIAT2.dbo.spConsulta_Dir_Elect_Cont %s', [codigo_contrib])
+        return dictfetchall(cursor)                
+
+def ConsultaNacionalidadCont(codigo_contrib):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC BDSIAT2.dbo.spConsulta_Nacionalidad_Cont %s', [codigo_contrib])
+        return dictfetchall(cursor)            
