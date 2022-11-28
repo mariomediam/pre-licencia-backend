@@ -165,7 +165,11 @@ class ConsultaTelefonoContController(RetrieveAPIView):
 
         if codigo:            
             telefono = ConsultaTelefonoCont(codigo)
-            return Response({'data': telefono}, status=status.HTTP_200_OK)
+            return Response(data={
+                    "message":None,
+                    "content": telefono
+                }, status=status.HTTP_200_OK)
+            # return Response({'data': telefono}, status=status.HTTP_200_OK)
 
         else:
              return Response(data={
@@ -182,7 +186,11 @@ class ConsultaDocumentoContController(RetrieveAPIView):
 
         if codigo:            
             documento = ConsultaDocumentoCont(codigo)
-            return Response({'data': documento}, status=status.HTTP_200_OK)
+            return Response(data={
+                    "message":None,
+                    "content": documento
+                }, status=status.HTTP_200_OK)
+            # return Response({'data': documento}, status=status.HTTP_200_OK)
 
         else:
              return Response(data={
@@ -198,7 +206,11 @@ class ConsultaDirElectContController(RetrieveAPIView):
 
         if codigo:            
             dir_elect = ConsultaDirElectCont(codigo)
-            return Response({'data': dir_elect}, status=status.HTTP_200_OK)
+            return Response(data={
+                    "message":None,
+                    "content": dir_elect
+                }, status=status.HTTP_200_OK)
+            # return Response({'data': dir_elect}, status=status.HTTP_200_OK)
 
         else:
              return Response(data={
@@ -214,7 +226,11 @@ class ConsultaNacionalidadController(RetrieveAPIView):
 
         if codigo:            
             nacionalidad = ConsultaNacionalidadCont(codigo)
-            return Response({'data': nacionalidad}, status=status.HTTP_200_OK)
+            return Response(data={
+                    "message":None,
+                    "content": nacionalidad
+                }, status=status.HTTP_200_OK)
+            # return Response({'data': nacionalidad}, status=status.HTTP_200_OK)
 
         else:
              return Response(data={
