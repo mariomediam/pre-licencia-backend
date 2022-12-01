@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status, mixins
-from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo, ConsultaTelefonoCont, ConsultaDocumentoCont, ConsultaDirElectCont, ConsultaNacionalidadCont
+from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo, ConsultaTelefonoCont, ConsultaDocumentoCont, ConsultaDirElectCont, ConsultaNacionalidadCont, separaNombre
 
 from app_deploy.general.paginations import CustomPagination
 
@@ -19,7 +19,11 @@ class BuscarContribNombreController(RetrieveAPIView):
 
         if nombre_contrib:            
             contribuyente = BuscarContribNombre(nombre_contrib)
-            return Response({'data': contribuyente}, status=status.HTTP_200_OK)
+            return Response(data={
+                    "message":None,
+                    "content": contribuyente
+                }, status=status.HTTP_200_OK)
+            # return Response({'data': contribuyente}, status=status.HTTP_200_OK)
 
         else:
              return Response(data={
@@ -36,7 +40,16 @@ class BuscarContribCodigoController(RetrieveAPIView):
 
         if codigo_contrib:            
             contribuyente = BuscarContribCodigo(codigo_contrib)
-            return Response({'data': contribuyente}, status=status.HTTP_200_OK)
+            
+            if len(contribuyente) == 1:
+                separa_nombre = separaNombre(contribuyente[0]["Identificación"])
+                contribuyente[0].update(separa_nombre)
+                
+            return Response(data={
+                    "message":None,
+                    "content": contribuyente
+                }, status=status.HTTP_200_OK)
+            # return Response({'data': contribuyente}, status=status.HTTP_200_OK)
 
         else:
              return Response(data={
@@ -53,7 +66,11 @@ class ConsultaContribCodigoController(RetrieveAPIView):
 
         if codigo_contrib:            
             contribuyente = ConsultaContribCodigo(codigo_contrib)
-            return Response({'data': contribuyente}, status=status.HTTP_200_OK)
+            return Response(data={
+                    "message":None,
+                    "content": contribuyente
+                }, status=status.HTTP_200_OK)
+            # return Response({'data': contribuyente}, status=status.HTTP_200_OK)
 
         else:
              return Response(data={
@@ -68,8 +85,11 @@ class ConsultaDocumentoNumeroController(RetrieveAPIView):
         numero_documento = request.query_params.get('numero')        
         if numero_documento:            
             documento = ConsultaDocumentoNumero(numero_documento)
-
-            return Response({'data': documento}, status=status.HTTP_200_OK)
+            return Response(data={
+                    "message":None,
+                    "content": documento
+                }, status=status.HTTP_200_OK)
+            # return Response({'data': documento}, status=status.HTTP_200_OK)
 
         else:
              return Response(data={
@@ -82,7 +102,11 @@ class ListarTipoContribuyenteController(RetrieveAPIView):
 
     def get(self, request: Request):        
         documento = ListarTipoContribuyente()
-        return Response({'data': documento}, status=status.HTTP_200_OK)
+        return Response(data={
+                    "message":None,
+                    "content": documento
+                }, status=status.HTTP_200_OK)
+        # return Response({'data': documento}, status=status.HTTP_200_OK)
 
 
 class ConsultaTipoLugarController(RetrieveAPIView):    
@@ -90,7 +114,11 @@ class ConsultaTipoLugarController(RetrieveAPIView):
 
     def get(self, request: Request):        
         tipo_lugar = ConsultaTipoLugar()
-        return Response({'data': tipo_lugar}, status=status.HTTP_200_OK)
+        return Response(data={
+                    "message":None,
+                    "content": tipo_lugar
+                }, status=status.HTTP_200_OK)
+        # return Response({'data': tipo_lugar}, status=status.HTTP_200_OK)
 
 
 class ConsultaSectoresController(RetrieveAPIView):    
@@ -98,7 +126,11 @@ class ConsultaSectoresController(RetrieveAPIView):
 
     def get(self, request: Request):        
         sectores = ConsultaSectores()
-        return Response({'data': sectores}, status=status.HTTP_200_OK)
+        return Response(data={
+                    "message":None,
+                    "content": sectores
+                }, status=status.HTTP_200_OK)
+        # return Response({'data': sectores}, status=status.HTTP_200_OK)
 
 
 class ConsultaLugarGeneralController(RetrieveAPIView):    
@@ -116,7 +148,11 @@ class ConsultaLugarGeneralController(RetrieveAPIView):
 
         lugar = ConsultaLugaresGeneral(codigo, nombre, tipo_lugar, sector, calificacion, dpto, prov, dist)
 
-        return Response({'data': lugar}, status=status.HTTP_200_OK)
+        return Response(data={
+                    "message":None,
+                    "content": lugar
+                }, status=status.HTTP_200_OK)
+        # return Response({'data': lugar}, status=status.HTTP_200_OK)
         
 
 class ConsultaTipLugController(RetrieveAPIView):    
@@ -128,7 +164,11 @@ class ConsultaTipLugController(RetrieveAPIView):
 
         if codigo:            
             tipo_lugar = ConsultaTipLugCodigo(codigo)
-            return Response({'data': tipo_lugar}, status=status.HTTP_200_OK)
+            return Response(data={
+                    "message":None,
+                    "content": tipo_lugar
+                }, status=status.HTTP_200_OK)
+            # return Response({'data': tipo_lugar}, status=status.HTTP_200_OK)
 
         else:
              return Response(data={

@@ -67,3 +67,17 @@ def ConsultaNacionalidadCont(codigo_contrib):
     with connection.cursor() as cursor:
         cursor.execute('EXEC BDSIAT2.dbo.spConsulta_Nacionalidad_Cont %s', [codigo_contrib])
         return dictfetchall(cursor)            
+    
+
+def separaNombre(nombre):
+    with connection.cursor() as cursor:                
+        sql = """\
+        DECLARE @apellido1 varchar(70), @apellido2 varchar(70), @nombre1 varchar(70)
+
+        EXEC BDSIAT2.dbo.spSepara_Nombre %s, @apellido1 = @apellido1 OUTPUT, @apellido2 = @apellido2 OUTPUT, @nombre1 = @nombre1 OUTPUT;
+
+        SELECT @apellido1 as separa_pepat, @apellido2 as separa_apemat, @nombre1 as separa_nombre;
+        """
+
+        cursor.execute(sql, [nombre])
+        return dictfetchall(cursor)[0]    
