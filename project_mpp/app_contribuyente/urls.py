@@ -13,7 +13,10 @@ from .views import (BuscarContribNombreController,
     ConsultaTelefonoContController,
     ConsultaDocumentoContController,
     ConsultaDirElectContController,
-    ConsultaNacionalidadController)
+    ConsultaNacionalidadController,
+    ConsultaLugarGeneralPaginationController,
+    ConsultaCalleGeneralController,
+    ConsultaCalleGeneralPaginationController)
 
 urlpatterns = [
     path('buscar-contribuyente-nombre', BuscarContribNombreController.as_view()),
@@ -30,4 +33,7 @@ urlpatterns = [
     path('consultar-contribuyente-documento', ConsultaDocumentoContController.as_view()),
     path('consultar-contribuyente-direlect', ConsultaDirElectContController.as_view()),
     path('consultar-contribuyente-nacion', ConsultaNacionalidadController.as_view()),
+    path('consultar-lugar-general-p', ConsultaLugarGeneralPaginationController.as_view()),
+    path('consultar-calle-general', ConsultaCalleGeneralController.as_view()),
+    path('consultar-calle-general-p', ConsultaCalleGeneralPaginationController.as_view()),
 ]

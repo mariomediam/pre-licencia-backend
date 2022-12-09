@@ -81,3 +81,9 @@ def separaNombre(nombre):
 
         cursor.execute(sql, [nombre])
         return dictfetchall(cursor)[0]    
+
+
+def ConsultaCallesGeneral(codigo, nombre):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC BDSIAT2.dbo.spmConsulta_Calles_General %s, %s', [codigo, nombre])
+        return dictfetchall(cursor)        

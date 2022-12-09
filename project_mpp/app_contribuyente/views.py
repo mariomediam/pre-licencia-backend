@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status, mixins
-from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo, ConsultaTelefonoCont, ConsultaDocumentoCont, ConsultaDirElectCont, ConsultaNacionalidadCont, separaNombre
+from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo, ConsultaTelefonoCont, ConsultaDocumentoCont, ConsultaDirElectCont, ConsultaNacionalidadCont, separaNombre, ConsultaCallesGeneral
 
 from app_deploy.general.paginations import CustomPagination
 
@@ -276,3 +276,67 @@ class ConsultaNacionalidadController(RetrieveAPIView):
              return Response(data={
                     "message":"Debe de ingresar codigo de contribuyente a buscar"
                 }, status=status.HTTP_404_NOT_FOUND)                           
+
+class ConsultaLugarGeneralPaginationController(ListAPIView,mixins.ListModelMixin):
+    permission_classes = [IsAuthenticated]    
+    pagination_class = CustomPagination    
+        
+    def get(self, request: Request):
+
+        codigo = request.query_params.get('codigo', '')
+        nombre = request.query_params.get('nombre', '')
+        tipo_lugar = request.query_params.get('tiplug', '')
+        sector = request.query_params.get('sector', '')
+        calificacion = request.query_params.get('calif', '')
+        dpto = request.query_params.get('dpto', '')
+        prov = request.query_params.get('prov', '')
+        dist = request.query_params.get('dist', '')
+
+        if len(codigo) > 0 or len(nombre) > 0 or len(tipo_lugar) > 0 or len(sector) > 0 or len(calificacion) > 0 or len(dpto) > 0 or len(prov) > 0 or len(dist) > 0:
+            lugar = ConsultaLugaresGeneral(codigo, nombre, tipo_lugar, sector, calificacion, dpto, prov, dist)
+
+            return self.get_paginated_response(self.paginate_queryset(lugar))        
+        
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar valor a buscar"
+                }, status=status.HTTP_404_NOT_FOUND)                
+
+class ConsultaCalleGeneralController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):    
+        codigo = request.query_params.get('codigo', '')
+        nombre = request.query_params.get('nombre', '')
+
+        if len(codigo) > 0 or len(nombre) > 0:
+            calle = ConsultaCallesGeneral(codigo, nombre)
+        
+            return Response(data={
+                        "message":None,
+                        "content": calle
+                    }, status=status.HTTP_200_OK)        
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar valor a buscar"
+                }, status=status.HTTP_404_NOT_FOUND)
+        
+
+class ConsultaCalleGeneralPaginationController(ListAPIView,mixins.ListModelMixin):
+    permission_classes = [IsAuthenticated]    
+    pagination_class = CustomPagination    
+        
+    def get(self, request: Request):
+
+        codigo = request.query_params.get('codigo', '')
+        nombre = request.query_params.get('nombre', '')
+
+        if len(codigo) > 0 or len(nombre) > 0:
+            calle = ConsultaCallesGeneral(codigo, nombre)
+
+            return self.get_paginated_response(self.paginate_queryset(calle))        
+        
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar valor a buscar"
+                }, status=status.HTTP_404_NOT_FOUND)                       
