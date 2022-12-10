@@ -87,3 +87,9 @@ def ConsultaCallesGeneral(codigo, nombre):
     with connection.cursor() as cursor:
         cursor.execute('EXEC BDSIAT2.dbo.spmConsulta_Calles_General %s, %s', [codigo, nombre])
         return dictfetchall(cursor)        
+
+
+def ListarTipDoc():
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT C003Cod_Doc, C003Nombre, C003Especificacion, I003Longitud, F003Fecha, C003Responsable, C003Motivo, C003Infocorp FROM BDSIAT2.dbo.T003Tip_Doc')
+        return dictfetchall(cursor)          

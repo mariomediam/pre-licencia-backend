@@ -16,7 +16,8 @@ from .views import (BuscarContribNombreController,
     ConsultaNacionalidadController,
     ConsultaLugarGeneralPaginationController,
     ConsultaCalleGeneralController,
-    ConsultaCalleGeneralPaginationController)
+    ConsultaCalleGeneralPaginationController,
+    ListarTipoDocumentoController)
 
 urlpatterns = [
     path('buscar-contribuyente-nombre', BuscarContribNombreController.as_view()),
@@ -36,4 +37,5 @@ urlpatterns = [
     path('consultar-lugar-general-p', ConsultaLugarGeneralPaginationController.as_view()),
     path('consultar-calle-general', ConsultaCalleGeneralController.as_view()),
     path('consultar-calle-general-p', ConsultaCalleGeneralPaginationController.as_view()),
+    path('tipo-documento', ListarTipoDocumentoController.as_view()),
 ]

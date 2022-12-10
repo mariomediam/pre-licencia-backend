@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status, mixins
-from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo, ConsultaTelefonoCont, ConsultaDocumentoCont, ConsultaDirElectCont, ConsultaNacionalidadCont, separaNombre, ConsultaCallesGeneral
+from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo, ConsultaTelefonoCont, ConsultaDocumentoCont, ConsultaDirElectCont, ConsultaNacionalidadCont, separaNombre, ConsultaCallesGeneral, ListarTipDoc
 
 from app_deploy.general.paginations import CustomPagination
 
@@ -340,3 +340,15 @@ class ConsultaCalleGeneralPaginationController(ListAPIView,mixins.ListModelMixin
              return Response(data={
                     "message":"Debe de ingresar valor a buscar"
                 }, status=status.HTTP_404_NOT_FOUND)                       
+
+
+class ListarTipoDocumentoController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):        
+        tipo_documento = ListarTipDoc()
+        return Response(data={
+                    "message":None,
+                    "content": tipo_documento
+                }, status=status.HTTP_200_OK)
+        # return Response({'data': documento}, status=status.HTTP_200_OK)                
