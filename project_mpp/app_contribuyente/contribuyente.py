@@ -93,3 +93,36 @@ def ListarTipDoc():
     with connection.cursor() as cursor:
         cursor.execute('SELECT C003Cod_Doc, C003Nombre, C003Especificacion, I003Longitud, F003Fecha, C003Responsable, C003Motivo, C003Infocorp FROM BDSIAT2.dbo.T003Tip_Doc')
         return dictfetchall(cursor)          
+
+
+def ConsultaDocumentoTipoNro(codigo_docum, numero_docum):
+    with connection.cursor() as cursor:
+        sql = """     
+        DECLARE @C002Cod_Doc char(2), @C002Num_Doc char(11)
+
+        select @C002Cod_Doc = %s, @C002Num_Doc = %s
+
+        SELECT T002Doc_Cont.C002Cod_Cont,
+        T001Contribuyente.C001Nombre,
+        T002Doc_Cont.C002Cod_Doc,
+        T002Doc_Cont.C002Num_Doc 
+        FROM BDSIAT2.dbo.T002Doc_Cont AS T002Doc_Cont
+        INNER JOIN BDSIAT2.dbo.T001Contribuyente AS T001Contribuyente
+        ON T002Doc_Cont.C002Cod_Cont = T001Contribuyente.C001Cod_Cont 
+        WHERE T002Doc_Cont.C002Cod_Doc = @C002Cod_Doc 
+        AND RTRIM(LTRIM(T002Doc_Cont.C002Num_Doc)) = RTRIM(LTRIM(@C002Num_Doc))
+        """
+        cursor.execute(sql, [codigo_docum, numero_docum])
+        return dictfetchall(cursor)
+
+
+def ConsultaTiposTelefono():
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC BDSIAT2.dbo.spmConsultaTipos_Telefono')
+        return dictfetchall(cursor)   
+
+
+def ListarTipoNacion():
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT C163CodNacion, C163Nombres, D163Fecha, C163Responsable, C163Gentilicio1, C163Gentilicio2 FROM BDSIAT2.dbo.T163Nacion ORDER BY C163Nombres')
+        return dictfetchall(cursor)          

@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status, mixins
-from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo, ConsultaTelefonoCont, ConsultaDocumentoCont, ConsultaDirElectCont, ConsultaNacionalidadCont, separaNombre, ConsultaCallesGeneral, ListarTipDoc
+from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo, ConsultaTelefonoCont, ConsultaDocumentoCont, ConsultaDirElectCont, ConsultaNacionalidadCont, separaNombre, ConsultaCallesGeneral, ListarTipDoc, ConsultaDocumentoTipoNro, ConsultaTiposTelefono, ListarTipoNacion
 
 from app_deploy.general.paginations import CustomPagination
 
@@ -351,4 +351,45 @@ class ListarTipoDocumentoController(RetrieveAPIView):
                     "message":None,
                     "content": tipo_documento
                 }, status=status.HTTP_200_OK)
-        # return Response({'data': documento}, status=status.HTTP_200_OK)                
+        
+
+class ConsultaDocumentoTipoNroController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):    
+        tipo = request.query_params.get('tipo', '')
+        numero = request.query_params.get('numero', '')                
+
+        if len(tipo) > 0 and len(numero) > 0:
+            documento_nro = ConsultaDocumentoTipoNro(tipo, numero)
+        
+            return Response(data={
+                        "message":None,
+                        "content":documento_nro
+                    }, status=status.HTTP_200_OK)        
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar tipo de documento y numero de documento"
+                }, status=status.HTTP_404_NOT_FOUND)
+
+
+class ConsultaTiposTelefonoController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):        
+        tipo_telefono = ConsultaTiposTelefono()
+        return Response(data={
+                    "message":None,
+                    "content": tipo_telefono
+                }, status=status.HTTP_200_OK)                
+
+
+class ListarTipoNacionController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):        
+        nacion = ListarTipoNacion()
+        return Response(data={
+                    "message":None,
+                    "content": nacion
+                }, status=status.HTTP_200_OK)                       
