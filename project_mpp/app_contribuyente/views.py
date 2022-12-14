@@ -401,88 +401,93 @@ class UpdateContribuyenteAllController(UpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, cod_cont):
+        try:
+            with transaction.atomic():             
+                nombre = request.data.get("nombreCompleto")
+                tipo_contrib = request.data.get("tipoContrib")
+                cod_lugar = request.data.get("codigoLugar")
+                cod_calle = request.data.get("codigoCalle")
+                direc_nro = request.data.get("direccNro", "")
+                direc_piso = request.data.get("direccPiso", "")
+                direc_mzna = request.data.get("direccMzna", "")
+                direc_lote = request.data.get("direccLote", "")
+                direc_dpto = request.data.get("direccDpto", "")
+                direc_adic = request.data.get("direccAdic", "")
+                fec_registro = date.today()
+                responsable = request.data.get("responsable")
+                motivo = request.data.get("observ", "")
+                profesion = request.data.get("profesion", "")
+                homonimia = request.data.get("homonimia", "")
+                cod_ant_contrib = request.data.get("codAntContrib", "")
+                sexo = request.data.get("sexo")
+                fec_nacimiento = request.data.get("fecNac", "1900-01-01 00:00:00")
+                cod_inmueble = request.data.get("codInmueble", "")
+                documentos = request.data.get("documentos")
+                telefonos = request.data.get("telefonos")
+                emails = request.data.get("emails")
+                naciones = request.data.get("naciones")
 
-        with transaction.atomic():             
-            nombre = request.data.get("nombreCompleto")
-            tipo_contrib = request.data.get("tipoContrib")
-            cod_lugar = request.data.get("codigoLugar")
-            cod_calle = request.data.get("codigoCalle")
-            direc_nro = request.data.get("direccNro", "")
-            direc_piso = request.data.get("direccPiso", "")
-            direc_mzna = request.data.get("direccMzna", "")
-            direc_lote = request.data.get("direccLote", "")
-            direc_dpto = request.data.get("direccDpto", "")
-            direc_adic = request.data.get("direccAdic", "")
-            fec_registro = date.today()
-            responsable = request.data.get("responsable")
-            motivo = request.data.get("observ", "")
-            profesion = request.data.get("profesion", "")
-            homonimia = request.data.get("homonimia", "")
-            cod_ant_contrib = request.data.get("codAntContrib", "")
-            sexo = request.data.get("sexo")
-            fec_nacimiento = request.data.get("fecNac", "1900-01-01 00:00:00")
-            cod_inmueble = request.data.get("codInmueble", "")
-            documentos = request.data.get("documentos")
-            telefonos = request.data.get("telefonos")
-            emails = request.data.get("emails")
-            naciones = request.data.get("naciones")
+                UpdateContribuyente(cod_cont, nombre, tipo_contrib, cod_lugar, cod_calle, direc_nro, direc_piso, direc_mzna, direc_lote, direc_dpto, direc_adic, fec_registro, responsable, motivo, profesion, homonimia, cod_ant_contrib, sexo, fec_nacimiento, cod_inmueble)      
 
-            UpdateContribuyente(cod_cont, nombre, tipo_contrib, cod_lugar, cod_calle, direc_nro, direc_piso, direc_mzna, direc_lote, direc_dpto, direc_adic, fec_registro, responsable, motivo, profesion, homonimia, cod_ant_contrib, sexo, fec_nacimiento, cod_inmueble)      
+                # ACTUALIZANDO DOCUMENTOS
 
-            # ACTUALIZANDO DOCUMENTOS
+                DeleteDocumentoContrib(cod_cont)
 
-            DeleteDocumentoContrib(cod_cont)
+                cadena_documentos = ""
 
-            cadena_documentos = ""
+                for documento in documentos:
+                    cadena_documentos += '{}~~{}~~NN~~'.format(documento["CodDoc"].strip(), documento["Número"].strip())
+                    
+                if len(cadena_documentos) > 0:
+                    EnviarDocumentoContrib(cod_cont, cadena_documentos)
 
-            for documento in documentos:
-                cadena_documentos += '{}~~{}~~NN~~'.format(documento["CodDoc"].strip(), documento["Número"].strip())
+                # ACTUALIZANDO TELEFONOS
+
+                DeleteTelefonoContrib(cod_cont)
+
+                cadena_telefonos = ""
+
+                for telefono in telefonos:
+                    cadena_telefonos += '{}~~{}~~NN~~'.format(telefono["Número"].strip(), telefono["TipTel"].strip())
+
+                if len(cadena_telefonos) > 0:
+                    EnviarTelefonoContrib(cod_cont, cadena_telefonos)
+
+                # ACTUALIZANDO EMAILS
+
+                DeleteDirElectContrib(cod_cont)
+
+                cadena_emails = ""
+
+                for email in emails:
+                    cadena_emails += '{}~~NN~~'.format(email["Dirección_Electrónica"].strip())
+
+                if len(cadena_emails) > 0:
+                    EnviarDirElectContrib(cod_cont, cadena_emails)
+
+                # ACTUALIZANDO NACIONALIDAD
+
+                DeleteNacionalidadContrib(cod_cont)
+
+                cadena_nacionalidad = ""
+
+                for nacionalidad in naciones:
+                    cadena_nacionalidad += '{}~~{}~~NN~~'.format(nacionalidad["Codigo"].strip(), nacionalidad["Gentilicio"].strip())
+
+                print(cadena_nacionalidad)
+                    
+                if len(cadena_nacionalidad) > 0:
+                    EnviarNacionalidadContrib(cod_cont, cadena_nacionalidad)
+
+                return Response(data={
+                            'message': 'Registro actualizado con exito',
+                            'content': None
+                        }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+                return Response(data={
+                    'message': e.args,
+                    'content': None
+                }, status=400)
+
+
                 
-            if len(cadena_documentos) > 0:
-                EnviarDocumentoContrib(cod_cont, cadena_documentos)
-
-            # ACTUALIZANDO TELEFONOS
-
-            DeleteTelefonoContrib(cod_cont)
-
-            cadena_telefonos = ""
-
-            for telefono in telefonos:
-                cadena_telefonos += '{}~~{}~~NN~~'.format(telefono["Número"].strip(), telefono["TipTel"].strip())
-
-            if len(cadena_telefonos) > 0:
-                EnviarTelefonoContrib(cod_cont, cadena_telefonos)
-
-            # ACTUALIZANDO EMAILS
-
-            DeleteDirElectContrib(cod_cont)
-
-            cadena_emails = ""
-
-            for email in emails:
-                cadena_emails += '{}~~NN~~'.format(email["Dirección_Electrónica"].strip())
-
-            if len(cadena_emails) > 0:
-                EnviarDirElectContrib(cod_cont, cadena_emails)
-
-             # ACTUALIZANDO NACIONALIDAD
-
-            DeleteNacionalidadContrib(cod_cont)
-
-            cadena_nacionalidad = ""
-
-            for nacionalidad in naciones:
-                cadena_nacionalidad += '{}~~{}~~NN~~'.format(nacionalidad["Codigo"].strip(), nacionalidad["Gentilicio"].strip())
-
-            print(cadena_nacionalidad)
-                
-            if len(cadena_nacionalidad) > 0:
-                EnviarNacionalidadContrib(cod_cont, cadena_nacionalidad)
-
-            return Response(data={
-                        'message': 'Registro actualizado con exito',
-                        'content': None
-                    }, status=status.HTTP_201_CREATED)
-
-
-              
