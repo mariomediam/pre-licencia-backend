@@ -1,6 +1,6 @@
 import string
 from django.db import connection
-from app_deploy.general.ejecutar import dictfetchall
+from app_deploy.general.ejecutar import dictfetchall, namedtuplefetchall
 
 def BuscarContribNombre(nombre_contrib):
     with connection.cursor() as cursor:
@@ -246,3 +246,71 @@ def EnviarNacionalidadContrib(cod_cont, cadena_vb):
         ,@CadenaVb        
         """
         cursor.execute(sql, [cod_cont, cadena_vb])            
+
+
+def InsertContribuyente(codCont, codAntContrib, nombre, tipoContrib, tipoDocum, codLugar, codCalle, direcNro, direcPiso, direcMzna, direcLote, direcDpto, direcAdic, fecRegistro, responsable, motivo, homonimia, profesion, sexo, fecNacimiento, placa, papeleta, codInmueble):
+     with connection.cursor() as cursor:
+        sql = """  
+        DECLARE @RC int
+        DECLARE @C001Cod_Cont char(11) = %s
+        DECLARE @C001Cod_Ant_Cont char(11) = %s
+        DECLARE @C001Nombre char(150) = %s
+        DECLARE @C001Tip_Cont char(2) = %s
+        DECLARE @Tip_Doc char(2) = %s
+        DECLARE @C001Cod_Lug char(9) = %s
+        DECLARE @C001Cod_Calle char(4) = %s
+        DECLARE @C001Numero char(4) = %s
+        DECLARE @C001Piso char(2) = %s
+        DECLARE @C001Manzana char(4) = %s
+        DECLARE @C001Lote char(4) = %s
+        DECLARE @C001Dpto char(4) = %s
+        DECLARE @C001Direc_Adic varchar(70) = %s
+        DECLARE @F001Fec_Reg datetime = %s
+        DECLARE @C001Responsable varchar(50) = %s
+        DECLARE @C001Motivo nvarchar(800) = %s
+        DECLARE @C001Homonimia char(1) = %s
+        DECLARE @C001Profesion char(5) = %s
+        DECLARE @C001Sexo char(1) = %s
+        DECLARE @D001FecNac datetime = %s
+        DECLARE @Placa varchar(11) = %s
+        DECLARE @Papeleta varchar(11) = %s
+        DECLARE @CondInmueble char(3) = %s
+
+        EXECUTE @RC = BDSIAT2.dbo.spInsertar_Contribuyente
+        @C001Cod_Cont
+        ,@C001Cod_Ant_Cont
+        ,@C001Nombre
+        ,@C001Tip_Cont
+        ,@Tip_Doc
+        ,@C001Cod_Lug
+        ,@C001Cod_Calle
+        ,@C001Numero
+        ,@C001Piso
+        ,@C001Manzana
+        ,@C001Lote
+        ,@C001Dpto
+        ,@C001Direc_Adic
+        ,@F001Fec_Reg
+        ,@C001Responsable
+        ,@C001Motivo
+        ,@C001Homonimia
+        ,@C001Profesion
+        ,@C001Sexo
+        ,@D001FecNac
+        ,@Placa
+        ,@Papeleta
+        ,@CondInmueble
+        """
+        cursor.execute(sql, [codCont, codAntContrib, nombre, tipoContrib, tipoDocum, codLugar, codCalle, direcNro, direcPiso, direcMzna, direcLote, direcDpto, direcAdic, fecRegistro, responsable, motivo, homonimia, profesion, sexo, fecNacimiento, placa, papeleta, codInmueble])
+
+def generaCorrelativoCodContribuyente():    
+    with connection.cursor() as cursor:                        
+        sql = """
+        SET NOCOUNT ON
+        DECLARE @Codigo char(11)
+        EXEC BDSIAT2.dbo.sp_InsertaCodContribuyente @Codigo = @Codigo OUTPUT;        
+        SELECT @Codigo as Codigo;
+        """
+
+        cursor.execute(sql)
+        return dictfetchall(cursor)[0]
