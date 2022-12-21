@@ -6,7 +6,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status, mixins
 from datetime import date
-from app_contribuyente.contribuyente import BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo, ConsultaTelefonoCont, ConsultaDocumentoCont, ConsultaDirElectCont, ConsultaNacionalidadCont, separaNombre, ConsultaCallesGeneral, ListarTipDoc, ConsultaDocumentoTipoNro, ConsultaTiposTelefono, ListarTipoNacion, UpdateContribuyente, DeleteDocumentoContrib, EnviarDocumentoContrib, DeleteTelefonoContrib, EnviarTelefonoContrib, DeleteDirElectContrib, EnviarDirElectContrib, DeleteNacionalidadContrib, EnviarNacionalidadContrib, InsertContribuyente, generaCorrelativoCodContribuyente
+from app_contribuyente.contribuyente import *
+# BuscarContribNombre, BuscarContribCodigo, ConsultaContribCodigo, ConsultaDocumentoNumero, ListarTipoContribuyente, ConsultaTipoLugar, ConsultaSectores, ConsultaLugaresGeneral, ConsultaTipLugCodigo, ConsultaTelefonoCont, ConsultaDocumentoCont, ConsultaDirElectCont, ConsultaNacionalidadCont, separaNombre, ConsultaCallesGeneral, ListarTipDoc, ConsultaDocumentoTipoNro, ConsultaTiposTelefono, ListarTipoNacion, UpdateContribuyente, DeleteDocumentoContrib, EnviarDocumentoContrib, DeleteTelefonoContrib, EnviarTelefonoContrib, DeleteDirElectContrib, EnviarDirElectContrib, DeleteNacionalidadContrib, EnviarNacionalidadContrib, InsertContribuyente, generaCorrelativoCodContribuyente
 
 from app_deploy.general.paginations import CustomPagination
 
@@ -598,3 +599,24 @@ class generaCorrelativoCodContribuyenteController(ListCreateAPIView):
                 "message":None,
                 "content": cod_contribuyente
             }, status=status.HTTP_200_OK)
+
+
+class VerificaNombreContribuyenteController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request):
+        try:                         
+            nombre_contrib = request.data.get("nombreCompleto")
+            tipo_contrib = request.data.get("tipoContrib")
+
+            valida_nombre = VerificaNombreContribuyente(tipo_contrib, nombre_contrib)            
+
+            return Response(data={
+                        'message': None,
+                        'content': valida_nombre
+                    }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+                return Response(data={
+                    'message': e.args,
+                    'content': None
+                }, status=400)

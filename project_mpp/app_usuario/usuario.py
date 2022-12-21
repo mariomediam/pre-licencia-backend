@@ -3,6 +3,7 @@ from app_deploy.general.ejecutar import dictfetchall
 
 def login(usuario, password, sistema='36'):
     with connection.cursor() as cursor:
+        print("************************* aqui **********************")
         cursor.execute('EXEC GENERAL.dbo.S07ValidarUsuario2 %s, %s, %s', [usuario, password, sistema])
         return dictfetchall(cursor)        
 

@@ -314,3 +314,23 @@ def generaCorrelativoCodContribuyente():
 
         cursor.execute(sql)
         return dictfetchall(cursor)[0]
+
+def VerificaNombreContribuyente(tipo_contrib, nombre_contrib):    
+    with connection.cursor() as cursor:                        
+        sql = """
+        SET NOCOUNT ON
+        DECLARE @RC int
+        DECLARE @TipCont char(2) = %s
+        DECLARE @Cadena varchar(100) = %s
+        DECLARE @Var char(1)
+
+        EXECUTE @RC = BDSIAT2.dbo.spmVerificar_Cadena_Cont
+        @TipCont
+        ,@Cadena
+        ,@Var OUTPUT
+        
+        SELECT @Var AS Var
+        """
+
+        cursor.execute(sql, [tipo_contrib, nombre_contrib])
+        return dictfetchall(cursor)[0]        
