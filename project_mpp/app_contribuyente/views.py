@@ -620,3 +620,24 @@ class VerificaNombreContribuyenteController(RetrieveAPIView):
                     'message': e.args,
                     'content': None
                 }, status=400)
+
+
+class BuscarContribDocumentoTipoNroController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        tipo = request.query_params.get('tipo', '')
+        numero = request.query_params.get('numero', '')                
+
+        if len(tipo) > 0 and len(numero) > 0:
+            documento_nro = BuscarContribDocumentoTipoNro(tipo, numero)
+        
+            return Response(data={
+                        "message":None,
+                        "content":documento_nro
+                    }, status=status.HTTP_200_OK)        
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar tipo de documento y numero de documento"
+                }, status=status.HTTP_404_NOT_FOUND)           

@@ -24,11 +24,13 @@ from .views import (BuscarContribNombreController,
     UpdateContribuyenteAllController,
     InsertContribuyenteAllController,
     generaCorrelativoCodContribuyenteController,
-    VerificaNombreContribuyenteController)
+    VerificaNombreContribuyenteController,
+    BuscarContribDocumentoTipoNroController)
 
 urlpatterns = [
     path('buscar-contribuyente-nombre', BuscarContribNombreController.as_view()),
     path('buscar-contribuyente-codigo', BuscarContribCodigoController.as_view()),
+    path('buscar-contribuyente-documento', BuscarContribDocumentoTipoNroController.as_view()),
     path('consultar-contribuyente-codigo', ConsultaContribCodigoController.as_view()),
     path('consultar-documento-numero', ConsultaDocumentoNumeroController.as_view()),
     path('tipo-contribuyente', ListarTipoContribuyenteController.as_view()),

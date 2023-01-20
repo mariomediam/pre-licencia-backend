@@ -13,6 +13,71 @@ def BuscarContribCodigo(codigo_contrib):
         cursor.execute('EXEC BDSIAT2.dbo.sp001Contribuyente_Codigo %s', [codigo_contrib])
         return dictfetchall(cursor)         
 
+def BuscarContribDocumentoTipoNro(codigo_docum, numero_docum):
+    with connection.cursor() as cursor:
+        sql = """   
+        SET NOCOUNT ON
+        USE BDSIAT2        
+
+        DECLARE @C002Cod_Doc char(2), @C002Num_Doc char(11)
+
+        select @C002Cod_Doc = %s, @C002Num_Doc = %s
+
+        Select C001Cod_Cont as Código, C001Nombre as Identificación, C001Homonimia as Homonimo, Isnull(C005Nombre,' ') as Lugar,
+            isnull(C007Nombre,'') as Calle, C001Numero as Número, C001piso as Piso, C001manzana as Mza, C001Lote as Lote,
+            C001Dpto as Dpto, C004Nombre as TipoCont, C001Cod_Lug, C001Cod_Calle, C005Sector, C078Nombre,
+            C001Tip_Cont, C001Direc_Adic, C001Cod_Ant_Cont as CodAntiguo,
+            convert(varchar(120), RTRIM(C005Nombre) + ' - ' +
+            CASE C001Cod_Calle
+                WHEN '' THEN ''
+                ELSE ' ' + ISNULL(RTRIM(C007Nombre), '')
+            END
+            +
+            CASE C001Numero
+                WHEN '' THEN ''
+                WHEN '0' THEN ''
+                ELSE ' - Num. ' + RTRIM(CONVERT(VARCHAR(5),C001Numero))
+            END
+            +
+            CASE C001Manzana
+                WHEN '' THEN ''
+                ELSE ' Mza. ' + RTRIM(C001Manzana)
+            END
+            +
+            CASE C001Lote
+                WHEN '' THEN ''
+                ELSE ' Lote ' + RTRIM(C001Lote)
+            END
+            +
+            CASE C001Piso
+                WHEN '' THEN ''
+                ELSE ' Piso ' + RTRIM(C001Piso)
+            END
+            +
+            CASE C001Dpto
+                WHEN '' THEN ''
+                ELSE ' Dpto ' + RTRIM(C001Dpto)
+            END
+            + '  - ' + RTRIM(C005Departamento) + '  ' +RTRIM(C005Provincia) + '  ' + RTRIM(C005Distrito)) As Dirección,
+            F001Fec_Reg,C001Responsable, C001Motivo, C001Direc_Adic, C005Provincia, C005Distrito,C001Sexo,D001FecNac, C138CodNacion, C163Gentilicio1
+            , ISNULL(RTRIM(C001CondInmueble),'') AS 'C001CondInmueble'
+        from (SELECT C002Cod_Cont
+            FROM T002Doc_Cont 
+            WHERE C002Cod_Doc = @C002Cod_Doc 
+            AND C002Num_Doc = @C002Num_Doc 
+            GROUP BY C002Cod_Cont) AS TDocCont
+        inner join T001Contribuyente on TDocCont.C002Cod_Cont = T001Contribuyente.C001Cod_Cont 
+        left  join T005Lugares   on  C001Cod_Lug=C005Cod_Lug
+        left join T078Sectores on C078Cod_Sector=C005Sector
+        left join T007Calles on C001Cod_Calle=C007Cod_Calle
+        left join T004Tip_Cont on C001Tip_Cont=C004Tip_Cont
+        left join T138ContNacion on C001Cod_Cont=C138CodCont
+        left join T163Nacion on C138CodNacion = C163CodNacion
+        order by C001Nombre
+        """
+        cursor.execute(sql, [codigo_docum, numero_docum])
+        return dictfetchall(cursor)    
+
 def ConsultaContribCodigo(codigo_contrib):
     with connection.cursor() as cursor:
         cursor.execute('EXEC BDSIAT2.dbo.spConsulta_Contribuyente_Codigo %s', [codigo_contrib])
