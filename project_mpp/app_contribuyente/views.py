@@ -187,16 +187,21 @@ class BuscarContribPaginationController(ListAPIView,mixins.ListModelMixin):
 
         nombre_contrib = request.query_params.get('nombre')        
         codigo_contrib = request.query_params.get('codigo')
+        documento = request.query_params.get('documento')
+        
+        
 
-        if nombre_contrib or codigo_contrib:
-
-            contribuyente = BuscarContribCodigo(codigo_contrib) if codigo_contrib else  BuscarContribNombre(nombre_contrib)
+        if nombre_contrib or codigo_contrib or documento:
+            if documento:                
+                contribuyente = BuscarContribDocumentoTipoNro(documento[0:2], documento[3:14])
+            else:
+                contribuyente = BuscarContribCodigo(codigo_contrib) if codigo_contrib else  BuscarContribNombre(nombre_contrib) 
               
             return self.get_paginated_response(self.paginate_queryset(contribuyente))        
         
         else:
              return Response(data={
-                    "message":"Debe de ingresar nombre o código a buscar"
+                    "message":"Debe de ingresar nombre, código o documento a buscar"
                 }, status=status.HTTP_404_NOT_FOUND)
         
 class ConsultaTelefonoContController(RetrieveAPIView):    
