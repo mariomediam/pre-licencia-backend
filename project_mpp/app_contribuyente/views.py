@@ -646,3 +646,29 @@ class BuscarContribDocumentoTipoNroController(RetrieveAPIView):
              return Response(data={
                     "message":"Debe de ingresar tipo de documento y numero de documento"
                 }, status=status.HTTP_404_NOT_FOUND)           
+
+
+
+
+class AgregarContribDocumentoController(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request):
+        try:
+
+            codigo_contrib = request.data.get("codContrib")
+            codigo_docum = request.data.get("codDocum")
+            numero_docum = request.data.get("numDocum")
+
+            AgregarContribDocumento(codigo_contrib, codigo_docum, numero_docum)            
+
+            return Response(data={
+                        'message': 'Documento agregado con exito',
+                        'content': None
+                    }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+                return Response(data={
+                    'message': e.args,
+                    'content': None
+                }, status=400)                

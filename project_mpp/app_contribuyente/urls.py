@@ -25,7 +25,8 @@ from .views import (BuscarContribNombreController,
     InsertContribuyenteAllController,
     generaCorrelativoCodContribuyenteController,
     VerificaNombreContribuyenteController,
-    BuscarContribDocumentoTipoNroController)
+    BuscarContribDocumentoTipoNroController,
+    AgregarContribDocumentoController)
 
 urlpatterns = [
     path('buscar-contribuyente-nombre', BuscarContribNombreController.as_view()),
@@ -54,4 +55,5 @@ urlpatterns = [
     path('insertar-all/<str:cod_cont>', InsertContribuyenteAllController.as_view()),
     path('generar-correlativo', generaCorrelativoCodContribuyenteController.as_view()),
     path('verifica-contribuyente-nombre', VerificaNombreContribuyenteController.as_view()),
+    path('insertar-documento', AgregarContribDocumentoController.as_view()),
 ]

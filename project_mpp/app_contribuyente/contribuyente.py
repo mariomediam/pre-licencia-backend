@@ -399,3 +399,46 @@ def VerificaNombreContribuyente(tipo_contrib, nombre_contrib):
 
         cursor.execute(sql, [tipo_contrib, nombre_contrib])
         return dictfetchall(cursor)[0]        
+
+def AgregarContribDocumento(codigo_contrib, codigo_docum, numero_docum):
+    with connection.cursor() as cursor:
+        sql = """   
+        SET NOCOUNT ON
+        USE BDSIAT2        
+
+        declare @C002Cod_Cont char(11), @C002Cod_Doc char(2), @C002Num_Doc char(11)
+
+        SELECT @C002Cod_Cont = %s, @C002Cod_Doc = %s, @C002Num_Doc = %s
+
+        DECLARE @ErrMsg nvarchar(4000), @ErrSeverity int
+
+        BEGIN TRY
+
+            BEGIN TRANSACTION
+
+            DELETE FROM T002Doc_Cont
+            WHERE C002Cod_Doc = @C002Cod_Doc 
+            AND C002Num_Doc = @C002Num_Doc 
+
+            INSERT INTO T002Doc_Cont (C002Cod_Cont, C002Cod_Doc, C002Num_Doc)
+            VALUES (@C002Cod_Cont, @C002Cod_Doc, @C002Num_Doc)
+
+            COMMIT TRANSACTION
+
+        END TRY
+        BEGIN CATCH
+                    
+            SELECT	@ErrMsg = ERROR_MESSAGE() + CHAR(13) + 'Linea: ' + CONVERT(VARCHAR(100),ERROR_LINE()) ,
+                    @ErrSeverity = ERROR_SEVERITY()
+                    
+            IF @@TRANCOUNT > 0
+            BEGIN	   
+            ROLLBACK TRANSACTION
+            END		
+                
+            RAISERROR(@ErrMsg, @ErrSeverity, -1)
+                
+        END CATCH
+        """
+        cursor.execute(sql, [codigo_contrib, codigo_docum, numero_docum])
+        
