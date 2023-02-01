@@ -54,3 +54,18 @@ def ImprimirLicencia(c_licenc, f_licencia_origen):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIAC.dbo.S02ImprimirLicencia %s, %s', [c_licenc, f_licencia_origen])
         return dictfetchall(cursor)          
+
+def BuscarGiroNegocio(area, xml_giros, area_mayor30):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIAC.dbo.S02BuscarGiroNegocio %s, %s, %s', [area, xml_giros, area_mayor30])
+        return dictfetchall(cursor)          
+
+def AgregarSol_GiroNegCiiu(c_solici, C_GiroNeg, c_usuari_login):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIAC.dbo.S02AgregarSol_GiroNegCiiu %s, %s, %s', [c_solici, C_GiroNeg, c_usuari_login])
+
+def SeleccionarSolicitud(c_solici):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIAC.dbo.S02SeleccionarSolicitud %s', [c_solici])
+        return dictfetchall(cursor)     
+

@@ -32,6 +32,9 @@ from .views import (PrecalificacionController,
                 AgregarLicencArchivoController,
                 licenciaPreviewFile,
                 licenciaDownloadFile,
+                BuscarGiroNegocioController,
+                AgregarSol_GiroNegCiiuController,
+                SeleccionarSolicitudController,
                 )
 
 urlpatterns = [
@@ -68,4 +71,7 @@ urlpatterns = [
     path('prueba', PrecalificacionPruebaController.as_view()),
     path('view/licencia/<int:id>',licenciaPreviewFile),    
     path('download/licencia/<int:id>',licenciaDownloadFile),
+    path('buscar-giro-area', BuscarGiroNegocioController.as_view()),
+    path('agregar-giro-solicitud/<str:id>', AgregarSol_GiroNegCiiuController.as_view()),
+    path('seleccionar-solicitud', SeleccionarSolicitudController.as_view()),    
 ]

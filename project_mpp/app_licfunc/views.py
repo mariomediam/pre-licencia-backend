@@ -15,7 +15,7 @@ from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from .models import GiroNegocioModel, LicencArchivoModel, PrecalificacionModel, EvalUsuModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalEvaluacionModel, PrecalDocumentacionModel, SectoresLicModel, TipoEvalModel, PrecalTipoDocumModel, TipoLicenciaModel, PrecalFirmaArchivoModel, LicencSolModel
 from .serializers import LicencArchivoSerializer, PrecalificacionSerializer, EvalUsuSerializer, PrecalifUserEstadoSerializer, PrecalifContribSerializer, PrecalifGiroNegSerializer, PrecalifCuestionarioSerializer, PrecalEvaluacionSerializer, PrecalEvaluacionTipoSerializer, PrecalDocumentacionSerializer, ListDocumentacionSerializer, TipoEvalSerializer, PrecalTipoDocumSerializer, UploadFileSerializer, TipoLicenciaSerializer, SectoresLicSerializer, PrecalRequisitoArchivoModel, GiroNegocioSerializer, LicencArchivoUploadSerializer
-from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo, BuscarLicencGen, BuscarDatosTrabajador, BuscarTipoTramite, ImprimirLicencia
+from app_licfunc.licfunc import TipoTramitePorLicencia, BuscarRequisitoArchivo, BuscarLicencGen, BuscarDatosTrabajador, BuscarTipoTramite, ImprimirLicencia, BuscarGiroNegocio, AgregarSol_GiroNegCiiu, SeleccionarSolicitud
 from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.descargar import download_file
 from app_deploy.general.cargar import upload_file
@@ -1151,3 +1151,86 @@ def licenciaDownloadFile(request, id=''):
     licencia = LicencArchivoModel.objects.get(pk=id)
     ruta_file = 'licenciaFuncionamiento/{}.pdf'.format(id)    
     return download_file(request, ruta_file, "Licencia_{}".format(licencia.licencNro))        
+
+
+class BuscarGiroNegocioController(RetrieveAPIView): 
+    permission_classes = [IsAuthenticated]   
+    
+    def get(self, request: Request):
+        
+        area = request.query_params.get('area')
+        xml_giros = request.query_params.get('giros')
+        area_mayor30 = request.query_params.get('mayor30')
+
+        if area:
+            giros_negocios = BuscarGiroNegocio(area, xml_giros, area_mayor30)
+
+            return Response(data = {
+            "message":None,
+            "content":giros_negocios
+            }, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar área del negocio"
+                }, status=status.HTTP_404_NOT_FOUND)    
+
+
+class AgregarSol_GiroNegCiiuController(CreateAPIView):
+    permission_classes = [IsAuthenticated]   
+
+    def post(self, request: Request, id=''):                
+        giros_solicitud = request.data.get("giros")
+        login = request.data.get("login")
+
+        if id and giros_solicitud and login:
+            try:
+                with transaction.atomic():                      
+                    for giro in giros_solicitud:
+                        AgregarSol_GiroNegCiiu(id, giro, login)
+
+                    return Response(data = {
+                    "message": "Giros ingresados correctamente",
+                    "content": ""
+                    }, status=status.HTTP_200_OK)
+        
+            except Exception as e:
+                    return Response(data={
+                        'message': e.args,
+                        'content': None
+                    }, status=400)
+        else:
+            return Response(data={
+                'message': 'Debe ingresar solicitud, giros y login',
+                'content': None
+            }, status=400)     
+
+
+class SeleccionarSolicitudController(RetrieveAPIView): 
+    permission_classes = [IsAuthenticated]   
+    
+    def get(self, request: Request):
+        
+        c_solici = request.query_params.get('solicitud')
+
+        if c_solici:
+            solicitud = SeleccionarSolicitud(c_solici)
+
+            if len(solicitud) > 0:
+                solicitud = solicitud[0]
+            else:
+                solicitud = {}
+
+            return Response(data = {
+            "message":None,
+            "content":solicitud
+            }, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar solicitud"
+                }, status=status.HTTP_404_NOT_FOUND)
+
+      
+        
+        
