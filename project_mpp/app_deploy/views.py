@@ -1,4 +1,5 @@
 from django.shortcuts import render
+import requests
 from rest_framework import serializers
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
@@ -13,7 +14,11 @@ import os
 from django.http.response import HttpResponse
 from django.shortcuts import render# Define function to download pdf file using template
 from django.conf import settings
+from dotenv import load_dotenv
 
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+
+load_dotenv(dotenv_path)
 
 def download_file(request, filename=''):
     if filename != '':
@@ -100,3 +105,21 @@ def downloadFileMedia(request, app='', filename=''):
     else:
         # Load the template
         return render(request, 'file.html')
+    
+
+class BuscarReniecDNIController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        numero = request.query_params.get('numero', '')                
+        responsable = request.query_params.get('responsable', '')                
+
+        if len(numero) == 8 and len(responsable) > 0:
+            ciudadano_reniec = requests.get("https://ws5.pide.gob.pe/Rest/Reniec/Consultar?nuDniConsulta={}&nuDniUsuario={}&nuRucUsuario={}&password={}&out=json".format(numero, os.environ.get('RENIEC_NUDNIUSUARIO'), os.environ.get('RENIEC_NURUCUSUARIO'), os.environ.get('RENIEC_PASSWORD'))).json()
+            
+            return Response(data=ciudadano_reniec, status=status.HTTP_200_OK)        
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar DNI valido y responsable de consulta"
+                }, status=status.HTTP_404_NOT_FOUND)      
