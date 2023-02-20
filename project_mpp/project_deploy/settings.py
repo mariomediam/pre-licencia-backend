@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'app_licfunc',
     'app_contribuyente',
     "rest_framework",
-    'corsheaders',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [

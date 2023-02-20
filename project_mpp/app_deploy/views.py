@@ -15,6 +15,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import render# Define function to download pdf file using template
 from django.conf import settings
 from dotenv import load_dotenv
+from .general.consultasReniec import AgregarConsultaReniec, ValidaAccesoConsultaReniec
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 
@@ -113,13 +114,46 @@ class BuscarReniecDNIController(RetrieveAPIView):
     def get(self, request: Request):
         
         numero = request.query_params.get('numero', '')                
-        responsable = request.query_params.get('responsable', '')                
+        responsable = request.user.username
 
-        if len(numero) == 8 and len(responsable) > 0:
-            ciudadano_reniec = requests.get("https://ws5.pide.gob.pe/Rest/Reniec/Consultar?nuDniConsulta={}&nuDniUsuario={}&nuRucUsuario={}&password={}&out=json".format(numero, os.environ.get('RENIEC_NUDNIUSUARIO'), os.environ.get('RENIEC_NURUCUSUARIO'), os.environ.get('RENIEC_PASSWORD'))).json()
-            
-            return Response(data=ciudadano_reniec, status=status.HTTP_200_OK)        
+        valida_acceso = ValidaAccesoConsultaReniec(responsable)
+        if valida_acceso["acceso"] == True:
+
+            if len(numero) == 8 and len(responsable) > 0:
+                ap_primer = None
+                ap_segundo = None
+                direccion = None
+                estado_civil = None
+                foto = None
+                pre_nombres = None
+                restriccion = None
+                ubigeo = None
+
+                ciudadano_reniec = requests.get("https://ws5.pide.gob.pe/Rest/Reniec/Consultar?nuDniConsulta={}&nuDniUsuario={}&nuRucUsuario={}&password={}&out=json".format(numero, os.environ.get('RENIEC_NUDNIUSUARIO'), os.environ.get('RENIEC_NURUCUSUARIO'), os.environ.get('RENIEC_PASSWORD'))).json()
+                
+                co_resultado = ciudadano_reniec["consultarResponse"]["return"]["coResultado"]    
+
+                if (co_resultado == "0000"):
+                    datos_persona = ciudadano_reniec["consultarResponse"]["return"]["datosPersona"]                
+                    ap_primer = datos_persona["apPrimer"]                
+                    ap_segundo = datos_persona["apSegundo"]
+                    direccion = datos_persona["direccion"]
+                    estado_civil = datos_persona["estadoCivil"]
+                    foto = datos_persona["foto"]
+                    pre_nombres = datos_persona["prenombres"]
+                    restriccion = datos_persona["restriccion"]
+                    ubigeo = datos_persona["ubigeo"]
+                
+                de_resultado = ciudadano_reniec["consultarResponse"]["return"]["deResultado"]
+
+                AgregarConsultaReniec(responsable, numero, co_resultado, ap_primer, ap_segundo, direccion, estado_civil, foto, pre_nombres,restriccion, ubigeo, de_resultado)
+                
+                return Response(data=ciudadano_reniec, status=status.HTTP_200_OK)        
+            else:
+                return Response(data={
+                        "message":"Debe de ingresar DNI valido y responsable de consulta"
+                    }, status=status.HTTP_404_NOT_FOUND) 
         else:
-             return Response(data={
-                    "message":"Debe de ingresar DNI valido y responsable de consulta"
-                }, status=status.HTTP_404_NOT_FOUND)      
+                return Response(data={
+                        "message":"No tiene acceso para realizar consultas a RENIEC"
+                    }, status=status.HTTP_404_NOT_FOUND)     
