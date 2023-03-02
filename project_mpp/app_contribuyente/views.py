@@ -478,9 +478,7 @@ class UpdateContribuyenteAllController(UpdateAPIView):
                 cadena_nacionalidad = ""
 
                 for nacionalidad in naciones:
-                    cadena_nacionalidad += '{}~~{}~~NN~~'.format(nacionalidad["Codigo"].strip(), nacionalidad["Gentilicio"].strip())
-
-                print(cadena_nacionalidad)
+                    cadena_nacionalidad += '{}~~{}~~NN~~'.format(nacionalidad["Codigo"].strip(), nacionalidad["Gentilicio"].strip())                
                     
                 if len(cadena_nacionalidad) > 0:
                     EnviarNacionalidadContrib(cod_cont, cadena_nacionalidad)
