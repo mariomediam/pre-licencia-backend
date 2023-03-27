@@ -157,3 +157,82 @@ class BuscarReniecDNIController(RetrieveAPIView):
                 return Response(data={
                         "message":"No tiene acceso para realizar consultas a RENIEC"
                     }, status=status.HTTP_404_NOT_FOUND)     
+        
+class BuscarSunatRUCController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        numero = request.query_params.get('numero', '')                
+        responsable = request.user.username
+
+        if len(numero) == 11 and len(responsable) > 0:
+            # ap_primer = None
+            # ap_segundo = None
+            # direccion = None
+            # estado_civil = None
+            # foto = None
+            # pre_nombres = None
+            # restriccion = None
+            # ubigeo = None
+
+            data_contribuyente = requests.get("https://ws3.pide.gob.pe/Rest/Sunat/DatosPrincipales?numruc={}&out=json".format(numero)).json()
+            contribuyente = data_contribuyente["list"]["multiRef"]
+
+            existe = False
+            ddp_numruc = ""
+            ddp_nombre = ""
+            ddp_nomzon = ""
+            ddp_nomvia = ""
+            ddp_numer1 = ""
+            ddp_refer1 = ""
+            desc_tipvia = ""
+            desc_dep = ""
+            desc_prov = ""
+            desc_dist = ""
+            desc_tpoemp = ""
+            desc_identi = ""
+            esActivo = False
+            esHabido = False
+
+            if "$" in contribuyente["ddp_numruc"]: 
+                existe = True           
+                ddp_numruc = contribuyente["ddp_numruc"]["$"]
+                ddp_nombre = contribuyente["ddp_nombre"]["$"]
+                ddp_nomzon = contribuyente["ddp_nomzon"]["$"]
+                ddp_nomvia = contribuyente["ddp_nomvia"]["$"]
+                ddp_numer1 = contribuyente["ddp_numer1"]["$"]
+                ddp_refer1 = contribuyente["ddp_refer1"]["$"]
+                desc_tipvia = contribuyente["desc_tipvia"]["$"]
+                desc_dep = contribuyente["desc_dep"]["$"]
+                desc_prov = contribuyente["desc_prov"]["$"]
+                desc_dist = contribuyente["desc_dist"]["$"]
+                desc_tpoemp = contribuyente["desc_tpoemp"]["$"]
+                desc_identi = contribuyente["desc_identi"]["$"]
+                esActivo = contribuyente["esActivo"]["$"]
+                esHabido = contribuyente["esHabido"]["$"]
+            
+            contribuyente_json = {
+                "existe" : existe,
+                "ddp_numruc" : ddp_numruc,
+                "ddp_nombre" : ddp_nombre,
+                "ddp_nomzon" : ddp_nomzon,
+                "ddp_nomvia" : ddp_nomvia,
+                "ddp_numer1" : ddp_numer1,
+                "ddp_refer1" : ddp_refer1,
+                "desc_tipvia" : desc_tipvia,
+                "desc_dep" : desc_dep,
+                "desc_prov" : desc_prov,
+                "desc_dist" : desc_dist,
+                "desc_tpoemp" : desc_tpoemp,
+                "desc_identi" : desc_identi,
+                "esActivo" : esActivo,
+                "esHabido" : esHabido
+            }
+            
+            return Response(data=contribuyente_json, status=status.HTTP_200_OK)        
+        else:
+            return Response(data={
+                    "message":"Debe de ingresar RUC valido y responsable de consulta"
+                }, status=status.HTTP_404_NOT_FOUND) 
+      
