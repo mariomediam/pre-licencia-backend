@@ -167,16 +167,8 @@ class BuscarSunatRUCController(RetrieveAPIView):
         responsable = request.user.username
 
         if len(numero) == 11 and len(responsable) > 0:
-            # ap_primer = None
-            # ap_segundo = None
-            # direccion = None
-            # estado_civil = None
-            # foto = None
-            # pre_nombres = None
-            # restriccion = None
-            # ubigeo = None
 
-            data_contribuyente = requests.get("https://ws3.pide.gob.pe/Rest/Sunat/DatosPrincipales?numruc={}&out=json".format(numero)).json()
+            data_contribuyente = requests.get("https://ws3.pide.gob.pe/Rest/Sunat/DatosPrincipales?numruc={}&out=json".format(numero)).json()            
             contribuyente = data_contribuyente["list"]["multiRef"]
 
             existe = False
@@ -197,20 +189,20 @@ class BuscarSunatRUCController(RetrieveAPIView):
 
             if "$" in contribuyente["ddp_numruc"]: 
                 existe = True           
-                ddp_numruc = contribuyente["ddp_numruc"]["$"]
-                ddp_nombre = contribuyente["ddp_nombre"]["$"]
-                ddp_nomzon = contribuyente["ddp_nomzon"]["$"]
-                ddp_nomvia = contribuyente["ddp_nomvia"]["$"]
-                ddp_numer1 = contribuyente["ddp_numer1"]["$"]
-                ddp_refer1 = contribuyente["ddp_refer1"]["$"]
-                desc_tipvia = contribuyente["desc_tipvia"]["$"]
-                desc_dep = contribuyente["desc_dep"]["$"]
-                desc_prov = contribuyente["desc_prov"]["$"]
-                desc_dist = contribuyente["desc_dist"]["$"]
-                desc_tpoemp = contribuyente["desc_tpoemp"]["$"]
-                desc_identi = contribuyente["desc_identi"]["$"]
-                esActivo = contribuyente["esActivo"]["$"]
-                esHabido = contribuyente["esHabido"]["$"]
+                ddp_numruc = contribuyente["ddp_numruc"].get("$", "")
+                ddp_nombre = contribuyente["ddp_nombre"].get("$", "")
+                ddp_nomzon = contribuyente["ddp_nomzon"].get("$", "")
+                ddp_nomvia = contribuyente["ddp_nomvia"].get("$", "")
+                ddp_numer1 = contribuyente["ddp_numer1"].get("$", "")
+                ddp_refer1 = contribuyente["ddp_refer1"].get("$", "")
+                desc_tipvia = contribuyente["desc_tipvia"].get("$", "")
+                desc_dep = contribuyente["desc_dep"].get("$", "")
+                desc_prov = contribuyente["desc_prov"].get("$", "")
+                desc_dist = contribuyente["desc_dist"].get("$", "")
+                desc_tpoemp = contribuyente["desc_tpoemp"].get("$", "")
+                desc_identi = contribuyente["desc_identi"].get("$", "")
+                esActivo = contribuyente["esActivo"].get("$", False)
+                esHabido = contribuyente["esHabido"].get("$", False)
             
             contribuyente_json = {
                 "existe" : existe,
