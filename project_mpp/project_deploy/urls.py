@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/seguridad/', include('app_usuario.urls')),
     path('api/licfunc/', include('app_licfunc.urls')),
     path('api/contribuyente/', include('app_contribuyente.urls')),
+    path('api/rrhh/', include('app_rrhh.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

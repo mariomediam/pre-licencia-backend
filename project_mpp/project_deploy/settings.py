@@ -14,6 +14,8 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+import pdfkit
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -51,6 +53,7 @@ INSTALLED_APPS = [
     'app_usuario',
     'app_licfunc',
     'app_contribuyente',
+    'app_rrhh',
     "rest_framework",
     'corsheaders'
 ]
@@ -202,3 +205,6 @@ RECIPIENT_ADDRESS= environ.get('RECIPIENT_ADDRESS')
 
 # FILE_UPLOAD_PERMISSIONS = 770
 # FILE_UPLOAD_DIRECTORY_PERMISSIONS =770
+
+WKHTMLTOPDF_CMD = 'C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe'
+PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
