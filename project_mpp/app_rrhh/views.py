@@ -5,14 +5,14 @@ from django.shortcuts import render
 from django.template.loader import get_template
 
 from rest_framework import status
-from rest_framework.generics import UpdateAPIView
+from rest_framework.generics import UpdateAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.request import Request
 
 from dotenv import load_dotenv
 
-from app_rrhh.rrhh import ListaPlanillaDetalle
+from app_rrhh.rrhh import ListaPlanillaDetalle, SelectPlanillaBoleta
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -65,3 +65,26 @@ class GenerateBoletasPdfController(UpdateAPIView):
             return Response(data={
                 "message":"Error al generar boleta"
                 }, status=status.HTTP_400_BAD_REQUEST)  
+        
+
+# Create your views here.
+class SelectPlanillaBoletaController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        anio = request.query_params.get('anio')
+        mes = request.query_params.get('mes')
+
+        if anio and mes:            
+            planillas = SelectPlanillaBoleta(anio, mes)
+            
+            return Response(data = {
+            "message":None,
+            "content":planillas
+            }, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar año y mes a consultar"
+                }, status=status.HTTP_404_NOT_FOUND)        
