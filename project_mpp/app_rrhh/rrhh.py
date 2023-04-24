@@ -22,3 +22,13 @@ def SelectPlanillaBoleta(anio, mes):
         return dictfetchall(cursor)   
     
 
+def ListaPlanillaResumen(anio, mes, tipo, numero):
+    with connection.cursor() as cursor:
+        sql = """   
+        SET NOCOUNT ON;
+        EXEC SIAM.dbo.ListaPlanillaResumen %s, %s, %s, %s;
+        """
+        cursor.execute(sql, [anio, mes, tipo, numero])        
+        return dictfetchall(cursor)   
+    
+

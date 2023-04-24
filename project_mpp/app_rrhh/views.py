@@ -12,7 +12,7 @@ from rest_framework.request import Request
 
 from dotenv import load_dotenv
 
-from app_rrhh.rrhh import ListaPlanillaDetalle, SelectPlanillaBoleta
+from app_rrhh.rrhh import ListaPlanillaDetalle, SelectPlanillaBoleta, ListaPlanillaResumen
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(dotenv_path)
@@ -88,3 +88,28 @@ class SelectPlanillaBoletaController(RetrieveAPIView):
              return Response(data={
                     "message":"Debe de ingresar año y mes a consultar"
                 }, status=status.HTTP_404_NOT_FOUND)        
+        
+
+# Create your views here.
+class ListaPlanillaResumenController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        anio = request.query_params.get('anio')
+        mes = request.query_params.get('mes')
+        tipo = request.query_params.get('tipo')
+        numero = request.query_params.get('numero')
+
+        if anio and mes:            
+            planilla = ListaPlanillaResumen(anio, mes, tipo, numero)
+            
+            return Response(data = {
+            "message":None,
+            "content":planilla
+            }, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar año, mes, tipo y numero a consultar"
+                }, status=status.HTTP_404_NOT_FOUND)                
