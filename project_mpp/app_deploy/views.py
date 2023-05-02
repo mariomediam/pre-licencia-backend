@@ -29,7 +29,7 @@ def download_file(request, filename=''):
         # Define the full file path
         # filepath = BASE_DIR + '/app_deploy/files/' + filename
         filepath = BASE_DIR + filename
-        print(filepath)
+        
         # Open the file for reading content
         path = open(filepath, 'rb')
         # Set the mime type

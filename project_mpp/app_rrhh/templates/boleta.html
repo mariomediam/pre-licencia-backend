@@ -3,11 +3,123 @@
 <head>
     <meta charset="utf-8">
 
+    <style>
+        table{
+            width:100%;
+            font-family: pp-sans-big-light, tahoma, arial, sans-serif; 
+            font-weight: normal;
+            font-size: 12px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Usuario</h1>
-    <p>DNI: {{ testUserId }}</p>
-    <p>NOMBRE: {{ testUserName }}</p>
-
+    <table>
+        <tr>
+            <td rowspan="3"  align="center">
+                <table>
+                    <tr>
+                        <img alt="Piura%20Bonita" height="50" border="0" dfsrc="http://tramitevirtual.munipiura.gob.pe/Content/img/logo02.png" src="http://tramitevirtual.munipiura.gob.pe/Content/img/logo02.png" saveddisplaymode="" style="">
+                    </tr>
+                    <tr>
+                        <td align="center" style="font-size: 8px;">MUNICIPALIDAD PROVINCIAL DE PIURA</td>
+                    </tr>
+                    <tr>
+                        <td align="center" style="font-size: 7px;">OFICINA DE PERSONAL</td>
+                    </tr>
+                </table>                
+            </td>
+            <th colspan="8" style="font-size: 20px;">BOLETA DE PAGO</th>
+        </tr>
+        <tr>            
+            <th colspan="8" style="font-size: 18px;">{{ n_boleta_titulo }}</th>
+        </tr>
+        <tr>
+            <th colspan="8" style="font-size: 16px;">{{ n_conlab_nombre }}</th>
+        </tr>
+        <tr>
+            <td>DNI :</td>
+            <td colspan="3">{{ c_traba_dni }}</td>
+            <td>NOMBRE :</td>
+            <td colspan="4">{{ n_nombre }}</td>
+        </tr>
+        <tr>
+            <td>CARGO :</td>
+            <td colspan="3">{{ n_cargo_nombre }}</td>
+            <td>UNIDAD ORGANICA :</td>
+            <td colspan="4">{{ n_depend_descripcion }}</td>
+        </tr>
+        <tr>
+            <td>FECHA DE INGRESO :</td>
+            <td colspan="3">{{ d_traba_fecing }}</td>
+            <td>CUSPP : </td>
+            <td colspan="4">{{ n_traba_cuspp }}</td>
+        </tr>
+        <tr>
+            <td>DIAS TRABAJADOS :</td>
+            <td colspan="3">{{ q_plani_dias }}</td>
+            <td>CUENTA REMUNERACIONES :</td>
+            <td colspan="5">{{ n_traba_ctabco }}</td>
+        </tr>
+        <tr>
+            <td>PLAZA :</td>
+            <td colspan="3">{{ q_traba_plaza }}</td>
+            <td>CATEG. REMUNERATIVA :</td>
+            <td colspan="5">{{ n_categ_nombre }}</td>
+        </tr>
+    </table>
+    <table border="1px">
+        <tr>
+            <th colspan="3">INGRESOS</th>
+            <th colspan="3">DESCUENTOS</th>
+            <th colspan="3">APORTES</th> 
+        </tr>
+        <tr>
+            <td colspan="3" valign="top">
+                <table>
+                    {% for registro in ingresos %}
+                    <tr align="top">
+                        <td>{{registro.c_rubro}}</td>
+                        <td>{{registro.n_rubro_abrev}}</td>
+                        <td align="right">{{registro.q_pladet_monto}}</td>
+                    </tr>
+                    {% endfor %}    
+                </table>
+            </td>
+            <td colspan="3" valign="top">
+                <table>
+                    {% for registro in descuentos %}
+                        <tr>
+                            <td>{{registro.c_rubro}}</td>
+                            <td>{{registro.n_rubro_abrev}}</td>
+                            <td align="right">{{registro.q_pladet_monto}}</td>
+                        </tr>
+                    {% endfor %}  
+                </table>
+            </td>
+            <td colspan="3" valign="top">
+                <table>
+                    {% for registro in aportes %}
+                        <tr>
+                            <td>{{registro.c_rubro}}</td>
+                            <td>{{registro.n_rubro_abrev}}</td>
+                            <td align="right">{{registro.q_pladet_monto}}</td>
+                        </tr>
+                    {% endfor %}
+                </table>                    
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">TOTAL INGRESOS :</td>
+            <td align="right">{{ total_ingresos }}</td>
+            <td colspan="2">TOTAL DESCUENTOS :</td>
+            <td align="right">{{ total_descuentos }}</td>
+            <td colspan="2">TOTAL APORTES :</td>
+            <td align="right">{{ total_aportes }}</td>
+        </tr>
+        <tr>
+            <td align="right" colspan="8">IMPORTE LIQUIDO :</td>
+            <td align="right">{{ importe_liquido }}</td>
+        </tr>
+    </table>
 <body>
 </html>

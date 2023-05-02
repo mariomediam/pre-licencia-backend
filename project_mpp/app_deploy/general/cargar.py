@@ -7,11 +7,11 @@ def upload_file(file, location, file_name):
     archivo = InMemoryUploadedFile = file
         
     # para ver el tipo de archivo que es
-    print(archivo.content_type)
+    # print(archivo.content_type)
     # para ver el nombre del archivo
-    print(archivo.name)
+    # print(archivo.name)
     # para ver el tamaño del archivo  expresado en bytes
-    print(archivo.size)
+    # print(archivo.size)
 
     # NOTA: una vez que se usa el metodo read() se elimina la informacion de ese archivo en la memoria RAM
 
