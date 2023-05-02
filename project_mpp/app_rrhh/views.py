@@ -153,28 +153,36 @@ class GenerateBoletasPdfController(UpdateAPIView):
                         pdfkit.from_string(html, file_path)
 
                     UpdateBoletaCarpeta(anio, mes, tipo, numero, 1, carpeta, login)
-                
-                    return Response(data={
-                        "message":"Boletas generadas con exito en carpeta: " + carpeta
-                        }, status=status.HTTP_200_OK)
-                    pass
+
+                    return Response(data = {
+                    "message":"Boletas generadas con exito en carpeta: " + carpeta,
+                    "content":{}
+                    }, status=status.HTTP_200_OK)
+                                 
 
                 except Exception as e:
                     DeleteBoletaCarpeta(anio, mes, tipo, numero, login)
-                    return Response(data={
-                        "message":e.args,
-                        }, status=status.HTTP_400_BAD_REQUEST)
-                
-            else:
-                return Response(data={
-                    "message":"No se encontraron datos"
-                    }, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response(data={
-                "message":"Error al generar boleta"
-                }, status=status.HTTP_400_BAD_REQUEST)  
-        
 
+                    return Response(data = {
+                    "message": e.args,
+                    "content":{}
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                                
+            else:
+
+                return Response(data = {
+                    "message":"No se encontraron datos",
+                    "content":{}
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            
+        else:
+
+            return Response(data = {
+                    "message":"Error al generar boleta",
+                    "content":{}
+                    }, status=status.HTTP_400_BAD_REQUEST)
+        
+        
 # Create your views here.
 class SelectPlanillaBoletaController(RetrieveAPIView):    
     permission_classes = [IsAuthenticated]
