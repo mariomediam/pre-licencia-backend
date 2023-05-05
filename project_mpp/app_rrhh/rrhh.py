@@ -67,3 +67,11 @@ def DeleteBoletaCarpeta(anio, mes, tipo, numero, usuario):
         """
         cursor.execute(sql, [anio, mes, tipo, numero, usuario])
         
+def SelectPlanillaBoletaGenerado(anio, mes, tipo, numero):
+    with connection.cursor() as cursor:
+        sql = """   
+        SET NOCOUNT ON;
+        EXEC SIAM.dbo.SelectPlanillaBoletaGenerado %s, %s, %s, %s;
+        """
+        cursor.execute(sql, [anio, mes, tipo, numero])        
+        return dictfetchall(cursor)          

@@ -15,7 +15,7 @@ from rest_framework.request import Request
 
 from dotenv import load_dotenv
 
-from app_rrhh.rrhh import SelectPlanillaBoleta, ListaPlanillaResumen, ListaBoletaPagoWeb, InsertBoletaCarpeta, UpdateBoletaCarpeta, DeleteBoletaCarpeta
+from app_rrhh.rrhh import SelectPlanillaBoleta, ListaPlanillaResumen, ListaBoletaPagoWeb, InsertBoletaCarpeta, UpdateBoletaCarpeta, DeleteBoletaCarpeta, SelectPlanillaBoletaGenerado
 from app_deploy.general.utilitarios import getMonthName
 
 
@@ -55,27 +55,27 @@ class GenerateBoletasPdfController(UpdateAPIView):
 
                     carpeta = BASE_DIR 
 
-                    if not os.path.exists(carpeta + "\\" + str(anio)):
+                    if not os.path.exists(carpeta + "/" + str(anio)):
                         # Crear carpeta año
-                        os.mkdir(carpeta + "\\" + str(anio))
+                        os.mkdir(carpeta + "/" + str(anio))
 
-                    carpeta += "\\" + str(anio)
+                    carpeta += "/" + str(anio)
 
                     month_name = getMonthName(mes)
 
-                    if not os.path.exists(carpeta + "\\" + month_name):
+                    if not os.path.exists(carpeta + "/" + month_name):
                         # Crear carpeta mes
-                        os.mkdir(carpeta + "\\" + month_name)
+                        os.mkdir(carpeta + "/" + month_name)
                     
-                    carpeta += "\\" + month_name
+                    carpeta += "/" + month_name
 
                     nombre_planilla = boleta_pago[0]["n_tippla_nombre"].strip() + "-" + str(numero).zfill(2)                    
 
-                    if not os.path.exists(carpeta + "\\" + nombre_planilla):
+                    if not os.path.exists(carpeta + "/" + nombre_planilla):
                         # Crear carpeta tipo y número de planilla
-                        os.mkdir(carpeta + "\\" + nombre_planilla)
+                        os.mkdir(carpeta + "/" + nombre_planilla)
                     
-                    carpeta += "\\" + nombre_planilla                    
+                    carpeta += "/" + nombre_planilla                    
 
                     # ******************** INICIO CREA ARCHIVOS ********************
 
@@ -148,7 +148,7 @@ class GenerateBoletasPdfController(UpdateAPIView):
                         template = get_template('boleta.html')
                         html = template.render(context = context)                        
                     
-                        file_path = carpeta  + "\\" +  filepdf
+                        file_path = carpeta  + "/" +  filepdf
 
                         pdfkit.from_string(html, file_path)
 
@@ -232,3 +232,28 @@ class ListaPlanillaResumenController(RetrieveAPIView):
              return Response(data={
                     "message":"Debe de ingresar año, mes, tipo y numero a consultar"
                 }, status=status.HTTP_404_NOT_FOUND)                
+        
+
+# Create your views here.
+class SelectPlanillaBoletaGeneradoController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        anio = request.query_params.get('anio')
+        mes = request.query_params.get('mes')
+        tipo = request.query_params.get('tipo')
+        numero = request.query_params.get('numero')
+
+        if anio and mes:            
+            planilla = SelectPlanillaBoletaGenerado(anio, mes, tipo, numero)
+            
+            return Response(data = {
+            "message":None,
+            "content":planilla
+            }, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar año, mes, tipo y numero a consultar"
+                }, status=status.HTTP_404_NOT_FOUND)                        
