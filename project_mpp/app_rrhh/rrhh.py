@@ -75,3 +75,24 @@ def SelectPlanillaBoletaGenerado(anio, mes, tipo, numero):
         """
         cursor.execute(sql, [anio, mes, tipo, numero])        
         return dictfetchall(cursor)          
+
+
+def SelectPlanillaTrabajadorCorreo(anio, mes, tipo, numero):
+    with connection.cursor() as cursor:
+        sql = """   
+        SET NOCOUNT ON;
+        EXEC SIAM.dbo.SelectPlanillaTrabajadorCorreo %s, %s, %s, %s;
+        """
+        cursor.execute(sql, [anio, mes, tipo, numero])        
+        return dictfetchall(cursor)                  
+    
+def SelectTipoPlanillaxTipo(tipo):
+    with connection.cursor() as cursor:
+        sql = """
+        declare @Field varchar(30) = 'IDTIPOPLANILLA'
+        declare @Value varchar(30) = %s 
+        SET NOCOUNT ON;
+        EXEC SIAM.dbo.SelectTipoPlanilla @Field, @Value;
+        """
+        cursor.execute(sql, [tipo])        
+        return dictfetchall(cursor)          

@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.template.loader import get_template
 
 from rest_framework import status
-from rest_framework.generics import UpdateAPIView, RetrieveAPIView
+from rest_framework.generics import UpdateAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -15,7 +15,8 @@ from rest_framework.request import Request
 
 from dotenv import load_dotenv
 
-from app_rrhh.rrhh import SelectPlanillaBoleta, ListaPlanillaResumen, ListaBoletaPagoWeb, InsertBoletaCarpeta, UpdateBoletaCarpeta, DeleteBoletaCarpeta, SelectPlanillaBoletaGenerado
+from app_rrhh.rrhh import SelectPlanillaBoleta, ListaPlanillaResumen, ListaBoletaPagoWeb, InsertBoletaCarpeta, UpdateBoletaCarpeta, DeleteBoletaCarpeta, SelectPlanillaBoletaGenerado, SelectPlanillaTrabajadorCorreo, SelectTipoPlanillaxTipo
+
 from app_deploy.general.utilitarios import getMonthName
 
 
@@ -257,3 +258,69 @@ class SelectPlanillaBoletaGeneradoController(RetrieveAPIView):
              return Response(data={
                     "message":"Debe de ingresar año, mes, tipo y numero a consultar"
                 }, status=status.HTTP_404_NOT_FOUND)                        
+        
+
+class SelectPlanillaTrabajadorCorreoController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        anio = request.query_params.get('anio')
+        mes = request.query_params.get('mes')
+        tipo = request.query_params.get('tipo')
+        numero = request.query_params.get('numero')
+
+        if anio and mes:            
+            planilla = SelectPlanillaTrabajadorCorreo(anio, mes, tipo, numero)
+            
+            return Response(data = {
+            "message":None,
+            "content":planilla
+            }, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar año, mes, tipo y numero a consultar"
+                }, status=status.HTTP_404_NOT_FOUND)                                
+        
+
+class SelectTipoPlanillaxTipoController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        tipo = request.query_params.get('tipo')
+
+        if tipo:            
+            tipo_planilla = SelectTipoPlanillaxTipo(tipo)
+            
+            return Response(data = {
+            "message":None,
+            "content":tipo_planilla
+            }, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar tipo de planilla a consultar"
+                }, status=status.HTTP_404_NOT_FOUND)     
+
+
+class SendEmailBoletaController(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request):
+        
+        anio = request.data.get('anio')
+        mes = request.data.get('mes')
+        tipo = request.data.get('tipo')
+        numero = request.data.get('numero')
+        destintarios = request.data.get('destinatarios', [])
+        login = request.user.username
+
+        print(destintarios)
+
+        return Response(data = {
+                "message":"Boletas enviadas con exito",
+                "content":{}
+                }, status=status.HTTP_200_OK)
+
