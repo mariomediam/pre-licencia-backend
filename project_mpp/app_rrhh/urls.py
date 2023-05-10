@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import GenerateBoletasPdfController, SelectPlanillaBoletaController, ListaPlanillaResumenController, SelectPlanillaBoletaGeneradoController, SelectPlanillaTrabajadorCorreoController, SelectTipoPlanillaxTipoController, SendEmailBoletaController
+from .views import GenerateBoletasPdfController, SelectPlanillaBoletaController, ListaPlanillaResumenController, SelectPlanillaBoletaGeneradoController, SelectPlanillaTrabajadorCorreoController, SelectTipoPlanillaxTipoController, SendEmailBoletaController, SelectBoletaEnvioController
 
 urlpatterns= [
     path("genera-boletas/", GenerateBoletasPdfController.as_view()),
@@ -9,4 +9,5 @@ urlpatterns= [
     path("lista-planilla-correo/", SelectPlanillaTrabajadorCorreoController.as_view()),
     path("tipo-planilla-xtipo/", SelectTipoPlanillaxTipoController.as_view()),
     path("enviar-boletas/", SendEmailBoletaController.as_view()),
+    path("lista-boleta-envio/", SelectBoletaEnvioController.as_view()),
 ]

@@ -96,3 +96,33 @@ def SelectTipoPlanillaxTipo(tipo):
         """
         cursor.execute(sql, [tipo])        
         return dictfetchall(cursor)          
+
+
+def UpdateBoletaCarpetaEnvio(anio, mes, tipo, numero, envio, usuario):
+    with connection.cursor() as cursor:
+        sql = """   
+        SET NOCOUNT ON;
+        EXEC SIAM.dbo.UpdateBoletaCarpetaEnvio %s, %s, %s, %s, %s, %s;
+        """
+        cursor.execute(sql, [anio, mes, tipo, numero, envio, usuario])
+
+
+
+def InsertBoletaEnvio(anio, mes, tipo, numero, dni, correo, usuario):
+    with connection.cursor() as cursor:
+        sql = """   
+        SET NOCOUNT ON;
+        EXEC SIAM.dbo.InsertBoleta_envio %s, %s, %s, %s, %s, %s, %s;
+        """
+        cursor.execute(sql, [anio, mes, tipo, numero, dni, correo, usuario])
+
+
+
+def SelectBoletaEnvio(anio, mes, tipo, numero):
+    with connection.cursor() as cursor:
+        sql = """   
+        SET NOCOUNT ON;
+        EXEC SIAM.dbo.SelectBoletaEnvio %s, %s, %s, %s;
+        """
+        cursor.execute(sql, [anio, mes, tipo, numero])        
+        return dictfetchall(cursor)           

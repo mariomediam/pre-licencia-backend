@@ -2,7 +2,7 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 
 
-def enviarEmail(subject, body, to, from_email = 'piurabonita@munipiura.gob.pe', bcc = None, attachments = None, contentHTML = True ):
+def enviarEmail(subject, body, to, from_email = 'informatica@munipiura.gob.pe', bcc = None, attachments = None, contentHTML = True ):
     
     email = EmailMessage(
     subject = subject,

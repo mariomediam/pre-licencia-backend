@@ -15,8 +15,10 @@ from rest_framework.request import Request
 
 from dotenv import load_dotenv
 
-from app_rrhh.rrhh import SelectPlanillaBoleta, ListaPlanillaResumen, ListaBoletaPagoWeb, InsertBoletaCarpeta, UpdateBoletaCarpeta, DeleteBoletaCarpeta, SelectPlanillaBoletaGenerado, SelectPlanillaTrabajadorCorreo, SelectTipoPlanillaxTipo
+from app_rrhh.rrhh import *
+# SelectPlanillaBoleta, ListaPlanillaResumen, ListaBoletaPagoWeb, InsertBoletaCarpeta, UpdateBoletaCarpeta, DeleteBoletaCarpeta, SelectPlanillaBoletaGenerado, SelectPlanillaTrabajadorCorreo, SelectTipoPlanillaxTipo, UpdateBoletaCarpetaEnvio, InsertBoletaEnvio
 
+from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.utilitarios import getMonthName
 
 
@@ -55,6 +57,8 @@ class GenerateBoletasPdfController(UpdateAPIView):
                     BASE_DIR = environ.get('RUTA_BOLETAS_PAGO')                    
 
                     carpeta = BASE_DIR 
+
+                    # carpeta = ""
 
                     if not os.path.exists(carpeta + "/" + str(anio)):
                         # Crear carpeta año
@@ -317,10 +321,103 @@ class SendEmailBoletaController(CreateAPIView):
         destintarios = request.data.get('destinatarios', [])
         login = request.user.username
 
-        print(destintarios)
 
-        return Response(data = {
+        if len(destintarios) == 0:
+                return Response(data = {
+                    "message":"Debe de ingresar destinatarios",
+                    "content":{}
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:            
+            UpdateBoletaCarpetaEnvio(anio, mes, tipo, numero, 0, login)                        
+            nombre_mes = getMonthName(mes)            
+            tipo_planilla = SelectTipoPlanillaxTipo(tipo)
+            planilla_boleta = SelectPlanillaBoleta(anio, mes, tipo, numero)
+            
+            if len(planilla_boleta) != 1:                
+                raise Exception("No se encontro carpeta de boleta en BD")
+
+            carpeta = planilla_boleta[0]["n_plani_carpeta"]
+
+            count_correos_enviados = 0
+
+            for destinatario in destintarios:
+                ruta_boleta_pdf = "{}/{}{}{}{}{}.pdf".format(carpeta, anio, mes, tipo, numero, destinatario["c_traba_dni"])
+
+                # ******************** OJO ELIMINAR AL PASARLO A PRODUCCION *****************************
+
+                ruta_boleta_pdf = ruta_boleta_pdf.replace( "/", "\\").replace("\\var\\www\\boletas", "P:")
+
+                # ***************************************************************************************
+                
+                if not os.path.isfile(ruta_boleta_pdf):
+                    raise Exception("No se encontro archivo PDF deL trabajador {}. Se envió {} correo(s) de {} seleccionado(s)".format( destinatario["n_traba_nombre"], count_correos_enviados, len(destintarios) ) )
+                    
+                
+                subject = "Boleta de pago {} de {} - {}".format(tipo_planilla[0]["n_tippla_nombre"], nombre_mes, anio)
+
+                body = '''
+                    <p>Estimado/a <b>{}</b>,</p>
+
+                    <p>Adjuntamos en formato PDF su boleta de pago <b>{}-{}</b> correspondiente al mes de <b>{} - {}</b>. Este correo electrónico tiene el propósito de brindarle información necesaria de manera oportuna y conveniente.</p>
+
+                   
+                    <p>Por favor, tenga en cuenta que este correo electrónico es generado automáticamente y se envía únicamente con fines informativos. Le informamos que debido a la naturaleza automatizada de este mensaje, cualquier consulta o respuesta que envíe no será leída ni atendida por nuestro personal. Si tiene alguna pregunta o inquietud relacionada con su boleta de pago, le recomendamos ponerse en contacto directamente con el personal de la Unidad de Remuneraciones, quienes estarán disponibles para brindarle la asistencia necesaria.</p>                   
+
+                    <p>Atentamente,</p>
+                    
+                    <p>Unidad de Remuneraciones<br>
+                    Oficina de Personal<br>
+                    Municipalidad Provincial de Piura</p>
+                '''.format( destinatario["n_traba_nombre"], tipo_planilla[0]["n_tippla_nombre"], numero, nombre_mes, anio)
+
+                
+                enviarEmail(subject=subject, body=body, to=[destinatario["n_traba_correo"]], attachments=[ruta_boleta_pdf])
+
+                InsertBoletaEnvio(anio, mes, tipo, numero, destinatario["c_traba_dni"], destinatario["n_traba_correo"], login)
+
+                count_correos_enviados += 1
+
+            return Response(data = {
                 "message":"Boletas enviadas con exito",
                 "content":{}
                 }, status=status.HTTP_200_OK)
 
+
+        except Exception as e:
+            print(e.args)
+            return Response(data = {
+                    "message": e.args,
+                    "content":{}
+                    }, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        finally:
+            UpdateBoletaCarpetaEnvio(anio, mes, tipo, numero, 1, login)
+            
+
+
+
+class SelectBoletaEnvioController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        anio = request.query_params.get('anio')
+        mes = request.query_params.get('mes')
+        tipo = request.query_params.get('tipo')
+        numero = request.query_params.get('numero')
+
+        if anio and mes:            
+            boleta_envio = SelectBoletaEnvio(anio, mes, tipo, numero)
+            
+            return Response(data = {
+            "message":None,
+            "content":boleta_envio
+            }, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar año, mes, tipo y numero a consultar"
+                }, status=status.HTTP_404_NOT_FOUND)                                
+       
