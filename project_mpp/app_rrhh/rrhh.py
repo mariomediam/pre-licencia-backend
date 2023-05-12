@@ -126,3 +126,13 @@ def SelectBoletaEnvio(anio, mes, tipo, numero):
         """
         cursor.execute(sql, [anio, mes, tipo, numero])        
         return dictfetchall(cursor)           
+    
+
+def SelectTrabajadorCorreo(valor):
+    with connection.cursor() as cursor:
+        sql = """   
+        SET NOCOUNT ON;
+        EXEC SIAM.dbo.SelectTrabajadorCorreo %s;
+        """
+        cursor.execute(sql, [valor])        
+        return dictfetchall(cursor)               

@@ -6,8 +6,8 @@ from os import environ
 from django.shortcuts import render
 from django.template.loader import get_template
 
-from rest_framework import status
-from rest_framework.generics import UpdateAPIView, RetrieveAPIView, CreateAPIView
+from rest_framework import status, mixins
+from rest_framework.generics import UpdateAPIView, RetrieveAPIView, CreateAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -20,6 +20,7 @@ from app_rrhh.rrhh import *
 
 from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.utilitarios import getMonthName
+from app_deploy.general.paginations import CustomPagination
 
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
@@ -57,8 +58,6 @@ class GenerateBoletasPdfController(UpdateAPIView):
                     BASE_DIR = environ.get('RUTA_BOLETAS_PAGO')                    
 
                     carpeta = BASE_DIR 
-
-                    # carpeta = ""
 
                     if not os.path.exists(carpeta + "/" + str(anio)):
                         # Crear carpeta año
@@ -342,11 +341,15 @@ class SendEmailBoletaController(CreateAPIView):
             count_correos_enviados = 0
 
             for destinatario in destintarios:
-                ruta_boleta_pdf = "{}/{}{}{}{}{}.pdf".format(carpeta, anio, mes, tipo, numero, destinatario["c_traba_dni"])
+                ruta_boleta_pdf = "{}/Firmadas/{}{}{}{}{}[R].pdf".format(carpeta, anio, mes, tipo, numero, destinatario["c_traba_dni"])
+
+
+
+
 
                 # ******************** OJO ELIMINAR AL PASARLO A PRODUCCION *****************************
 
-                ruta_boleta_pdf = ruta_boleta_pdf.replace( "/", "\\").replace("\\var\\www\\boletas", "P:")
+                # ruta_boleta_pdf = ruta_boleta_pdf.replace( "/", "\\").replace("\\var\\www\\boletas", "P:")
 
                 # ***************************************************************************************
                 
@@ -372,7 +375,7 @@ class SendEmailBoletaController(CreateAPIView):
                 '''.format( destinatario["n_traba_nombre"], tipo_planilla[0]["n_tippla_nombre"], numero, nombre_mes, anio)
 
                 
-                enviarEmail(subject=subject, body=body, to=[destinatario["n_traba_correo"]], attachments=[ruta_boleta_pdf])
+                enviarEmail(subject=subject, body=body, to=[destinatario["n_traba_correo"]], attachments=[ruta_boleta_pdf])                
 
                 InsertBoletaEnvio(anio, mes, tipo, numero, destinatario["c_traba_dni"], destinatario["n_traba_correo"], login)
 
@@ -421,3 +424,42 @@ class SelectBoletaEnvioController(RetrieveAPIView):
                     "message":"Debe de ingresar año, mes, tipo y numero a consultar"
                 }, status=status.HTTP_404_NOT_FOUND)                                
        
+
+
+class SelectTrabajadorCorreoPaginationController(ListAPIView,mixins.ListModelMixin):
+    permission_classes = [IsAuthenticated]    
+    pagination_class = CustomPagination    
+        
+    def get(self, request: Request):
+
+        valor = request.query_params.get('valor')        
+        
+        if valor:
+            trabajador_correo = SelectTrabajadorCorreo(valor)              
+            return self.get_paginated_response(self.paginate_queryset(trabajador_correo))        
+        
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar nombre o DNI del colaborador a buscar"
+                }, status=status.HTTP_404_NOT_FOUND)
+        
+
+class SelectTrabajadorCorreoController(RetrieveAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        valor = request.query_params.get('valor')    
+
+        if valor:            
+            trabajador_correo = SelectTrabajadorCorreo(valor)
+            
+            return Response(data = {
+            "message":None,
+            "content":trabajador_correo
+            }, status=status.HTTP_200_OK)
+
+        else:
+             return Response(data={
+                    "message":"Debe de ingresar nombre o DNI del colaborador a buscar"
+                }, status=status.HTTP_404_NOT_FOUND)        
