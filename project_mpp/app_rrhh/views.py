@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.template.loader import get_template
 
 from rest_framework import status, mixins
-from rest_framework.generics import UpdateAPIView, RetrieveAPIView, CreateAPIView, ListAPIView
+from rest_framework.generics import UpdateAPIView, RetrieveAPIView, CreateAPIView, ListAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -344,9 +344,6 @@ class SendEmailBoletaController(CreateAPIView):
                 ruta_boleta_pdf = "{}/Firmadas/{}{}{}{}{}[R].pdf".format(carpeta, anio, mes, tipo, numero, destinatario["c_traba_dni"])
 
 
-
-
-
                 # ******************** OJO ELIMINAR AL PASARLO A PRODUCCION *****************************
 
                 # ruta_boleta_pdf = ruta_boleta_pdf.replace( "/", "\\").replace("\\var\\www\\boletas", "P:")
@@ -387,8 +384,7 @@ class SendEmailBoletaController(CreateAPIView):
                 }, status=status.HTTP_200_OK)
 
 
-        except Exception as e:
-            print(e.args)
+        except Exception as e:            
             return Response(data = {
                     "message": e.args,
                     "content":{}
@@ -463,3 +459,66 @@ class SelectTrabajadorCorreoController(RetrieveAPIView):
              return Response(data={
                     "message":"Debe de ingresar nombre o DNI del colaborador a buscar"
                 }, status=status.HTTP_404_NOT_FOUND)        
+        
+
+class InsertUpdateTrabajadorCorreoController(UpdateAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request):
+        
+        dni = request.data.get('dni')
+        correo = request.data.get('correo')
+        login = request.user.username       
+
+        print("dni: ", dni)
+        print("correo: ", correo) 
+
+        try:
+            if dni and correo:
+                trabajador_correo = InsertUpdateTrabajadorCorreo(dni, correo, login)
+
+                print("ooook")
+                
+                return Response(data = {
+                "message":"Correo actualizado con exito",
+                "content":trabajador_correo
+                }, status=status.HTTP_200_OK)
+            
+
+            
+            else:
+                 raise Exception("Debe ingresar DNI y correo del colaborador a actualizar")
+            
+        except Exception as e:
+            print("errrror")
+            return Response(data = {
+                    "message": e.args,
+                    "content":{}
+                    }, status=status.HTTP_400_BAD_REQUEST)
+        
+class DeleteTrabajadorCorreoComponent(DestroyAPIView):    
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request: Request, dni: str = None):
+
+        login = request.user.username       
+
+        try:
+            if dni:
+                trabajador_correo = DeleteTrabajadorCorreo(dni, login)
+                
+                return Response(data = {
+                "message":"Correo eliminado con exito",
+                "content":trabajador_correo
+                }, status=status.HTTP_200_OK)
+            
+            else:
+                 raise Exception("Debe ingresar DNI del colaborador a eliminar")
+            
+        except Exception as e:
+            return Response(data = {
+                    "message": e.args,
+                    "content":{}
+                    }, status=status.HTTP_400_BAD_REQUEST)        
+
+        

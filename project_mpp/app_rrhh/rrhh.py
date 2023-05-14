@@ -136,3 +136,22 @@ def SelectTrabajadorCorreo(valor):
         """
         cursor.execute(sql, [valor])        
         return dictfetchall(cursor)               
+    
+
+def InsertUpdateTrabajadorCorreo(dni, correo, usuario):
+    with connection.cursor() as cursor:
+        sql = """   
+        SET NOCOUNT ON;
+        EXEC SIAM.dbo.InsertUpdateTrabajadorCorreo %s, %s, %s;
+        """
+        cursor.execute(sql, [dni, correo, usuario])    
+
+
+def DeleteTrabajadorCorreo(dni, usuario):
+    with connection.cursor() as cursor:
+        sql = """   
+        SET NOCOUNT ON;
+        EXEC SIAM.dbo.DeleteTrabajador_correo %s, %s;
+        """
+        cursor.execute(sql, [dni, usuario])                    
+
