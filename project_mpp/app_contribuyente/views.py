@@ -45,8 +45,13 @@ class BuscarContribCodigoController(RetrieveAPIView):
             contribuyente = BuscarContribCodigo(codigo_contrib)
             
             if len(contribuyente) == 1:
-                separa_nombre = separaNombre(contribuyente[0]["Identificación"])
-                contribuyente[0].update(separa_nombre)
+                try:
+                    separa_nombre = separaNombre(contribuyente[0]["Identificación"])
+                    contribuyente[0].update(separa_nombre)
+                except Exception as e:
+                    contribuyente[0]['separa_pepat'] = contribuyente[0]["Identificación"]
+                    contribuyente[0]['separa_apemat'] = ""
+                    contribuyente[0]['separa_nombre'] = ""
                 
             return Response(data={
                     "message":None,
