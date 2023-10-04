@@ -35,6 +35,8 @@ from .views import (PrecalificacionController,
                 BuscarGiroNegocioController,
                 AgregarSol_GiroNegCiiuController,
                 SeleccionarSolicitudController,
+                LicProvTipoController,
+                LicProvBuscarController,
                 )
 
 urlpatterns = [
@@ -74,4 +76,6 @@ urlpatterns = [
     path('buscar-giro-area', BuscarGiroNegocioController.as_view()),
     path('agregar-giro-solicitud/<str:id>', AgregarSol_GiroNegCiiuController.as_view()),
     path('seleccionar-solicitud', SeleccionarSolicitudController.as_view()),    
+    path('lic-prov-tipo', LicProvTipoController.as_view()),
+    path('lic-prov-buscar', LicProvBuscarController.as_view()),
 ]

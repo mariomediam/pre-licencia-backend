@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers
 from django.conf import settings
-from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel, PrecalTipoDocumModel, TipoLicenciaModel, SectoresLicModel, PrecalRequisitoArchivoModel, PrecalFirmaArchivoModel, PrecalVBExpedienteModel, LicencGenModel, LicencArchivoModel
+from .models import PrecalificacionModel, TipoEvalModel, EvalUsuModel, WebContribuyenteModel, GiroNegocioModel, PrecalGiroNegModel, PrecalCuestionarioModel, PrecalTipoDocumModel, PrecalEvaluacionModel, PrecalDocumentacionModel, PrecalTipoDocumModel, TipoLicenciaModel, SectoresLicModel, PrecalRequisitoArchivoModel, PrecalFirmaArchivoModel, PrecalVBExpedienteModel, LicencGenModel, LicencArchivoModel, LicProvTipoModel, LicProvRubroModel, LicProvUbicaModel, LicProvModel
 from app_licfunc.licfunc import ListarFunciones
 import json
 
@@ -263,3 +263,42 @@ class LicencArchivoUploadSerializer(serializers.Serializer):
     archivo = UploadFileSerializer(read_only = True, many=False) 
     licencia = LicencArchivoSerializer(read_only = True, many=False) 
     
+class LicProvTipoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LicProvTipoModel
+        fields = '__all__'
+
+class LicProvRubroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LicProvRubroModel
+        fields = '__all__'        
+
+class LicProvUbicaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LicProvUbicaModel
+        fields = '__all__'        
+
+class LicProvSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LicProvModel
+        fields = '__all__'        
+
+    def create(self, validated_data):
+        validated_data['licProvIniVig'] = validated_data['licProvFecEmi']
+        validated_data['licProvFinVig'] = validated_data['licProvIniVig'].replace(year=validated_data['licProvIniVig'].year + 1)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data['licProvIniVig'] = validated_data['licProvFecEmi']
+        validated_data['licProvFinVig'] = validated_data['licProvIniVig'].replace(year=validated_data['licProvIniVig'].year + 1)
+        return super().update(instance, validated_data)
+    
+
+
+class LicProvFullSerializer(serializers.ModelSerializer):
+    rubro = LicProvRubroSerializer(read_only = True)
+    ubica = LicProvUbicaSerializer(read_only = True)
+
+    class Meta:
+        model = LicProvModel
+        fields = '__all__'    

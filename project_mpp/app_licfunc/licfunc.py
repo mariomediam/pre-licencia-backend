@@ -69,3 +69,7 @@ def SeleccionarSolicitud(c_solici):
         cursor.execute('EXEC SIAC.dbo.S02SeleccionarSolicitud %s', [c_solici])
         return dictfetchall(cursor)     
 
+def LicProvisionalBuscar(C_LicProv_Tipo, Campo, Valor):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIAC.dbo.S02LicProvisionalBuscar %s, %s, %s', [C_LicProv_Tipo, Campo, Valor])
+        return dictfetchall(cursor)

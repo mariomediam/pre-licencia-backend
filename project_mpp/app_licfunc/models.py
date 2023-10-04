@@ -447,3 +447,116 @@ class LicencSolModel(models.Model):
     class Meta:
         db_table = 'S02LicencSol'
 
+
+
+class LicProvTipoModel(models.Model):
+
+    licProvTipoId = models.AutoField(primary_key=True, null=False, db_column='C_LicProv_Tipo', unique=True)
+
+    licProvNombre = models.CharField(max_length=50, db_column='N_LicProv_Nombre', null=False)
+
+    licProvDescrip = models.CharField(max_length=1024, db_column='T_LicProv_Descrip', null=False)
+
+    licProvImagen = models.CharField(max_length=100, db_column='N_LicProv_Imagen', null=False)
+    
+    class Meta:
+        db_table = 'S02Lic_Provisional_Tipo'
+
+class LicProvUbicaModel(models.Model):
+
+    ubicaId = models.AutoField(primary_key=True, null=False, db_column='C_Ubica', unique=True)
+
+    licProvTipo = models.ForeignKey(to=LicProvTipoModel, related_name='licProvTipo_Ubica', db_column='C_LicProv_Tipo', on_delete=models.PROTECT)
+
+    ubicaOrden = models.IntegerField(db_column='M_Ubica_Orden', null=False)
+
+    ubicaCodigo = models.CharField(max_length=20, db_column='C_Ubica_Codigo', null=False)
+
+    ubicaDescrip = models.CharField(max_length=512, db_column='N_Ubica_Descrip', null=False)
+
+    ubicaUTMNorte = models.DecimalField(db_column='Q_Ubica_UTMNorte', max_digits=18, decimal_places=7, null=False)
+
+    ubicaUTMEste = models.DecimalField(db_column='Q_Ubica_UTMEste', max_digits=18, decimal_places=7, null=False)
+
+    ubicaLogin = models.CharField(max_length=20, null=False, db_column='C_Usuari_Login')
+
+    ubicaDigitFecha = models.DateTimeField(auto_now=True, db_column='D_Ubica_FecDig')
+
+    ubicaDigitPC = models.CharField(max_length=20, db_column='N_Ubica_PC', null=False)
+
+    class Meta:
+        db_table = 'S02Lic_Provisional_Ubica'
+
+class LicProvRubroModel(models.Model):
+
+    rubroId = models.AutoField(primary_key=True, null=False, db_column='C_Rubro', unique=True)
+
+    licProvTipo = models.ForeignKey(to=LicProvTipoModel, related_name='licProvTipo_Rubro', db_column='C_LicProv_Tipo', on_delete=models.PROTECT)
+
+    rubroOrden = models.IntegerField(db_column='M_Rubro_Orden', null=False)
+
+    rubroDescrip = models.CharField(max_length=512, db_column='N_Rubro_Descrip', null=False)
+
+    rubroDimension = models.CharField(max_length=50, db_column='N_Rubro_Dimension', null=False)
+
+    rubroLogin = models.CharField(max_length=20, null=False, db_column='C_Usuari_Login')
+
+    rubroDigitFecha = models.DateTimeField(auto_now=True, db_column='D_Rubro_FecDig')
+
+    rubroDigitPC = models.CharField(max_length=20, db_column='N_Rubro_PC', null=False)
+
+    class Meta:
+        db_table = 'S02Lic_Provisional_Rubro'
+
+
+class LicProvModel(models.Model):
+
+    licProvId = models.AutoField(primary_key=True, null=False, db_column='C_LicProv', unique=True)
+
+    licProvTipo = models.ForeignKey(to=LicProvTipoModel, related_name='licProvTipo_LicProv', db_column='C_LicProv_Tipo', on_delete=models.PROTECT)
+
+    licProvNro  = models.IntegerField(db_column='M_LicProv_Nro', null=False)
+
+    licProvRenov = models.IntegerField(db_column='M_LicProv_Renov', null=True)
+
+    licProvExpNro = models.CharField(max_length=8, db_column='C_Exped', null=False)
+
+    licProvExpAnio = models.CharField(max_length=4, db_column='C_Exped_Anio', null=False)
+
+    licProvTitCod = models.CharField(max_length=11, db_column='C_LicProv_TitCod', null=False)
+
+    licProvTitTipCod = models.CharField(max_length=2, db_column='C_LicProv_TitTipDoc', null=False)
+
+    licProvTitNroDoc = models.CharField(max_length=11, db_column='M_LicProv_TitNroDoc', null=False)
+
+    licProvTitImg = models.CharField(max_length=100, db_column='N_LicProv_TitImg', null=False)
+
+    licProvRubro = models.ForeignKey(to=LicProvRubroModel, related_name='licProvRubro_licProv', db_column='C_Rubro', on_delete=models.PROTECT)
+
+    licProvUbica = models.ForeignKey(to=LicProvUbicaModel, related_name='licProvUbica_licProv', db_column='C_Ubica', on_delete=models.PROTECT)
+
+    licProvHorAte = models.CharField(max_length=50, db_column='N_LicProv_HorAte', null=False)
+
+    licProvCerGas = models.CharField(max_length=50, db_column='N_LicProv_CerGas', null=False)
+
+    licProvObs = models.CharField(max_length=1024, db_column='T_LicProv_Obs', null=False)
+
+    licProvFecEmi = models.DateField(db_column='D_LicProv_FecEmi', null=False)
+
+    licProvIniVig = models.DateField(db_column='D_LicProv_IniVig', null=False)
+
+    licProvFinVig = models.DateField(db_column='D_LicProv_FinVig', null=False)
+
+    licProvFormato = models.CharField(max_length=20, db_column='N_LicProv_Formato', null=False)
+
+    licProvLogin = models.CharField(max_length=20, null=False, db_column='C_Usuari_Login')
+
+    licProvDigitFecha = models.DateTimeField(auto_now=True, db_column='D_LicProv_FecDig')
+
+    licProvDigitPC = models.CharField(max_length=20, db_column='N_LicProv_PC', null=False)
+
+    class Meta:
+        db_table = 'S02Lic_Provisional'
+
+
+

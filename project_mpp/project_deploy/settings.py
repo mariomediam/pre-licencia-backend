@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'app_licfunc',
     'app_contribuyente',
     'app_rrhh',
+    'app_planif',
     "rest_framework",
     'corsheaders'
 ]
@@ -113,6 +114,19 @@ DATABASES = {
                 'driver': 'ODBC Driver 17 for SQL Server',
             },
         },
+        'BDSIAT': {
+            'ENGINE': 'mssql',
+            'NAME': environ.get('DB_SIAT'),
+            'USER': environ.get('DB_USERNAME'),
+            'PASSWORD': environ.get('DB_PASSWORD'),
+            'HOST': environ.get('DB_HOST'),
+            'PORT': '',
+
+            'OPTIONS': {
+                'driver': 'ODBC Driver 17 for SQL Server',
+            },
+        },
+
    }
 
 # Password validation
