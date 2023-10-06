@@ -1,3 +1,5 @@
+import base64
+
 from django.shortcuts import render
 from django.db import transaction
 from django.db.models import F, Q, ImageField, OuterRef, Subquery, Count
@@ -1573,6 +1575,8 @@ class LicProvBuscarController(RetrieveAPIView):
         lic_prov_tipo = request.query_params.get("tipo")
         campo_buscado = request.query_params.get("campo")
         valor_buscado = request.query_params.get("valor")
+        
+        lic_prov_tipo = int(lic_prov_tipo)
 
         campos_validos = [
             "todos",
@@ -1594,7 +1598,86 @@ class LicProvBuscarController(RetrieveAPIView):
             lic_prov_tipo, campo_buscado, valor_buscado
         )
 
+        # Listar el contenido del directorio /var/www/licenciaProvisional
+        # y obtener el nombre de los archivos
+        # os.chdir(environ.get("RUTA_REQUISITOS_LICENCIA_PROVISIONAL"))
+        # archivos = glob.glob("*")
+        # ruta_carpeta = '/var/www/licenciaProvisional'
+        # print(os.listdir(ruta_carpeta))
+
+
+        # Convirtiendo imagen a base64        
+        for i, lic in enumerate(lic_provisional):
+            ruta_imagen = str(lic["N_LicProv_TitImg"]).replace("/var/www/licenciaProvisional/", "Y:\\")
+            print(ruta_imagen)
+            if os.path.exists(ruta_imagen.strip()):
+                print("entroooo")
+                with open(ruta_imagen, "rb") as f:
+                    imagen_codificada = base64.b64encode(f.read()).decode("utf-8")
+            else:
+                imagen_codificada = None
+            
+            lic_provisional[i]["N_Imagen_Base64"] = imagen_codificada
+
+
+        lic_provisional_formato = []
+
+        numeros_unicos = {lic["M_LicProv_Nro"] for lic in lic_provisional}
+
+        for numero in numeros_unicos:
+            lic_provisional_formato.append(
+                {
+                    "C_LicProv_Tipo": lic_prov_tipo,
+                    "M_LicProv_Nro": numero,
+                    "permisos": [
+                        lic
+                        for lic in lic_provisional
+                        if lic["M_LicProv_Nro"] == numero
+                    ],
+                }
+            )
+
         return Response(
-            data={"message": None, "content": lic_provisional},
+            data={"message": None, "content": lic_provisional_formato},
             status=status.HTTP_200_OK,
         )
+
+
+class LicProvCampoBuscarController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        mapea_campos = [
+            {
+                "display": "Nº autoriza",
+                "value": "autoriza",
+            },
+            {
+                "display": "Titular",
+                "value": "titular",
+            },
+            {
+                "display": "Rubro",
+                "value": "rubro",
+            },
+            {
+                "display": "Ubicación",
+                "value": "ubica",
+            },
+            {
+                "display": "Nº expediente",
+                "value": "expediente",
+            },
+            {
+                "display": "Nº formato",
+                "value": "formato",
+            },
+            {
+                "display": "Listar todos",
+                "value": "todos",
+            }
+        ]
+
+           
+        
+        return Response(data={"message": None, "content": list(mapea_campos)})

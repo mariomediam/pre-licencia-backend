@@ -37,6 +37,7 @@ from .views import (PrecalificacionController,
                 SeleccionarSolicitudController,
                 LicProvTipoController,
                 LicProvBuscarController,
+                LicProvCampoBuscarController,
                 )
 
 urlpatterns = [
@@ -78,4 +79,5 @@ urlpatterns = [
     path('seleccionar-solicitud', SeleccionarSolicitudController.as_view()),    
     path('lic-prov-tipo', LicProvTipoController.as_view()),
     path('lic-prov-buscar', LicProvBuscarController.as_view()),
+    path('lic-prov-campos', LicProvCampoBuscarController.as_view()),
 ]
