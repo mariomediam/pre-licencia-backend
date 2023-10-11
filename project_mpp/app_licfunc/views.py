@@ -1562,8 +1562,15 @@ class LicProvTipoController(RetrieveAPIView):
     serializer_class = LicProvTipoSerializer
     queryset = LicProvTipoModel.objects.all()
 
-    def get(self, request):
-        data = self.serializer_class(instance=self.get_queryset(), many=True)
+    def get(self, request, id=None):
+        if id:
+            lic_prov_tipo = self.get_queryset().get(pk=id)
+            data = self.serializer_class(instance=lic_prov_tipo, many=False)
+        else:
+            lic_prov_tipo = self.get_queryset()
+            data = self.serializer_class(instance=lic_prov_tipo, many=True)
+
+        
         return Response(data={"message": None, "content": data.data})
 
 
@@ -1574,7 +1581,7 @@ class LicProvBuscarController(RetrieveAPIView):
     def get(self, request: Request):
         lic_prov_tipo = request.query_params.get("tipo")
         campo_buscado = request.query_params.get("campo")
-        valor_buscado = request.query_params.get("valor")
+        valor_buscado = request.query_params.get("valor")        
         
         lic_prov_tipo = int(lic_prov_tipo)
 
@@ -1598,20 +1605,13 @@ class LicProvBuscarController(RetrieveAPIView):
             lic_prov_tipo, campo_buscado, valor_buscado
         )
 
-        # Listar el contenido del directorio /var/www/licenciaProvisional
-        # y obtener el nombre de los archivos
-        # os.chdir(environ.get("RUTA_REQUISITOS_LICENCIA_PROVISIONAL"))
-        # archivos = glob.glob("*")
-        # ruta_carpeta = '/var/www/licenciaProvisional'
-        # print(os.listdir(ruta_carpeta))
-
 
         # Convirtiendo imagen a base64        
         for i, lic in enumerate(lic_provisional):
+
             ruta_imagen = str(lic["N_LicProv_TitImg"]).replace("/var/www/licenciaProvisional/", "Y:\\")
-            print(ruta_imagen)
-            if os.path.exists(ruta_imagen.strip()):
-                print("entroooo")
+            
+            if os.path.exists(ruta_imagen.strip()):            
                 with open(ruta_imagen, "rb") as f:
                     imagen_codificada = base64.b64encode(f.read()).decode("utf-8")
             else:
@@ -1625,15 +1625,21 @@ class LicProvBuscarController(RetrieveAPIView):
         numeros_unicos = {lic["M_LicProv_Nro"] for lic in lic_provisional}
 
         for numero in numeros_unicos:
+            permisos = []
+            for lic in lic_provisional:
+                if lic["M_LicProv_Nro"] == numero:
+                    permisos.append(lic)
+
+            anulada = False
+            if len(permisos) > 0:
+                anulada = permisos[0]["F_LicProv_Anula"] 
+                
             lic_provisional_formato.append(
                 {
                     "C_LicProv_Tipo": lic_prov_tipo,
                     "M_LicProv_Nro": numero,
-                    "permisos": [
-                        lic
-                        for lic in lic_provisional
-                        if lic["M_LicProv_Nro"] == numero
-                    ],
+                    "F_LicProv_Anula": anulada,
+                    "permisos": permisos,
                 }
             )
 

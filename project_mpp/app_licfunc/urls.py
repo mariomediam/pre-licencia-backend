@@ -80,4 +80,5 @@ urlpatterns = [
     path('lic-prov-tipo', LicProvTipoController.as_view()),
     path('lic-prov-buscar', LicProvBuscarController.as_view()),
     path('lic-prov-campos', LicProvCampoBuscarController.as_view()),
+    path('lic-prov-tipo/<int:id>', LicProvTipoController.as_view()),
 ]

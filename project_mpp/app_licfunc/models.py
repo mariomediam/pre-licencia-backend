@@ -458,6 +458,8 @@ class LicProvTipoModel(models.Model):
     licProvDescrip = models.CharField(max_length=1024, db_column='T_LicProv_Descrip', null=False)
 
     licProvImagen = models.CharField(max_length=100, db_column='N_LicProv_Imagen', null=False)
+
+    licProvIcon = models.CharField(max_length=50, db_column='N_LicProv_Icon', null=False)
     
     class Meta:
         db_table = 'S02Lic_Provisional_Tipo'
@@ -557,6 +559,23 @@ class LicProvModel(models.Model):
 
     class Meta:
         db_table = 'S02Lic_Provisional'
+
+
+class LicProvAnulaModel(models.Model):
+
+    licProv = models.OneToOneField(to=LicProvModel, primary_key=True, db_column='C_LicProv', on_delete=models.CASCADE, related_name='anulacion')
+
+    anulaMotivo = models.CharField(max_length=1024, db_column='T_Anula_Motivo', null=False)
+
+    anulaLogin = models.CharField(max_length=20, null=False, db_column='C_Usuari_Login')
+
+    anulaDigitFecha = models.DateTimeField(auto_now=True, db_column='D_Anula_FecDig')
+
+    anulaDigitPC = models.CharField(max_length=20, db_column='N_Anula_PC', null=False)
+
+    class Meta:
+        db_table = 'S02Lic_Provisional_Anula'
+
 
 
 
