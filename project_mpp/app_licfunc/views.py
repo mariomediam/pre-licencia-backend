@@ -1,4 +1,8 @@
 import base64
+import os
+import io
+from  PIL import Image
+import imghdr
 
 from django.shortcuts import render
 from django.db import transaction
@@ -64,6 +68,9 @@ from .serializers import (
     LicProvSerializer,
     LicProvTipoSerializer,
     LicProvFullSerializer,
+    LicProvRubroSerializer,
+    LicProvUbicaSerializer,
+    LicProvSerializerImage64
 )
 from app_licfunc.licfunc import (
     TipoTramitePorLicencia,
@@ -1687,3 +1694,188 @@ class LicProvCampoBuscarController(RetrieveAPIView):
            
         
         return Response(data={"message": None, "content": list(mapea_campos)})
+
+
+class LicProvRubroController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = LicProvRubroSerializer
+    queryset = LicProvRubroModel.objects.all()
+
+    def get(self, request, id=None):
+        if id:
+            lic_prov_rubro = self.get_queryset().get(pk=id)
+            data = self.serializer_class(instance=lic_prov_rubro, many=False)
+        else:
+            lic_prov_rubro = self.get_queryset()
+            data = self.serializer_class(instance=lic_prov_rubro, many=True)
+
+        
+        return Response(data={"message": None, "content": data.data})
+    
+# class LicProvRubroController(RetrieveAPIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = LicProvRubroSerializer
+#     queryset = LicProvRubroModel.objects.all()
+
+#     def get(self, request, id=None):
+#         if id:
+#             lic_prov_rubro = self.get_queryset().get(pk=id)
+#             data = self.serializer_class(instance=lic_prov_rubro, many=False)
+#         else:
+#             lic_prov_rubro = self.get_queryset()
+#             data = self.serializer_class(instance=lic_prov_rubro, many=True)
+
+        
+#         return Response(data={"message": None, "content": data.data})    
+    
+
+class BuscarLicProvRubroController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = LicProvRubroSerializer
+    queryset = LicProvRubroModel.objects.all()
+
+    def get(self, request, tipo:int, orden:int = None):
+
+        lic_prov_rubro = self.get_queryset().filter(licProvTipo=tipo)
+
+        if orden:
+            lic_prov_rubro = lic_prov_rubro.filter(rubroOrden=orden).first()
+            
+            if not lic_prov_rubro:
+                return Response(data={"message": None, "content": {}})
+            
+            data = self.serializer_class(instance=lic_prov_rubro, many=False)   
+                        
+        else:
+            data = self.serializer_class(instance=lic_prov_rubro, many=True)        
+        
+        return Response(data={"message": None, "content": data.data})        
+    
+
+class LicProvUbicaController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = LicProvUbicaSerializer
+    queryset = LicProvUbicaModel.objects.all()
+
+    def get(self, request, id=None):
+        if id:
+            lic_prov_ubica = self.get_queryset().get(pk=id)
+            data = self.serializer_class(instance=lic_prov_ubica, many=False)
+        else:
+            lic_prov_ubica = self.get_queryset()
+            data = self.serializer_class(instance=lic_prov_ubica, many=True)
+
+        
+        return Response(data={"message": None, "content": data.data})    
+
+
+class BuscarLicProvUbicaController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = LicProvUbicaSerializer
+    queryset = LicProvUbicaModel.objects.all()
+
+    def get(self, request, tipo:int, orden:int = None):
+
+        lic_prov_ubica = self.get_queryset().filter(licProvTipo=tipo)
+
+        if orden:
+            lic_prov_ubica = lic_prov_ubica.filter(ubicaOrden=orden).first()
+            
+            if not lic_prov_ubica:
+                return Response(data={"message": None, "content": {}})
+            
+            data = self.serializer_class(instance=lic_prov_ubica, many=False)   
+                        
+        else:
+            data = self.serializer_class(instance=lic_prov_ubica, many=True)        
+        
+        return Response(data={"message": None, "content": data.data})                
+
+def getLicProvMaxNro(tipo:int):
+    lic_prov = LicProvModel.objects.filter(licProvTipo=tipo).aggregate(Max('licProvNro'))
+    return  lic_prov["licProvNro__max"] 
+
+def saveImageBase64(image_base64, image_name):
+    if image_base64:
+        image_data = base64.b64decode(image_base64)
+        extension = imghdr.what(None, h=image_data)
+        if extension:
+            image_name_with_extension = "{}.{}".format(image_name, extension)
+        else:
+            image_name_with_extension = image_name
+        image = Image.open(io.BytesIO(image_data))
+        image.save(image_name_with_extension)
+        return extension or ""
+    else:
+        return None
+
+
+class LicProvController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = LicProvSerializer
+    queryset = LicProvModel.objects.all()
+
+    def post(self, request: Request):
+
+        try:
+            TIPO_ACCION = { 1:  "nuevo", 2: "modificar", 3: "renovar"}
+            login = request.user.username
+            data = self.serializer_class(data=request.data) 
+                
+            accion = data.initial_data["accion"] or 0
+
+            if accion not in TIPO_ACCION:
+                return Response(data={"message": "No se ha especificado acción", "content": None}, status=400)
+            
+            if TIPO_ACCION[accion] == "nuevo":
+                licprov_nro_new = getLicProvMaxNro(data.initial_data["licProvTipo"])
+                if not licprov_nro_new:
+                    licprov_nro_new = 1
+                else:
+                    licprov_nro_new += 1
+
+                data.initial_data["licProvNro"] = licprov_nro_new
+                data.initial_data["licProvRenov"] = None
+                        
+            
+            img_titular = data.initial_data["licProvTitImg"]
+            if len(img_titular) > 0:
+                data.initial_data["licProvTitImg"] = "Temporal"
+
+            data.initial_data["licProvLogin"] = login
+            data.initial_data["licProvDigitPC"] = request.META.get("REMOTE_ADDR")
+
+            if data.is_valid():
+                
+                with transaction.atomic():
+                    licprov_new = data.save()
+                    path_TitImg = "{}titular-{}".format(environ.get("RUTA_LIVPROV_TITULAR"), licprov_new.licProvId)
+                    extension = saveImageBase64(img_titular, path_TitImg)
+                    licprov_new.licProvTitImg =  "{}.{}".format(path_TitImg, extension)
+                    licprov_new.save()
+
+            else: 
+                
+                return Response(
+                data={"message": data.errors, "content": "Error creando licencia provisional"},
+                status=400,
+                )
+
+            return Response(data={"message": None, "content": data.data}, status=200)   
+        
+        except Exception as e:
+                print("**********errores ***************")
+                print(e.__cause__)
+                return Response(data={"message": e.args, "content": None}, status=400)
+
+
+    
+    def get(self, request, id):
+        try:
+            lic_prov = self.get_queryset().get(pk=id)
+            data = LicProvSerializerImage64(instance=lic_prov, many=False)
+            
+            return Response(data={"message": None, "content": data.data}, status=200)
+            
+        except Exception as e:
+            return Response(data={"message": e.args, "content": None}, status=400)

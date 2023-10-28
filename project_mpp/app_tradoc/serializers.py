@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .models import ExpedientesModel
 
 
 # class PrecalifUserEstadoSerializer(serializers.Serializer):
@@ -12,3 +13,7 @@ from rest_framework import serializers
 #     webContribNomCompleto = serializers.CharField(max_length=250)
 #     farchivos = serializers.IntegerField()
 
+class ExpedientesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExpedientesModel
+        fields = "__all__"        

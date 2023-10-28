@@ -539,9 +539,9 @@ class LicProvModel(models.Model):
 
     licProvHorAte = models.CharField(max_length=50, db_column='N_LicProv_HorAte', null=False)
 
-    licProvCerGas = models.CharField(max_length=50, db_column='N_LicProv_CerGas', null=False)
+    licProvCerGas = models.CharField(max_length=50, db_column='N_LicProv_CerGas', null=True, blank=True, default='')
 
-    licProvObs = models.CharField(max_length=1024, db_column='T_LicProv_Obs', null=False)
+    licProvObs = models.CharField(max_length=1024, db_column='T_LicProv_Obs', null=True, blank=True, default='')
 
     licProvFecEmi = models.DateField(db_column='D_LicProv_FecEmi', null=False)
 
@@ -549,7 +549,7 @@ class LicProvModel(models.Model):
 
     licProvFinVig = models.DateField(db_column='D_LicProv_FinVig', null=False)
 
-    licProvFormato = models.CharField(max_length=20, db_column='N_LicProv_Formato', null=False)
+    licProvFormato = models.CharField(max_length=20, db_column='N_LicProv_Formato', null=True, blank=True, default='')
 
     licProvLogin = models.CharField(max_length=20, null=False, db_column='C_Usuari_Login')
 
