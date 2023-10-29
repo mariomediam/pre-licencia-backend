@@ -73,3 +73,9 @@ def LicProvisionalBuscar(C_LicProv_Tipo, Campo, Valor):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIAC.dbo.S02LicProvisionalBuscar %s, %s, %s', [C_LicProv_Tipo, Campo, Valor])
         return dictfetchall(cursor)
+
+def LicProvisionalImprimir(C_LicProv):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIAC.dbo.S02LicProvisionalImprimir %s', [C_LicProv])
+        return dictfetchall(cursor)
+

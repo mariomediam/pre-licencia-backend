@@ -3,6 +3,8 @@ import os
 import io
 from  PIL import Image
 import imghdr
+import pdfkit
+import mimetypes
 
 from django.shortcuts import render
 from django.db import transaction
@@ -83,11 +85,14 @@ from app_licfunc.licfunc import (
     AgregarSol_GiroNegCiiu,
     SeleccionarSolicitud,
     LicProvisionalBuscar,
+    LicProvisionalImprimir,
 )
 from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.descargar import download_file
 from app_deploy.general.cargar import upload_file
 from app_deploy.general.paginations import CustomPagination
+from app_deploy.general.imageToBase64 import imageToBase64
+from app_deploy.general.generateQR import generateQrURL
 from app_tradoc.tradoc import SeleccReqTupa
 
 from app_contribuyente.models import ContribuyenteModel
@@ -1616,7 +1621,8 @@ class LicProvBuscarController(RetrieveAPIView):
         # Convirtiendo imagen a base64        
         for i, lic in enumerate(lic_provisional):
 
-            ruta_imagen = str(lic["N_LicProv_TitImg"]).replace("/var/www/licenciaProvisional/", "Y:\\")
+            # ruta_imagen = str(lic["N_LicProv_TitImg"]).replace("/var/www/licenciaProvisional/", "Y:\\")
+            ruta_imagen = str(lic["N_LicProv_TitImg"])
             
             if os.path.exists(ruta_imagen.strip()):            
                 with open(ruta_imagen, "rb") as f:
@@ -1808,6 +1814,49 @@ def saveImageBase64(image_base64, image_name):
         return extension or ""
     else:
         return None
+    
+def addLicProv(licprov_data, img_titular):
+    try:    
+        licprov_new = licprov_data.save()        
+        path_TitImg = "{}titular-{}".format(environ.get("RUTA_LIVPROV_TITULAR"), licprov_new.licProvId)
+        extension = saveImageBase64(img_titular, path_TitImg)
+        licprov_new.licProvTitImg =  "{}.{}".format(path_TitImg, extension)
+        licprov_new.save()
+        return licprov_new
+    except Exception as e:
+        raise Exception(e)
+    
+def editLicProv(licprov_data, img_titular):
+    try:    
+        lic_prov_id = licprov_data.initial_data["licProvId"]
+        licprov_edit = LicProvModel.objects.all().get(pk=lic_prov_id)
+        licprov_edit.licProvExpNro = licprov_data.validated_data["licProvExpNro"]
+        licprov_edit.licProvExpAnio = licprov_data.validated_data["licProvExpAnio"]
+        licprov_edit.licProvTitCod = licprov_data.validated_data["licProvTitCod"]
+        licprov_edit.licProvTitTipCod = licprov_data.validated_data["licProvTitTipCod"]
+        licprov_edit.licProvTitNroDoc = licprov_data.validated_data["licProvTitNroDoc"]        
+        licprov_edit.licProvRubro = licprov_data.validated_data["licProvRubro"]
+        licprov_edit.licProvUbica = licprov_data.validated_data["licProvUbica"]
+        licprov_edit.licProvHorAte = licprov_data.validated_data["licProvHorAte"]
+        licprov_edit.licProvCerGas = licprov_data.validated_data["licProvCerGas"]
+        licprov_edit.licProvObs = licprov_data.validated_data["licProvObs"]
+        licprov_edit.licProvFecEmi = licprov_data.validated_data["licProvFecEmi"]
+        licprov_edit.licProvIniVig = licprov_data.validated_data["licProvIniVig"]
+        licprov_edit.licProvFinVig = licprov_data.validated_data["licProvFinVig"]
+        licprov_edit.licProvFormato = licprov_data.validated_data["licProvFormato"]
+        licprov_edit.licProvLogin = licprov_data.validated_data["licProvLogin"]
+        licprov_edit.licProvDigitFecha = licprov_data.initial_data["licProvDigitFecha"]
+        licprov_edit.licProvDigitPC = licprov_data.validated_data["licProvDigitPC"]
+
+        path_TitImg = "{}titular-{}".format(environ.get("RUTA_LIVPROV_TITULAR"), lic_prov_id)
+        extension = saveImageBase64(img_titular, path_TitImg)
+        licprov_edit.licProvTitImg = "{}.{}".format(path_TitImg, extension)        
+
+        licprov_edit.save()                
+        return licprov_edit
+
+    except Exception as e:
+        raise Exception(e)
 
 
 class LicProvController(RetrieveAPIView):
@@ -1836,8 +1885,7 @@ class LicProvController(RetrieveAPIView):
 
                 data.initial_data["licProvNro"] = licprov_nro_new
                 data.initial_data["licProvRenov"] = None
-                        
-            
+                            
             img_titular = data.initial_data["licProvTitImg"]
             if len(img_titular) > 0:
                 data.initial_data["licProvTitImg"] = "Temporal"
@@ -1848,14 +1896,12 @@ class LicProvController(RetrieveAPIView):
             if data.is_valid():
                 
                 with transaction.atomic():
-                    licprov_new = data.save()
-                    path_TitImg = "{}titular-{}".format(environ.get("RUTA_LIVPROV_TITULAR"), licprov_new.licProvId)
-                    extension = saveImageBase64(img_titular, path_TitImg)
-                    licprov_new.licProvTitImg =  "{}.{}".format(path_TitImg, extension)
-                    licprov_new.save()
+                    if TIPO_ACCION[accion] == "nuevo":
+                        licprov_gestion = addLicProv(data, img_titular)                                                
+                    elif TIPO_ACCION[accion] == "modificar":                        
+                        licprov_gestion = editLicProv(data, img_titular)
 
-            else: 
-                
+            else:                 
                 return Response(
                 data={"message": data.errors, "content": "Error creando licencia provisional"},
                 status=400,
@@ -1864,8 +1910,6 @@ class LicProvController(RetrieveAPIView):
             return Response(data={"message": None, "content": data.data}, status=200)   
         
         except Exception as e:
-                print("**********errores ***************")
-                print(e.__cause__)
                 return Response(data={"message": e.args, "content": None}, status=400)
 
 
@@ -1879,3 +1923,38 @@ class LicProvController(RetrieveAPIView):
             
         except Exception as e:
             return Response(data={"message": e.args, "content": None}, status=400)
+        
+def LicProvDownloadController(request, id=""):
+           
+    lic_provisional = LicProvisionalImprimir(id)
+
+    
+    if len(lic_provisional) == 1:
+        lic_provisional = lic_provisional[0]        
+        image_base_64 = imageToBase64(lic_provisional["N_LicProv_TitImg"])
+        url_QR = generateQrURL("https://www.gob.pe/munipiura")
+        
+        # ********************* INCIO GENERANDO PDF ********************* #
+        context = {"C_LicProv" : id,
+                   "M_LicProv_Nro": lic_provisional["M_LicProv_Nro"],
+                    "N_Imagen_Base64": image_base_64,
+                    "url_QR": url_QR,}
+        
+        template = get_template('licenciaProvisional.html')
+        html = template.render(context = context)                        
+    
+        file_generate = pdfkit.from_string(html, False)
+        response = HttpResponse(file_generate, content_type="application/pdf")
+        file_name_download = "licenciaProvisional_{}.pdf".format(lic_provisional["M_LicProv_Nro"])
+        print("*********************************************")
+        print(file_name_download)
+        response['Content-Disposition'] = "attachment; filename={}".format(file_name_download)
+
+        # ********************* FIN GENERANDO PDF ********************* #
+
+        return response
+
+    return Response(
+            data={"message": "No se encontro licencia provisional", "content": None},
+            status=status.HTTP_400_BAD_REQUEST,
+        )        

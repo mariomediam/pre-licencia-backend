@@ -376,12 +376,12 @@ class LicProvSerializerImage64(serializers.ModelSerializer):
     class Meta:
         model = LicProvModel
         fields = "__all__"
-
-    # cuando busque un valor reemplazar la columa licProvLogin por "aaa"
+    
     def to_representation(self, instance):
         ret = super().to_representation(instance)
          # Convirtiendo imagen a base64        
-        ruta_imagen = str(ret["licProvTitImg"]).replace("/var/www/licenciaProvisional/", "Y:\\")            
+        # ruta_imagen = str(ret["licProvTitImg"]).replace("/var/www/licenciaProvisional/", "Y:\\")            
+        ruta_imagen = str(ret["licProvTitImg"])
         if os.path.exists(ruta_imagen.strip()):            
             with open(ruta_imagen, "rb") as f:
                 imagen_codificada = base64.b64encode(f.read()).decode("utf-8")

@@ -43,6 +43,7 @@ from .views import (PrecalificacionController,
                 BuscarLicProvUbicaController,
                 LicProvUbicaController,
                 LicProvController,
+                LicProvDownloadController
                 )
 
 urlpatterns = [
@@ -96,4 +97,5 @@ urlpatterns = [
     path('lic-prov-ubica/<int:id>', LicProvUbicaController.as_view()),
     path('lic-prov-ubica-buscar/<int:tipo>', BuscarLicProvUbicaController.as_view()),
     path('lic-prov-ubica-buscar/<int:tipo>/<int:orden>', BuscarLicProvUbicaController.as_view()),
+    path('lic-prov-imprimir/<int:id>', LicProvDownloadController),
 ]
