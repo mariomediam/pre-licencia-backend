@@ -13,9 +13,10 @@ def download_file(request, file_download='', file_rename=''):
     if file_download != '':
         # Define Django project base directory
         # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))                   
-        BASE_DIR = environ.get('RUTA_REQUISITOS_LICENCIA')            
+        # BASE_DIR = environ.get('RUTA_REQUISITOS_LICENCIA')            
         # Define the full file path
-        filepath = BASE_DIR + file_download
+        # filepath = BASE_DIR + file_download
+        filepath = file_download
         # filepath = BASE_DIR + filename        
         # Open the file for reading content
         path = open(filepath, 'rb')
