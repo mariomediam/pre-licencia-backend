@@ -1931,18 +1931,41 @@ def LicProvDownloadController(request, id=""):
     if len(lic_provisional) == 1:
         lic_provisional = lic_provisional[0]        
         image_base_64 = imageToBase64(lic_provisional["N_LicProv_TitImg"])
-        url_QR = generateQrURL("https://www.gob.pe/munipiura")
+        url_QR = generateQrURL(lic_provisional["url_QR"])
         
         # ********************* INCIO GENERANDO PDF ********************* #
         context = {"C_LicProv" : id,
                    "M_LicProv_Nro": lic_provisional["M_LicProv_Nro"],
-                    "N_Imagen_Base64": image_base_64,
-                    "url_QR": url_QR,}
+                   "M_LicProv_NroTitle": str(lic_provisional["M_LicProv_Nro"]).zfill(5),
+                   "N_Titular": lic_provisional["N_Titular"],
+                   "N_TipDoc": lic_provisional["N_TipDoc"],
+                   "M_LicProv_TitNroDoc": lic_provisional["M_LicProv_TitNroDoc"],
+                   "N_LicProv_Nombre": lic_provisional["N_LicProv_Nombre"],
+                   "C_Ubica_Codigo": lic_provisional["C_Ubica_Codigo"],
+                   "N_Ubica_Descrip": lic_provisional["N_Ubica_Descrip"],
+                   "N_Rubro_Descrip": lic_provisional["N_Rubro_Descrip"],
+                   "N_Rubro_Dimension": lic_provisional["N_Rubro_Dimension"],
+                   "N_LicProv_HorAte": lic_provisional["N_LicProv_HorAte"],
+                   "D_LicProv_FecEmi": lic_provisional["D_LicProv_FecEmi"],
+                   "D_LicProv_FinVig": lic_provisional["D_LicProv_FinVig"],
+                   "N_Imagen_Base64": image_base_64,
+                   "url_QR": url_QR,}
         
         template = get_template('licenciaProvisional.html')
-        html = template.render(context = context)                        
+        html = template.render(context = context)    
+
+        options = {
+            'page-size': 'A4',
+            'margin-top': '0.75in',
+            'margin-right': '0.75in',
+            'margin-bottom': '0.75in',
+            'margin-left': '0.75in',
+            'encoding': "UTF-8",           
+            'no-outline': None
+        }                    
     
-        file_generate = pdfkit.from_string(html, False)
+        file_generate = pdfkit.from_string(html, False, options=options)
+        
         response = HttpResponse(file_generate, content_type="application/pdf")
         file_name_download = "licenciaProvisional_{}.pdf".format(lic_provisional["M_LicProv_Nro"])
         response['Content-Disposition'] = "attachment; filename={}".format(file_name_download)

@@ -2,10 +2,127 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <style>
+       
+       .tableTitle{
+        padding-top: 150px;
+        padding-bottom: 70px;
+       }
+
+       .tdTitle{
+        padding-left: 120px;
+        width: 600px;        
+       }
+       h2{
+        padding-bottom: 0px;
+        margin-bottom: 0px;
+       }
+       .exhibir{
+        padding-top: 0px;
+        margin-top: 0px;
+       }
+       
+        h2, .exhibir {
+            text-align: center;
+        }
+        .imgFoto {
+            height: 200px;
+            object-fit: cover;
+        }
+        .imgQR{
+            height: 150px;
+            object-fit: cover;
+            padding: 0px;
+            margin-left: 50px;
+        }
+        .tdLabel {
+            width: 250px;
+            font-weight: bold;            
+        }
+
+        .tdMain{
+            padding-bottom: 25px;            
+        }
+        .negrita{
+            font-weight: bold;
+        }
+        .showBorder {
+            border: 1px solid black;
+        }
+        .textTop{
+            vertical-align: text-top;
+        }
+       
+    </style>
 </head>
 <body>
-    <h1>Licencia provisional {{ M_LicProv_Nro }}</h1>
-    <img src="data:image/png;base64,{{ N_Imagen_Base64 }}" alt="Red dot" />
-    <img src="{{ url_QR }}">
+    <table class="tableTitle">
+        <tr>
+            <td class="tdTitle">
+                <h2>AUTORIZACIÓN Nº {{ M_LicProv_NroTitle }}</h2>
+                <p class="exhibir">"Exhibir en un lugar visible"</p>
+            </td>
+            <td> 
+                <img  class="imgFoto" src="data:image/png;base64,{{ N_Imagen_Base64 }}" alt="Red dot" />
+            </td>
+        </tr>
+    </table>
+
+    <table>
+        <tr class="tdMain">
+            <td class="tdLabel tdMain">TITULAR</td>
+            <td class="tdMain">: {{ N_Titular }}</td>
+        </tr>
+        <tr class="tdMain" >
+            <td class="tdLabel tdMain">{{ N_TipDoc}} Nº</td>
+            <td class="tdMain">: {{ M_LicProv_TitNroDoc }}</td>
+        </tr>
+        <tr class="tdMain" >
+            <td class="tdLabel tdMain">GIRO AUTORIZADO</td>
+            <td class="tdMain"> : {{ N_LicProv_Nombre|upper }}</td>
+        </tr>
+        <tr class="tdMain" >
+            <td class="tdLabel tdMain">CÓDIGO DE UBICACIÓN</td>
+            <td class="tdMain"> : {{ C_Ubica_Codigo }}</td>
+        </tr>
+        <tr class="tdMain" >
+            <td class="tdLabel tdMain">RUBRO</td>
+            <td class="tdMain"> : {{ N_Rubro_Descrip }}</td>
+        </tr>
+        <tr class="tdMain" >
+            <td class="tdLabel tdMain">UBICACIÓN DETALLADA</td>
+            <td class="tdMain"> : {{ N_Ubica_Descrip }}</td>
+        </tr>
+        <tr class="tdMain" >
+            <td class="tdLabel tdMain">MEDIDAS DEL MÓDULO</td>
+            <td class="tdMain"> : {{ N_Rubro_Dimension }}</td>
+        </tr>
+        <tr class="tdMain" >
+            <td class="tdLabel tdMain">HORARIO DE ATENCIÓN</td>
+            <td class="tdMain"> : {{ N_LicProv_HorAte }}</td>
+        </tr>
+        <tr class="tdMain" >
+            <td class="tdLabel tdMain">FECHA DE EMISIÓN</td>
+            <td class="tdMain"> : Piura, {{ D_LicProv_FecEmi }}</td>
+        </tr>
+        <tr class="tdMain" >
+            <td class="tdLabel tdMain">FECHA DE VENCIMIENTO</td>
+            <td class="tdMain"> : Piura, {{ D_LicProv_FinVig }}</td>
+        </tr>
+    </table>
+
+    <table>
+        <tr>
+            <td class="textTop">
+                <p ><strong>Nota:</strong> De no cumplir con las consideraciones establecidas, la autorización provisional se revocará.</p>
+            </td>
+            <td>
+                <img class="imgQR showBorder" src="{{ url_QR }}">
+            </td>
+        </tr>
+    </table>
+        
+    
+    
 <body>
 </html>
