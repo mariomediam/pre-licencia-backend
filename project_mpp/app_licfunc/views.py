@@ -458,9 +458,7 @@ class PrecalEvaluacionController(RetrieveAPIView):
                             for documento_selecc in mis_documentos_selecc:
                                 array_documentos.append(
                                     documento_selecc["precalTipDocNombre"]
-                                )
-
-                        print("************************ 01 **************************")
+                                )                        
 
                         array_requisitos = []
                         if (
@@ -485,16 +483,10 @@ class PrecalEvaluacionController(RetrieveAPIView):
                                     }
                                 )
 
-                        print("************************ 02 **************************")
-
                         subject = (
                             "MPP - Solicitud Virtual de Pre Licencia N° "
                             + f"{precalificacion.precalId:04}"
                         )
-
-                        # print(html_evaluaciones)
-
-                        # obj_tipo_licencia = TipoLicenciaModel.objects.all().filter(tipoLicId=tipo_licencia).first()
 
                         context = {
                             "precalId": f"{precalificacion.precalId:04}",
@@ -516,7 +508,6 @@ class PrecalEvaluacionController(RetrieveAPIView):
 
                         to = ["mmedina@munipiura.gob.pe"]
 
-                        print("************************ 03 **************************")
 
                         # print(precalificacion.precalCorreo)
 
@@ -526,8 +517,6 @@ class PrecalEvaluacionController(RetrieveAPIView):
                         enviarEmail(
                             subject=subject, body=body, to=to, attachments=attachments
                         )
-
-                        print("************************ 04 **************************")
 
                     precalificacion.save()
 
@@ -1804,21 +1793,25 @@ def getLicProvMaxNro(tipo:int):
 def saveImageBase64(image_base64, image_name):
     if image_base64:
         image_data = base64.b64decode(image_base64)
+        
         extension = imghdr.what(None, h=image_data)
         if extension:
             image_name_with_extension = "{}.{}".format(image_name, extension)
         else:
             image_name_with_extension = image_name
+
         image = Image.open(io.BytesIO(image_data))
         image.save(image_name_with_extension)
+
         return extension or ""
+     
     else:
         return None
     
 def addLicProv(licprov_data, img_titular):
     try:    
         licprov_new = licprov_data.save()        
-        path_TitImg = "{}titular-{}".format(environ.get("RUTA_LIVPROV_TITULAR"), licprov_new.licProvId)
+        path_TitImg = "{}/titular-{}".format(environ.get("RUTA_LIVPROV_TITULAR"), licprov_new.licProvId)
         extension = saveImageBase64(img_titular, path_TitImg)
         licprov_new.licProvTitImg =  "{}.{}".format(path_TitImg, extension)
         licprov_new.save()
@@ -1848,7 +1841,7 @@ def editLicProv(licprov_data, img_titular):
         licprov_edit.licProvDigitFecha = licprov_data.initial_data["licProvDigitFecha"]
         licprov_edit.licProvDigitPC = licprov_data.validated_data["licProvDigitPC"]
 
-        path_TitImg = "{}titular-{}".format(environ.get("RUTA_LIVPROV_TITULAR"), lic_prov_id)
+        path_TitImg = "{}/titular-{}".format(environ.get("RUTA_LIVPROV_TITULAR"), lic_prov_id)
         extension = saveImageBase64(img_titular, path_TitImg)
         licprov_edit.licProvTitImg = "{}.{}".format(path_TitImg, extension)        
 
@@ -1869,14 +1862,19 @@ class LicProvController(RetrieveAPIView):
         try:
             TIPO_ACCION = { 1:  "nuevo", 2: "modificar", 3: "renovar"}
             login = request.user.username
+            
             data = self.serializer_class(data=request.data) 
+            
                 
             accion = data.initial_data["accion"] or 0
 
+            
             if accion not in TIPO_ACCION:
                 return Response(data={"message": "No se ha especificado acción", "content": None}, status=400)
             
+
             if TIPO_ACCION[accion] == "nuevo":
+
                 licprov_nro_new = getLicProvMaxNro(data.initial_data["licProvTipo"])
                 if not licprov_nro_new:
                     licprov_nro_new = 1
@@ -1893,11 +1891,12 @@ class LicProvController(RetrieveAPIView):
             data.initial_data["licProvLogin"] = login
             data.initial_data["licProvDigitPC"] = request.META.get("REMOTE_ADDR")
 
+
             if data.is_valid():
-                
+                                
                 with transaction.atomic():
-                    if TIPO_ACCION[accion] == "nuevo":
-                        licprov_gestion = addLicProv(data, img_titular)                                                
+                    if TIPO_ACCION[accion] == "nuevo":                        
+                        licprov_gestion = addLicProv(data, img_titular)                                                                        
                     elif TIPO_ACCION[accion] == "modificar":                        
                         licprov_gestion = editLicProv(data, img_titular)
 
@@ -1946,8 +1945,6 @@ def LicProvDownloadController(request, id=""):
         file_generate = pdfkit.from_string(html, False)
         response = HttpResponse(file_generate, content_type="application/pdf")
         file_name_download = "licenciaProvisional_{}.pdf".format(lic_provisional["M_LicProv_Nro"])
-        print("*********************************************")
-        print(file_name_download)
         response['Content-Disposition'] = "attachment; filename={}".format(file_name_download)
 
         # ********************* FIN GENERANDO PDF ********************* #
