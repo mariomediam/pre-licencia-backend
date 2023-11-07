@@ -1850,6 +1850,15 @@ def editLicProv(licprov_data, img_titular):
 
     except Exception as e:
         raise Exception(e)
+    
+def lastLicProv(licProvTipo, licProvNro):
+    try:
+        # obtener el maximo licProvRenov
+        max_renov = LicProvModel.objects.filter(licProvTipo=licProvTipo).filter(licProvNro=licProvNro).aggregate(Max('licProvRenov'))
+        return max_renov["licProvRenov__max"]
+    except Exception as e:
+        raise Exception(e)
+ 
 
 
 class LicProvController(RetrieveAPIView):
@@ -1922,6 +1931,27 @@ class LicProvController(RetrieveAPIView):
             
         except Exception as e:
             return Response(data={"message": e.args, "content": None}, status=400)
+        
+
+    def delete(self, request, id):
+        try:
+            with transaction.atomic():
+                lic_prov = self.get_queryset().get(pk=id)
+                max_renov = lastLicProv(lic_prov.licProvTipo, lic_prov.licProvNro)                
+                
+                if lic_prov.licProvRenov == max_renov:                    
+                    path_TitImg = lic_prov.licProvTitImg
+                    lic_prov.delete()
+                    if os.path.exists(path_TitImg):
+                        os.remove(path_TitImg)
+                    
+                    return Response(data={"message": "Licencia eliminada correctamente", "content": None}, status=200)
+                else:
+                    return Response(data={"message": "No se puede eliminar licencia provisional", "content": None}, status=400)
+
+                                    
+        except Exception as e:
+            return Response(data={"message": e.args, "content": None}, status=400)        
         
 def LicProvDownloadController(request, id=""):
            
