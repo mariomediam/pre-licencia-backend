@@ -46,6 +46,7 @@ from .models import (
     LicProvUbicaModel,
     LicProvRubroModel,
     LicProvModel,
+    LicProvAnulaModel,
 )
 from .serializers import (
     LicencArchivoSerializer,
@@ -72,7 +73,8 @@ from .serializers import (
     LicProvFullSerializer,
     LicProvRubroSerializer,
     LicProvUbicaSerializer,
-    LicProvSerializerImage64
+    LicProvSerializerImage64,
+    LicProvAnulaSerializer,
 )
 from app_licfunc.licfunc import (
     TipoTramitePorLicencia,
@@ -1707,22 +1709,7 @@ class LicProvRubroController(RetrieveAPIView):
         
         return Response(data={"message": None, "content": data.data})
     
-# class LicProvRubroController(RetrieveAPIView):
-#     permission_classes = [IsAuthenticated]
-#     serializer_class = LicProvRubroSerializer
-#     queryset = LicProvRubroModel.objects.all()
-
-#     def get(self, request, id=None):
-#         if id:
-#             lic_prov_rubro = self.get_queryset().get(pk=id)
-#             data = self.serializer_class(instance=lic_prov_rubro, many=False)
-#         else:
-#             lic_prov_rubro = self.get_queryset()
-#             data = self.serializer_class(instance=lic_prov_rubro, many=True)
-
-        
-#         return Response(data={"message": None, "content": data.data})    
-    
+  
 
 class BuscarLicProvRubroController(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
@@ -1850,16 +1837,15 @@ def editLicProv(licprov_data, img_titular):
 
     except Exception as e:
         raise Exception(e)
+      
     
 def lastLicProv(licProvTipo, licProvNro):
-    try:
-        # obtener el maximo licProvRenov
+    try:        
         max_renov = LicProvModel.objects.filter(licProvTipo=licProvTipo).filter(licProvNro=licProvNro).aggregate(Max('licProvRenov'))
         return max_renov["licProvRenov__max"]
     except Exception as e:
         raise Exception(e)
  
-
 
 class LicProvController(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
@@ -1892,6 +1878,15 @@ class LicProvController(RetrieveAPIView):
 
                 data.initial_data["licProvNro"] = licprov_nro_new
                 data.initial_data["licProvRenov"] = None
+                
+            elif TIPO_ACCION[accion] == "renovar":
+                max_renov = lastLicProv(data.initial_data["licProvTipo"], data.initial_data["licProvNro"])  
+                if max_renov:
+                   max_renov += 1
+                else:
+                   max_renov = 1
+                data.initial_data["licProvRenov"] = max_renov
+
                             
             img_titular = data.initial_data["licProvTitImg"]
             if len(img_titular) > 0:
@@ -1904,7 +1899,7 @@ class LicProvController(RetrieveAPIView):
             if data.is_valid():
                                 
                 with transaction.atomic():
-                    if TIPO_ACCION[accion] == "nuevo":                        
+                    if TIPO_ACCION[accion] == "nuevo" or TIPO_ACCION[accion] == "renovar":                        
                         licprov_gestion = addLicProv(data, img_titular)                                                                        
                     elif TIPO_ACCION[accion] == "modificar":                        
                         licprov_gestion = editLicProv(data, img_titular)
@@ -2008,3 +2003,34 @@ def LicProvDownloadController(request, id=""):
             data={"message": "No se encontro licencia provisional", "content": None},
             status=status.HTTP_400_BAD_REQUEST,
         )        
+
+
+class LicProvAnulaController(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = LicProvAnulaSerializer
+    queryset = LicProvAnulaModel.objects.all()
+
+    def post(self, request: Request):
+        try:
+
+            data = self.serializer_class(data=request.data)
+            data.initial_data["anulaLogin"] = request.user.username
+            data.initial_data["anulaDigitPC"] = request.META.get("REMOTE_ADDR")
+
+            if data.is_valid():                
+                with transaction.atomic():
+                    data.save()
+                    
+                    return Response(
+                        data={"message": "Licencia provisional anulada correctamente", "content": None}, status=200
+                    )
+
+            else:
+                return Response(
+                    data={"message": data.errors, "content": None}, status=400
+                )
+
+        except Exception as e:
+            return Response(data={"message": e.args, "content": None}, status=400)
+
+    
