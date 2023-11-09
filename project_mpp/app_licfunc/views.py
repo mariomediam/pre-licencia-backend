@@ -1957,6 +1957,15 @@ def LicProvDownloadController(request, id=""):
         lic_provisional = lic_provisional[0]        
         image_base_64 = imageToBase64(lic_provisional["N_LicProv_TitImg"])
         url_QR = generateQrURL(lic_provisional["url_QR"])
+
+        # Dando diseño a formato (bordes, escudo y otros)
+
+        path_border = str(settings.MEDIA_ROOT) +'/app_licfunc/bordes_licencia.jpg'
+        border_base_64 = imageToBase64(path_border)
+
+
+
+
         
         # ********************* INCIO GENERANDO PDF ********************* #
         context = {"C_LicProv" : id,
@@ -1974,17 +1983,18 @@ def LicProvDownloadController(request, id=""):
                    "D_LicProv_FecEmi": lic_provisional["D_LicProv_FecEmi"],
                    "D_LicProv_FinVig": lic_provisional["D_LicProv_FinVig"],
                    "N_Imagen_Base64": image_base_64,
-                   "url_QR": url_QR,}
+                   "url_QR": url_QR,
+                   "border_base_64": border_base_64,}
         
         template = get_template('licenciaProvisional.html')
         html = template.render(context = context)    
 
         options = {
             'page-size': 'A4',
-            'margin-top': '0.75in',
-            'margin-right': '0.75in',
-            'margin-bottom': '0.75in',
-            'margin-left': '0.75in',
+            'margin-top': '0.25in',
+            'margin-right': '0.25in',
+            'margin-bottom': '0.25in',
+            'margin-left': '0.25in',
             'encoding': "UTF-8",           
             'no-outline': None
         }                    

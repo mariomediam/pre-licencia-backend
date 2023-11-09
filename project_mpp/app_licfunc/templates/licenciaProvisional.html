@@ -2,46 +2,93 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"> 
     <style>
        
+       body {
+        margin: 0px;
+        padding: 0px;
+	font-family: 'Roboto', sans-serif;
+	font-size: 24px;
+       }
+
+	
+       .container{
+        background-image: url("data:image/jpg;base64,{{ border_base_64 }}");
+        height: 1700px;
+	width: 950px;
+
+	
+        background-repeat: no-repeat;
+	background-size: 100% 100%;
+        padding-left: 115px;
+        padding-right: 115px;
+	padding-top: 0px;
+	margin-top: 0px;
+	border: 1px solid white;
+
+       }
+	
+
+	
+       .img-escudo {
+        height: 150px;
+        
+	object-fit: cover;
+	
+        padding-top: 0px;
+	margin-top: 80px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;            
+	
+       }
+
        .tableTitle{
-        padding-top: 150px;
-        padding-bottom: 70px;
+        padding-top: 0px;
+        padding-bottom: 25x;
        }
 
        .tdTitle{
         padding-left: 120px;
-        width: 600px;        
+        width: 600px;           
+        /* vertical-align: text-top; */
+       }
+       h1{
+	font-size: 48px;
        }
        h2{
         padding-bottom: 0px;
         margin-bottom: 0px;
+	font-size: 30px;
        }
        .exhibir{
         padding-top: 0px;
         margin-top: 0px;
        }
        
-        h2, .exhibir {
+        h1, h2, .exhibir {
             text-align: center;
         }
         .imgFoto {
             height: 200px;
             object-fit: cover;
+            border: 1px solid black;
+            border-radius: 10px;
         }
         .imgQR{
-            height: 150px;
+            height: 200px;
             object-fit: cover;
             padding: 0px;
             margin-left: 50px;
         }
         .tdLabel {
-            width: 250px;
+            width: 350px;
             font-weight: bold;            
         }
 
         .tdMain{
-            padding-bottom: 25px;            
+            padding-bottom: 20px;            
         }
         .negrita{
             font-weight: bold;
@@ -52,77 +99,103 @@
         .textTop{
             vertical-align: text-top;
         }
+        .table_QR{
+            height: 185px;
+        }
+
+        .footer{
+	    position: absolute;
+	    bottom: 25px;	
+            margin-top: 18px;
+            margin-left: 40px;
+            margin-right: 160px;
+            text-align: center;
+            margin-bottom: 45px;                        
+            
+            font-size: 11px;
+        }
+
+        .sizeFooter {
+            min-height: 80px;
+        }
        
     </style>
 </head>
 <body>
-    <table class="tableTitle">
-        <tr>
-            <td class="tdTitle">
-                <h2>AUTORIZACIÓN Nº {{ M_LicProv_NroTitle }}</h2>
-                <p class="exhibir">"Exhibir en un lugar visible"</p>
-            </td>
-            <td> 
-                <img  class="imgFoto" src="data:image/png;base64,{{ N_Imagen_Base64 }}" alt="Red dot" />
-            </td>
-        </tr>
-    </table>
+    <div class="container">
+        <img alt="Piura" class="img-escudo" src="http://tramitevirtual.munipiura.gob.pe/Content/img/logo02.png" />
+        <h1>MUNICIPALIDAD PROVINCIAL DE PIURA</h1>
+        <h2>AUTORIZACIÓN PROVISIONAL MUNICIPAL PARA EL DESARROLLO DE LA ACTIVIDAD COMERCIAL EN LOS ESPACIOS PÚBLICOS</h2>
+        <table class="tableTitle">
+            <tr>
+                <td class="tdTitle">
+                    <h2>AUTORIZACIÓN Nº {{ M_LicProv_NroTitle }}</h2>
+                    <p class="exhibir">"Exhibir en un lugar visible"</p>
+                </td>
+                <td> 
+                    <img  class="imgFoto" src="data:image/png;base64,{{ N_Imagen_Base64 }}" alt="Red dot" />
+                </td>
+            </tr>
+        </table>
 
-    <table>
-        <tr class="tdMain">
-            <td class="tdLabel tdMain">TITULAR</td>
-            <td class="tdMain">: {{ N_Titular }}</td>
-        </tr>
-        <tr class="tdMain" >
-            <td class="tdLabel tdMain">{{ N_TipDoc}} Nº</td>
-            <td class="tdMain">: {{ M_LicProv_TitNroDoc }}</td>
-        </tr>
-        <tr class="tdMain" >
-            <td class="tdLabel tdMain">GIRO AUTORIZADO</td>
-            <td class="tdMain"> : {{ N_LicProv_Nombre|upper }}</td>
-        </tr>
-        <tr class="tdMain" >
-            <td class="tdLabel tdMain">CÓDIGO DE UBICACIÓN</td>
-            <td class="tdMain"> : {{ C_Ubica_Codigo }}</td>
-        </tr>
-        <tr class="tdMain" >
-            <td class="tdLabel tdMain">RUBRO</td>
-            <td class="tdMain"> : {{ N_Rubro_Descrip }}</td>
-        </tr>
-        <tr class="tdMain" >
-            <td class="tdLabel tdMain">UBICACIÓN DETALLADA</td>
-            <td class="tdMain"> : {{ N_Ubica_Descrip }}</td>
-        </tr>
-        <tr class="tdMain" >
-            <td class="tdLabel tdMain">MEDIDAS DEL MÓDULO</td>
-            <td class="tdMain"> : {{ N_Rubro_Dimension }}</td>
-        </tr>
-        <tr class="tdMain" >
-            <td class="tdLabel tdMain">HORARIO DE ATENCIÓN</td>
-            <td class="tdMain"> : {{ N_LicProv_HorAte }}</td>
-        </tr>
-        <tr class="tdMain" >
-            <td class="tdLabel tdMain">FECHA DE EMISIÓN</td>
-            <td class="tdMain"> : Piura, {{ D_LicProv_FecEmi }}</td>
-        </tr>
-        <tr class="tdMain" >
-            <td class="tdLabel tdMain">FECHA DE VENCIMIENTO</td>
-            <td class="tdMain"> : Piura, {{ D_LicProv_FinVig }}</td>
-        </tr>
-    </table>
+        <table>
+            <tr class="tdMain">
+                <td class="tdLabel tdMain">TITULAR</td>
+                <td class="tdMain">: {{ N_Titular }}</td>
+            </tr>
+            <tr class="tdMain" >
+                <td class="tdLabel tdMain">{{ N_TipDoc}} Nº</td>
+                <td class="tdMain">: {{ M_LicProv_TitNroDoc }}</td>
+            </tr>
+            <tr class="tdMain" >
+                <td class="tdLabel tdMain">GIRO AUTORIZADO</td>
+                <td class="tdMain"> : {{ N_LicProv_Nombre|upper }}</td>
+            </tr>
+            <tr class="tdMain" >
+                <td class="tdLabel tdMain">CÓDIGO DE UBICACIÓN</td>
+                <td class="tdMain"> : {{ C_Ubica_Codigo }}</td>
+            </tr>
+            <tr class="tdMain" >
+                <td class="tdLabel tdMain">RUBRO</td>
+                <td class="tdMain"> : {{ N_Rubro_Descrip }} </td>
+            </tr>
+            <tr class="tdMain" >
+                <td class="tdLabel tdMain">UBICACIÓN DETALLADA</td>
+                <td class="tdMain"> : {{ N_Ubica_Descrip }}</td>                                
+            </tr>
+            <tr class="tdMain" >
+                <td class="tdLabel tdMain">MEDIDAS DEL MÓDULO</td>
+                <td class="tdMain"> : {{ N_Rubro_Dimension }}</td>
+            </tr>
+            <tr class="tdMain" >
+                <td class="tdLabel tdMain">HORARIO DE ATENCIÓN</td>
+                <td class="tdMain"> : {{ N_LicProv_HorAte }}</td>
+            </tr>
+            <tr class="tdMain" >
+                <td class="tdLabel tdMain">FECHA DE EMISIÓN</td>
+                <td class="tdMain"> : Piura, {{ D_LicProv_FecEmi }}</td>
+            </tr>
+            <tr class="tdMain" >
+                <td class="tdLabel tdMain">FECHA DE VENCIMIENTO</td>
+                <td class="tdMain"> : Piura, {{ D_LicProv_FinVig }}</td>
+            </tr>
+        </table>
 
-    <table>
-        <tr>
-            <td class="textTop">
-                <p ><strong>Nota:</strong> De no cumplir con las consideraciones establecidas, la autorización provisional se revocará.</p>
-            </td>
-            <td>
-                <img class="imgQR showBorder" src="{{ url_QR }}">
-            </td>
-        </tr>
-    </table>
+        <table class="table_QR">
+            <tr>
+                <td class="textTop">
+                    <p ><strong>Nota:</strong> De no cumplir con las consideraciones establecidas, la autorización provisional se revocará.</p>
+                </td>
+                <td>
+                    <img class="imgQR showBorder" src="{{ url_QR }}">
+                </td>
+            </tr>
+        </table>
+
+        <p class="footer"
+        >La presente autorización provisional se ha emitido al titular de la misma al haber cumplido con los requisitos según ordenanzas: EMPRENDEDORES URBANOS O.M 367-00-CMPP del 16 de diciembre del 2022 y  D.A. 001-2023-A/MPP; EMOLIENTEROS Y MAQUEROS O.M. 370-00-CMPP del 23 de Diciembre del 2022  y D.A. 005-2023-A/MPP  y LUSTRADORES DE CALZADOS O.M. 371-00-CMPP del 28 de Diciembre del 2022 y D.A. 004-2023-A/MPP;  así mismo esta autorización será vigente desde la fecha de emisión, teniendo vigencia de un año, siempre que se respeten las condiciones por las que fue emitida, así como las disposiciones contenidas en las menciones normas.</p>
         
-    
+    </div>
     
 <body>
 </html>
