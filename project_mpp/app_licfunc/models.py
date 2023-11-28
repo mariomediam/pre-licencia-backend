@@ -537,7 +537,7 @@ class LicProvModel(models.Model):
 
     licProvUbica = models.ForeignKey(to=LicProvUbicaModel, related_name='licProvUbica_licProv', db_column='C_Ubica', on_delete=models.PROTECT)
 
-    licProvHorAte = models.CharField(max_length=50, db_column='N_LicProv_HorAte', null=False)
+    licProvHorAte = models.CharField(max_length=100, db_column='N_LicProv_HorAte', null=False)
 
     licProvCerGas = models.CharField(max_length=50, db_column='N_LicProv_CerGas', null=True, blank=True, default='')
 
@@ -549,7 +549,7 @@ class LicProvModel(models.Model):
 
     licProvFinVig = models.DateField(db_column='D_LicProv_FinVig', null=False)
 
-    licProvFormato = models.CharField(max_length=20, db_column='N_LicProv_Formato', null=True, blank=True, default='')
+    licProvFormato = models.IntegerField(db_column='N_LicProv_Formato', null=False)
 
     licProvLogin = models.CharField(max_length=20, null=False, db_column='C_Usuari_Login')
 

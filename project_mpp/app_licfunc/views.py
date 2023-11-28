@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime
 import os
 import io
 from  PIL import Image
@@ -23,6 +24,7 @@ from rest_framework.generics import (
     CreateAPIView,
     UpdateAPIView,
     ListAPIView,
+    RetrieveUpdateDestroyAPIView
 )
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -88,6 +90,7 @@ from app_licfunc.licfunc import (
     SeleccionarSolicitud,
     LicProvisionalBuscar,
     LicProvisionalImprimir,
+    LicProvisionalSigNroFormato,
 )
 from app_deploy.general.enviarEmail import enviarEmail
 from app_deploy.general.descargar import download_file
@@ -1731,10 +1734,13 @@ class BuscarLicProvRubroController(RetrieveAPIView):
         else:
             data = self.serializer_class(instance=lic_prov_rubro, many=True)        
         
-        return Response(data={"message": None, "content": data.data})        
-    
+        return Response(data={"message": None, "content": data.data})  
 
-class LicProvUbicaController(RetrieveAPIView):
+def getLicProvUbicaMaxOrden(tipo:int):
+    mayor_orden = LicProvUbicaModel.objects.filter(licProvTipo=tipo).aggregate(Max('ubicaOrden'))    
+    return  mayor_orden["ubicaOrden__max"]           
+    
+class LicProvUbicaController(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = LicProvUbicaSerializer
     queryset = LicProvUbicaModel.objects.all()
@@ -1747,10 +1753,113 @@ class LicProvUbicaController(RetrieveAPIView):
             lic_prov_ubica = self.get_queryset()
             data = self.serializer_class(instance=lic_prov_ubica, many=True)
 
-        
         return Response(data={"message": None, "content": data.data})    
 
+    def post(self, request: Request):
+        
+        data = self.serializer_class(data=request.data)
+        data.initial_data["ubicaOrden"] = getLicProvUbicaMaxOrden(data.initial_data["licProvTipo"]) + 1
+        data.initial_data["ubicaLogin"] = request.user.username
+        data.initial_data["ubicaDigitFecha"] = datetime.now()
+        data.initial_data["ubicaDigitPC"] = request.META.get("REMOTE_ADDR")
 
+        if data.is_valid():
+            try:
+                data.save()
+                # retornar data creada
+
+                return Response(
+                    data={"message": "Ubicación creada correctamente", "content": data.data},
+                    status=status.HTTP_201_CREATED,
+                )
+            except Exception as e:
+                return Response(
+                    data={"message": e.args, "content": None},
+                    status=400,
+                )
+        else:
+            return Response(
+                data={"message": data.errors, "content": None},
+                status=400,
+            )
+        
+    def put(self, request: Request, id:int):
+
+        data = self.serializer_class(data=request.data)        
+        data.initial_data["ubicaLogin"] = request.user.username        
+        data.initial_data["ubicaDigitPC"] = request.META.get("REMOTE_ADDR")
+
+        if data.is_valid():
+            try:
+                lic_prov_ubica = self.get_queryset().get(pk=id)
+                lic_prov_ubica.ubicaOrden = data.validated_data["ubicaOrden"]
+                lic_prov_ubica.ubicaCodigo = data.validated_data["ubicaCodigo"]
+                lic_prov_ubica.ubicaDescrip = data.validated_data["ubicaDescrip"]
+                lic_prov_ubica.ubicaUTMNorte = data.validated_data["ubicaUTMNorte"]
+                lic_prov_ubica.ubicaUTMEste = data.validated_data["ubicaUTMEste"]
+                lic_prov_ubica.ubicaLogin = data.validated_data["ubicaLogin"]
+                lic_prov_ubica.ubicaDigitFecha = datetime.now()
+                lic_prov_ubica.ubicaDigitPC = data.validated_data["ubicaDigitPC"]
+
+                lic_prov_ubica.save()
+
+                lic_prov_ubica_data = self.serializer_class(lic_prov_ubica).data
+                
+                return Response(
+                    data={"message": "Ubicación actualizada correctamente", "content": lic_prov_ubica_data},
+                    status=status.HTTP_201_CREATED,
+                )
+            except Exception as e:
+                return Response(
+                    data={"message": e.args, "content": None},
+                    status=400,
+                )
+        else:
+            return Response(
+                data={"message": data.errors, "content": None },
+                status=400,
+            )
+
+    # def put(self, request: Request, id:int):
+    #     try:            
+    #         instance = LicProvUbicaModel.objects.get(pk=id)            
+    #         data = request.data
+    #         data["ubicaLogin"] = request.user.username
+    #         data["ubicaDigitFecha"] = datetime.now()
+    #         data["ubicaDigitPC"] = request.META.get("REMOTE_ADDR")
+
+    #         serializer = self.serializer_class(instance, data=data, partial=True)
+    #         if serializer.is_valid():
+    #             serializer.save()
+    #             return Response(
+    #                 data={"message": "Ubicación actualizada correctamente"},
+    #                 status=status.HTTP_200_OK,
+    #             )
+    #         else:
+    #             return Response(
+    #                 data={"message": "Error al actualizar el registro", "content": serializer.errors},
+    #                 status=status.HTTP_400_BAD_REQUEST,
+    #             )
+    #     except Exception as e:
+    #         return Response(
+    #             data={"message": "Error al actualizar el registro", "content": str(e)},
+    #             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #         )
+        
+    def delete(self, request: Request, id:int):
+        try:
+            lic_prov_ubica = self.get_queryset().get(pk=id)
+            lic_prov_ubica.delete()
+            return Response(
+                data={"message": "Ubicación eliminada correctamente"},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                data={"message": e.args, "content": None},
+                status=400,
+            )
+    
 class BuscarLicProvUbicaController(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = LicProvUbicaSerializer
@@ -1858,16 +1967,13 @@ class LicProvController(RetrieveAPIView):
             TIPO_ACCION = { 1:  "nuevo", 2: "modificar", 3: "renovar"}
             login = request.user.username
             
-            data = self.serializer_class(data=request.data) 
-            
-                
+            data = self.serializer_class(data=request.data)                             
             accion = data.initial_data["accion"] or 0
 
             
             if accion not in TIPO_ACCION:
                 return Response(data={"message": "No se ha especificado acción", "content": None}, status=400)
             
-
             if TIPO_ACCION[accion] == "nuevo":
 
                 licprov_nro_new = getLicProvMaxNro(data.initial_data["licProvTipo"])
@@ -1892,9 +1998,11 @@ class LicProvController(RetrieveAPIView):
             if len(img_titular) > 0:
                 data.initial_data["licProvTitImg"] = "Temporal"
 
+            if "licProvFormato" not in data.initial_data or not data.initial_data["licProvFormato"] or data.initial_data["licProvFormato"] == 0 or data.initial_data["licProvFormato"] == "":            
+                data.initial_data["licProvFormato"] = LicProvisionalSigNroFormato()["N_LicProv_Formato"]
+            
             data.initial_data["licProvLogin"] = login
             data.initial_data["licProvDigitPC"] = request.META.get("REMOTE_ADDR")
-
 
             if data.is_valid():
                                 
@@ -1909,8 +2017,10 @@ class LicProvController(RetrieveAPIView):
                 data={"message": data.errors, "content": "Error creando licencia provisional"},
                 status=400,
                 )
+            
+            data_result = LicProvSerializer(instance=licprov_gestion, many=False)
 
-            return Response(data={"message": None, "content": data.data}, status=200)   
+            return Response(data={"message": None, "content": data_result.data}, status=200)   
         
         except Exception as e:
                 return Response(data={"message": e.args, "content": None}, status=400)
@@ -1963,10 +2073,6 @@ def LicProvDownloadController(request, id=""):
         path_border = str(settings.MEDIA_ROOT) +'/app_licfunc/bordes_licencia.jpg'
         border_base_64 = imageToBase64(path_border)
 
-
-
-
-        
         # ********************* INCIO GENERANDO PDF ********************* #
         context = {"C_LicProv" : id,
                    "M_LicProv_Nro": lic_provisional["M_LicProv_Nro"],
@@ -1982,6 +2088,7 @@ def LicProvDownloadController(request, id=""):
                    "N_LicProv_HorAte": lic_provisional["N_LicProv_HorAte"],
                    "D_LicProv_FecEmi": lic_provisional["D_LicProv_FecEmi"],
                    "D_LicProv_FinVig": lic_provisional["D_LicProv_FinVig"],
+                   "N_LicProv_Formato": lic_provisional["N_LicProv_Formato"],
                    "N_Imagen_Base64": image_base_64,
                    "url_QR": url_QR,
                    "border_base_64": border_base_64,}

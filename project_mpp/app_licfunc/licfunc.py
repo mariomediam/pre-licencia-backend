@@ -79,3 +79,15 @@ def LicProvisionalImprimir(C_LicProv):
         cursor.execute('EXEC SIAC.dbo.S02LicProvisionalImprimir %s', [C_LicProv])
         return dictfetchall(cursor)
 
+def LicProvisionalSigNroFormato():
+    with connection.cursor() as cursor:                
+        sql = """\
+        DECLARE @N_LicProv_Formato int
+
+        EXEC SIAC.dbo.S02LicProvisionalSigNroFormato @N_LicProv_Formato OUTPUT
+
+        SELECT @N_LicProv_Formato AS N_LicProv_Formato
+        """
+
+        cursor.execute(sql, ())
+        return dictfetchall(cursor)[0]
