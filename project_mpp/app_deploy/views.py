@@ -1,3 +1,5 @@
+from django.http import FileResponse
+from io import BytesIO
 from django.shortcuts import render
 import requests
 from rest_framework import serializers
@@ -16,6 +18,9 @@ from django.shortcuts import render# Define function to download pdf file using 
 from django.conf import settings
 from dotenv import load_dotenv
 from .general.consultasReniec import AgregarConsultaReniec, ValidaAccesoConsultaReniec
+
+import urllib.parse
+import segno
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 
@@ -228,3 +233,40 @@ class BuscarSunatRUCController(RetrieveAPIView):
                     "message":"Debe de ingresar RUC valido y responsable de consulta"
                 }, status=status.HTTP_404_NOT_FOUND) 
       
+
+class GenerateQrImageController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request: Request):
+        data = request.query_params.get("data")
+        scale = request.query_params.get("scale", 5)
+
+        if not data:
+            return Response(data={
+                "message":"Debe de ingresar data"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        # encoded_data = urllib.parse.quote(data)
+        if data.startswith('http'):
+            encoded_data = data.replace('%26', '&')
+        else:
+            encoded_data = data
+
+        qrcode = segno.make_qr(encoded_data)
+
+        # Crear un objeto BytesIO para almacenar la imagen del código QR
+        buffer = BytesIO()
+
+        # Guardar la imagen del código QR en el objeto BytesIO
+        qrcode.save(buffer, kind='png', scale=scale)
+
+        # Mover el cursor al inicio del objeto BytesIO
+        buffer.seek(0)
+
+        # Crear una respuesta de archivo con la imagen del código QR
+        response = FileResponse(buffer, as_attachment=True, filename='qrcode.png')
+
+        return response
+    
+
+
