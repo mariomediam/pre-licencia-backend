@@ -235,11 +235,14 @@ class BuscarSunatRUCController(RetrieveAPIView):
       
 
 class GenerateQrImageController(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    
     
     def get(self, request: Request):
         data = request.query_params.get("data")
         scale = request.query_params.get("scale", 5)
+        border_str = request.query_params.get("border", 1)
+
+        border = int(border_str)
 
         if not data:
             return Response(data={
@@ -258,7 +261,7 @@ class GenerateQrImageController(RetrieveAPIView):
         buffer = BytesIO()
 
         # Guardar la imagen del código QR en el objeto BytesIO
-        qrcode.save(buffer, kind='png', scale=scale)
+        qrcode.save(buffer, kind='png', scale=scale, border=border)
 
         # Mover el cursor al inicio del objeto BytesIO
         buffer.seek(0)

@@ -8,5 +8,5 @@ urlpatterns= [
     path('download-file/<str:app>/<str:filename>',downloadFileMedia),
     path("buscar-reniec/", BuscarReniecDNIController.as_view()),
     path("buscar-sunat/", BuscarSunatRUCController.as_view()),
-    path("generate-qr/", GenerateQrImageController.as_view()),
+    path("generate-qr/", GenerateQrImageController.as_view(), name='generate_qr'),
 ]

@@ -2066,7 +2066,7 @@ def LicProvDownloadController(request, id=""):
     if len(lic_provisional) == 1:
         lic_provisional = lic_provisional[0]        
         image_base_64 = imageToBase64(lic_provisional["N_LicProv_TitImg"])
-        url_QR = generateQrURL(lic_provisional["url_QR"])
+        url_QR = generateQrURL(lic_provisional["url_QR"], 5, 8)
 
         # Dando diseño a formato (bordes, escudo y otros)
 
