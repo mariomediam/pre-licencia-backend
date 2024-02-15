@@ -19,6 +19,8 @@ from django.conf import settings
 from dotenv import load_dotenv
 from .general.consultasReniec import AgregarConsultaReniec, ValidaAccesoConsultaReniec
 
+from app_deploy.deploy import SelectJefeDepen
+
 import urllib.parse
 import segno
 
@@ -273,3 +275,26 @@ class GenerateQrImageController(RetrieveAPIView):
     
 
 
+class SelectJefeDepenController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        
+        anio = request.query_params.get('anio')
+        coddep = request.query_params.get('coddep')
+
+        if anio and coddep:            
+            jefe_depen = SelectJefeDepen(anio, coddep)
+
+            if len(jefe_depen) == 0:
+                jefe_depen = {}
+            else:
+                jefe_depen = jefe_depen[0]
+
+            return Response(data={"message": None, "content": jefe_depen}, status=200)
+
+        else:
+            return Response(
+                data={"message": "Debe de ingresar año y código de dependencia buscado","content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )

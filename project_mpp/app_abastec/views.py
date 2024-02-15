@@ -7,7 +7,9 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 from app_abastec.abastec import (SelectAccesoDepenReque,
-                                 SelectRequeSf_dep)
+                                 SelectRequeSf_dep,
+                                 SelectRequeById,
+                                 SelectAniosDepenById)
 
 # Create your views here.
 class SelectAccesoDepenRequeController(RetrieveAPIView):
@@ -53,6 +55,70 @@ class SelectRequerimientosxDepController(RetrieveAPIView):
             else:
                 return Response(
                     data={"message": "Debe de ingresar año, dependencia y tipo de requerimiento buscado","content": None},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return Response(
+                data={"message": str(e),"content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class SelectRequeByIdController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+
+        try:
+            
+            anio = request.query_params.get("anio")        
+            numero = request.query_params.get("numero")
+            bie_ser_tipo = request.query_params.get("tipo")
+            
+            if anio and numero and bie_ser_tipo:            
+                requerimiento = SelectRequeById(anio, numero, bie_ser_tipo)
+
+                if len(requerimiento) == 0:
+                    requerimiento_return = {}
+                else:
+                    requerimiento_return = requerimiento[0]
+
+                return Response(data={"message": None, "content": requerimiento_return}, status=200)
+
+            else:
+                return Response(
+                    data={"message": "Debe de ingresar año, numero y tipo de requerimiento buscado","content": None},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return Response(
+                data={"message": str(e),"content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class SelectAniosDepenByIdController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+
+        try:            
+            anio = request.query_params.get("anio")        
+            cod_dep = request.query_params.get("coddep")
+                        
+            if anio and cod_dep:            
+                dependencia = SelectAniosDepenById(anio, cod_dep)
+
+                if len(dependencia) == 0:
+                    dependencia_return = {}
+                else:
+                    dependencia_return = dependencia[0]
+
+                return Response(data={"message": None, "content": dependencia_return}, status=200)
+
+            else:
+                return Response(
+                    data={"message": "Debe de ingresar año y código de dependencia buscado","content": None},
                     status=status.HTTP_404_NOT_FOUND,
                 )
         except Exception as e:
