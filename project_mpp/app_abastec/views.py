@@ -192,7 +192,7 @@ class SelectSaldoPresupDepenController(RetrieveAPIView):
                                 "Q_monto": item["Q_monto"]
                             } for item in group
                         ]
-                        cabecera["saldo"] = detalle
+                        cabecera["saldos"] = detalle
                         saldo_format.append(cabecera)
 
                     saldo = saldo_format
@@ -211,10 +211,10 @@ class SelectSaldoPresupDepenController(RetrieveAPIView):
                                 "C_depen": item["C_depen"],
                                 "C_activpoi": item["C_activpoi"],
                                 "N_activpoi_desc": item["N_activpoi_desc"],
-                                "saldo": item["saldo"],
+                                "saldos": item["saldos"],
                             } for item in group
                         ]
-                        cabecera["actividad"] = detalle
+                        cabecera["actividades"] = detalle
                         saldo_format.append(cabecera)
 
                     saldo = saldo_format               
