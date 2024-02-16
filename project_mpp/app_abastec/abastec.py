@@ -22,5 +22,8 @@ def SelectAniosDepenById(anio, cod_dep):
         cursor.execute('EXEC SIGA.dbo.SelectDependencia %s, %s, %s', [anio, field, cod_dep])
         return dictfetchall(cursor)     
     
-    
+def SelectSaldoPresupDepen(anio, cod_dep, bie_ser_tipo):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.SelectSaldoPresupDepen %s, %s, %s', [anio, cod_dep, bie_ser_tipo])
+        return dictfetchall(cursor)    
 

@@ -1,3 +1,4 @@
+import itertools
 from rest_framework.generics import (
     RetrieveAPIView,
 )
@@ -9,7 +10,8 @@ from rest_framework.permissions import IsAuthenticated
 from app_abastec.abastec import (SelectAccesoDepenReque,
                                  SelectRequeSf_dep,
                                  SelectRequeById,
-                                 SelectAniosDepenById)
+                                 SelectAniosDepenById,
+                                 SelectSaldoPresupDepen)
 
 # Create your views here.
 class SelectAccesoDepenRequeController(RetrieveAPIView):
@@ -119,6 +121,109 @@ class SelectAniosDepenByIdController(RetrieveAPIView):
             else:
                 return Response(
                     data={"message": "Debe de ingresar año y código de dependencia buscado","content": None},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return Response(
+                data={"message": str(e),"content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class SelectSaldoPresupDepenController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+
+        try:            
+            anio = request.query_params.get("anio")        
+            cod_dep = request.query_params.get("coddep")
+            bie_ser_tipo = request.query_params.get("tipo")
+            formato = request.query_params.get("formato")
+                        
+            if anio and cod_dep:            
+                saldo = SelectSaldoPresupDepen(anio, cod_dep, bie_ser_tipo)
+
+                if formato == "reque":
+                    saldo_format = []
+                    # secfun = ""
+                    # activ_poi = ""
+                    # cabecera = {} 
+                       
+                    # i = 0
+                    # while i < len(saldo):                                           
+                    #     cabecera = {"C_anipre": saldo[i]["C_anipre"], "C_secfun": saldo[i]["C_secfun"], "N_metapresup_desc": saldo[i]["N_metapresup_desc"], "C_depen": saldo[i]["C_depen"], "C_activpoi": saldo[i]["C_activpoi"], "N_activpoi_desc": saldo[i]["N_activpoi_desc"]}
+
+                    #     secfun = saldo[i]["C_secfun"]
+                    #     activ_poi = saldo[i]["C_activpoi"]
+                    #     detalle = []             
+                        
+                    #     while i < len(saldo):                            
+                    #         if secfun == saldo[i]["C_secfun"] and activ_poi == saldo[i]["C_activpoi"]:
+                    #             detalle_row = {"C_clapre": saldo[i]["C_clapre"], "C_fuefin": saldo[i]["C_fuefin"], "C_recurso": saldo[i]["C_recurso"], "C_objpoi": saldo[i]["C_objpoi"], "C_metapoi": saldo[i]["C_metapoi"], "Q_monto": saldo[i]["Q_monto"]}
+                    #             detalle.append(detalle_row)
+
+                    #             secfun = saldo[i]["C_secfun"]
+                    #             activ_poi = saldo[i]["C_activpoi"]
+                    #             i += 1
+                    #         else:                                
+                    #             break
+
+                    #     cabecera["saldo"] = detalle
+
+                    #     saldo_format.append(cabecera)
+                    for key, group in itertools.groupby(saldo, key=lambda x: (x['C_secfun'], x['C_activpoi'])):
+                        group = list(group)
+                        cabecera = {
+                            "C_anipre": group[0]["C_anipre"],
+                            "C_secfun": group[0]["C_secfun"],
+                            "N_metapresup_desc": group[0]["N_metapresup_desc"],
+                            "C_depen": group[0]["C_depen"],
+                            "C_activpoi": group[0]["C_activpoi"],
+                            "N_activpoi_desc": group[0]["N_activpoi_desc"]
+                        }
+                        detalle = [
+                            {
+                                "C_clapre": item["C_clapre"],
+                                "C_fuefin": item["C_fuefin"],
+                                "C_recurso": item["C_recurso"],
+                                "C_objpoi": item["C_objpoi"],
+                                "C_metapoi": item["C_metapoi"],
+                                "Q_monto": item["Q_monto"]
+                            } for item in group
+                        ]
+                        cabecera["saldo"] = detalle
+                        saldo_format.append(cabecera)
+
+                    saldo = saldo_format
+
+                    saldo_format = []
+
+                    for key, group in itertools.groupby(saldo, key=lambda x: (x['C_secfun'])):
+                        group = list(group)
+                        cabecera = {
+                            "C_anipre": group[0]["C_anipre"],
+                            "C_secfun": group[0]["C_secfun"],
+                            "N_metapresup_desc": group[0]["N_metapresup_desc"]
+                        }
+                        detalle = [
+                            {
+                                "C_depen": item["C_depen"],
+                                "C_activpoi": item["C_activpoi"],
+                                "N_activpoi_desc": item["N_activpoi_desc"],
+                                "saldo": item["saldo"],
+                            } for item in group
+                        ]
+                        cabecera["actividad"] = detalle
+                        saldo_format.append(cabecera)
+
+                    saldo = saldo_format               
+                
+                return Response(data={"message": None, "content": saldo}, status=200)
+
+            else:
+                return Response(
+                    data={"message": "Debe de ingresar año, código de dependencia y tipo de bien o servicio buscado","content": None},
                     status=status.HTTP_404_NOT_FOUND,
                 )
         except Exception as e:
