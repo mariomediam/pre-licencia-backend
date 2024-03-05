@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from operator import itemgetter
 
 from rest_framework.generics import (
@@ -14,6 +16,8 @@ from app_abastec.abastec import (
     SelectRequeById,
     SelectAniosDepenById,
     SelectSaldoPresupDepen,
+    SelectBBSSDisponibleOrden,
+    InsertRequeMyXML
 )
 
 
@@ -190,11 +194,11 @@ class SelectSaldoPresupDepenController(RetrieveAPIView):
                             row = {"C_anipre": saldo[i]["C_anipre"], "C_secfun": saldo[i]["C_secfun"], "N_metapresup_desc": saldo[i]["N_metapresup_desc"], "actividades": []}
 
                         if activ_poi != saldo[i]["C_activpoi"] or depen != saldo[i]["C_depen"]:                            
-                            actividad = {"C_activpoi": saldo[i]["C_activpoi"], "N_activpoi_desc": saldo[i]["N_activpoi_desc"], "clasificadores": []}
+                            actividad = {"C_activpoi": saldo[i]["C_activpoi"], "N_activpoi_desc": saldo[i]["N_activpoi_desc"], "C_depen": saldo[i]["C_depen"]  ,"clasificadores": []}
                             row["actividades"].append(actividad)
 
                         if clapre != saldo[i]["C_clapre"] or objpoi != saldo[i]["C_objpoi"] or metapoi != saldo[i]["C_metapoi"]:
-                            clasificador = {"C_clapre": saldo[i]["C_clapre"], "C_objpoi": saldo[i]["C_objpoi"], "C_metapoi": saldo[i]["C_metapoi"], "saldos": []}
+                            clasificador = {"C_clapre": saldo[i]["C_clapre"], "C_objpoi": saldo[i]["C_objpoi"], "C_metapoi": saldo[i]["C_metapoi"], "saldos": [], "selecc": False}
                             row["actividades"][-1]["clasificadores"].append(clasificador)
 
                         row["actividades"][-1]["clasificadores"][-1]["saldos"].append({"C_fuefin": saldo[i]["C_fuefin"], "C_recurso": saldo[i]["C_recurso"], "Q_monto": saldo[i]["Q_monto"]})                                                                            
@@ -222,6 +226,139 @@ class SelectSaldoPresupDepenController(RetrieveAPIView):
                     },
                     status=status.HTTP_404_NOT_FOUND,
                 )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class SelectBBSSDisponibleOrdenController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+
+        try:            
+            anio = request.query_params.get("anio")
+            sec_fun = request.query_params.get("secfun", "")
+            cod_dep = request.query_params.get("coddep", "")
+            bie_ser_tipo = request.query_params.get("tipo")
+            file = request.query_params.get("file")
+            valor = request.query_params.get("valor")
+
+            if anio and bie_ser_tipo and file and valor:
+                bienes_servicios = SelectBBSSDisponibleOrden(anio, sec_fun, cod_dep, bie_ser_tipo, file, valor)                
+
+                return Response(
+                    data={"message": None, "content": bienes_servicios}, status=200
+                )
+
+            else:
+                return Response(
+                    data={
+                        "message": "Debe de ingresar año, tipo de bien o servicio y valor buscado",
+                        "content": None,
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
+class RequerimientoController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, anio, numero, tipo):
+
+        try:
+
+            if anio and numero and tipo:
+                requerimiento = SelectRequeById(anio, numero, tipo)
+
+                if len(requerimiento) == 0:
+                    requerimiento_return = {}
+                else:
+                    requerimiento_return = requerimiento[0]
+
+                return Response(
+                    data={"message": None, "content": requerimiento_return}, status=200
+                )
+
+            else:
+                return Response(
+                    data={
+                        "message": "Debe de ingresar año, numero y tipo de requerimiento buscado",
+                        "content": None,
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+    def post(self, request: Request, anio, numero, tipo):
+
+        try:    
+            if int(numero) == 0:
+                numero = None
+
+            requerimiento = request.data.get("requerimiento") 
+
+            fecha = requerimiento["D_reque_fecha"]
+            obs = requerimiento["T_reque_obs"]
+            tipo_gasto = requerimiento["C_tipogasto"]
+            sf_dep = requerimiento["C_sf_dep"]
+            login = request.user.username      
+            libre = requerimiento["f_libre"]
+
+            fecha = datetime.strptime(fecha, "%Y-%m-%d")
+            
+            my_xml = '''<?xml version="1.0" encoding="utf-8" ?><root>'''
+
+            for clasificador in requerimiento["requeClasificadores"]:   
+                for item in clasificador["items"]:                
+                    my_xml += '''<Registro>'''
+                    my_xml += '''<Dato0>{}</Dato0>'''.format(clasificador["C_depen"])
+                    my_xml += '''<Dato1>{}</Dato1>'''.format(clasificador["C_secfun"])
+                    my_xml += '''<Dato2>{}</Dato2>'''.format(item["C_bieser"])
+                    my_xml += '''<Dato3>{}</Dato3>'''.format(item["C_biesertipo"])
+                    my_xml += '''<Dato4>{}</Dato4>'''.format(item["Q_requedet_cant"])
+                    my_xml += '''<Dato5>{}</Dato5>'''.format(item["Q_requedet_precio"])
+                    my_xml += '''<Dato6>{}</Dato6>'''.format(item["C_item"])
+                    my_xml += '''<Dato7>{}</Dato7>'''.format(clasificador["C_activpoi"])
+                    my_xml += '''<Dato8>{}</Dato8>'''.format(clasificador["C_metapoi"])
+                    my_xml += '''<Dato9>{}</Dato9>'''.format(clasificador["C_objpoi"])
+                    my_xml += '''<Dato10>{}</Dato10>'''.format(clasificador["C_clapre"])
+                    my_xml += '''<Dato11>{}</Dato11>'''.format(item["c_depen_aux"])
+                    my_xml += '''<Dato12>{}</Dato12>'''.format(item["N_cnespec_desc"])
+                    my_xml += '''</Registro>'''
+
+            my_xml += '''</root>'''
+
+            requerimiento = InsertRequeMyXML({
+                "anipre": anio,
+                "numero": numero,
+                "fecha": fecha,
+                "obs": obs,
+                "tipogasto": tipo_gasto,
+                "biesertipo": tipo,
+                "sf_dep": sf_dep,
+                "my_xml": my_xml,
+                "user": login,
+                "libre": libre,
+                "depen": None,
+                "traba_dni": None
+            
+            })
+
+            return Response(
+                data={"message": "", "content": requerimiento[0]}, status=200
+            )
+
         except Exception as e:
             return Response(
                 data={"message": str(e), "content": None},

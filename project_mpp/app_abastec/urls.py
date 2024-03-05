@@ -3,12 +3,16 @@ from .views import (SelectAccesoDepenRequeController
                     ,SelectRequerimientosxDepController
                     ,SelectRequeByIdController
                     ,SelectAniosDepenByIdController
-                    ,SelectSaldoPresupDepenController)
+                    ,SelectSaldoPresupDepenController
+                    ,SelectBBSSDisponibleOrdenController
+                    ,RequerimientoController)
 
 urlpatterns = [
     path('acceso-depen', SelectAccesoDepenRequeController.as_view()),    
     path('reque-depen', SelectRequerimientosxDepController.as_view()),
     path('reque', SelectRequeByIdController.as_view()),
+    path('reque/<str:anio>/<str:numero>/<str:tipo>', RequerimientoController.as_view()),
     path('depen-coddep', SelectAniosDepenByIdController.as_view()),
     path('saldo-depen', SelectSaldoPresupDepenController.as_view()),
+    path('bbss-disponible-orden', SelectBBSSDisponibleOrdenController.as_view()),
 ]

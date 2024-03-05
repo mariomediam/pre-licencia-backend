@@ -27,3 +27,32 @@ def SelectSaldoPresupDepen(anio, cod_dep, bie_ser_tipo):
         cursor.execute('EXEC SIGA.dbo.SelectSaldoPresupDepen %s, %s, %s', [anio, cod_dep, bie_ser_tipo])
         return dictfetchall(cursor)    
 
+def SelectBBSSDisponibleOrden(anio, sec_fun, cod_dep, bie_ser_tipo, file, valor):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.SelectBBSSDisponibleOrden %s, %s, %s, %s, %s, %s', [anio, sec_fun, cod_dep, bie_ser_tipo, file, valor])
+        return dictfetchall(cursor)    
+
+def InsertRequeMyXML(params):    
+    anipre = params.get('anipre')
+    numero = params.get('numero')
+    fecha = params.get('fecha')
+    obs = params.get('obs')
+    tipogasto = params.get('tipogasto')
+    biesertipo = params.get('biesertipo')
+    sf_dep = params.get('sf_dep')
+    my_xml = params.get('my_xml')
+    user = params.get('user')
+    libre = params.get('libre')
+    depen = params.get('depen')
+    traba_dni = params.get('traba_dni')
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.InsertRequeMyXML %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s', [anipre, numero, fecha, obs, tipogasto, biesertipo, sf_dep, my_xml, user, libre, depen, traba_dni])
+        
+        results = []
+        do = True
+        while do:
+            row = dictfetchall(cursor)
+            if row:
+                results.append(row)
+            do = cursor.nextset()  # Move to the next result set, if available
+        return results
