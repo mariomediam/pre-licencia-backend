@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from operator import itemgetter
@@ -17,7 +18,8 @@ from app_abastec.abastec import (
     SelectAniosDepenById,
     SelectSaldoPresupDepen,
     SelectBBSSDisponibleOrden,
-    InsertRequeMyXML
+    InsertRequeMyXML,
+    SelectRequeDetalle
 )
 
 
@@ -276,12 +278,39 @@ class RequerimientoController(RetrieveAPIView):
 
             if anio and numero and tipo:
                 requerimiento = SelectRequeById(anio, numero, tipo)
+                
 
                 if len(requerimiento) == 0:
                     requerimiento_return = {}
                 else:
                     requerimiento_return = requerimiento[0]
+                    detalle = SelectRequeDetalle(anio, numero, tipo)
 
+                    key_mapping = {'c_clapre': 'C_clapre', "C_ITEM": "C_item", "N_BIESER_DESC": "N_bieser_desc", "N_UNIMED_DESC": "N_unimed_desc"}
+                    datalle_format = []
+
+                    for item in detalle:
+                        updated_json = {key_mapping.get(key, key): value for key, value in item.items()}
+                        datalle_format.append(updated_json)
+
+                    keys = ["C_clapre", "C_secfun", "C_depen", "C_activpoi", "C_objpoi", "C_metapoi"]
+                    clasificadores_dict = {}
+
+                    for item in datalle_format:
+                        # Creamos una tupla con los valores de las claves que nos interesan
+                        tuple_keys = tuple(item[key] for key in keys)
+                        
+                        # Si la tupla no está en el diccionario, la agregamos al diccionario y al resultado
+                        if tuple_keys not in clasificadores_dict:
+                            clasificadores_dict[tuple_keys] = {key: item[key] for key in keys}
+                            clasificadores_dict[tuple_keys]["items"] = []
+                        
+                        clasificadores_dict[tuple_keys]["items"].append(item)
+
+                    requeClasificadores = list(clasificadores_dict.values())
+
+                    requerimiento_return["requeClasificadores"] = requeClasificadores
+                                
                 return Response(
                     data={"message": None, "content": requerimiento_return}, status=200
                 )
@@ -364,3 +393,7 @@ class RequerimientoController(RetrieveAPIView):
                 data={"message": str(e), "content": None},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        
+
+
+        
