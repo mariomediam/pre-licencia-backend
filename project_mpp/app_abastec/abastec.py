@@ -62,3 +62,8 @@ def SelectRequeDetalle(anio, reque, bie_ser_tipo):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIGA.dbo.SelectRequeDetalle %s, %s, %s', [anio, reque, bie_ser_tipo])
         return dictfetchall(cursor)        
+    
+    
+def DeleteRequeDetalle(anipre, numero, secfun, depen, bie_ser_tipo, bieser, item, user):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.DeleteRequeDetalle %s, %s, %s, %s, %s, %s, %s, %s', [anipre, numero, secfun, depen, bie_ser_tipo, bieser, item, user])        
