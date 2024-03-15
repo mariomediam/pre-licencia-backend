@@ -67,3 +67,18 @@ def SelectRequeDetalle(anio, reque, bie_ser_tipo):
 def DeleteRequeDetalle(anipre, numero, secfun, depen, bie_ser_tipo, bieser, item, user):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIGA.dbo.DeleteRequeDetalle %s, %s, %s, %s, %s, %s, %s, %s', [anipre, numero, secfun, depen, bie_ser_tipo, bieser, item, user])        
+
+def SelectSaldoPresupReque(anio, reque, bie_ser_tipo):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.SelectSaldoPresupReque %s, %s, %s', [anio, reque, bie_ser_tipo])
+        return dictfetchall(cursor)        
+
+def RequeFuentes(anio, secfun, depen, clasif, fecha, meta, obj, todo, fuente = None, recurso = None):
+    with connection.cursor() as cursor:
+        cursor.execute("EXEC SIGA.dbo.REQUEFUENTES %s, %s, %s, %s, %s, %s, %s, %s, %s, %s", [anio, secfun, depen, clasif, fecha, meta, obj, todo, fuente, recurso])
+        return dictfetchall(cursor)
+
+def SelectSaldoPresupRequeItem(anio, secfun, depen, clasif, metapoi, objpoi, activpoi):
+    with connection.cursor() as cursor:
+        cursor.execute("EXEC SIGA.dbo.SelectSaldoPresupRequeItem %s, %s, %s, %s, %s, %s, %s", [anio, secfun, depen, clasif, metapoi, objpoi, activpoi])
+        return dictfetchall(cursor)

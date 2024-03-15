@@ -22,6 +22,9 @@ from app_abastec.abastec import (
     InsertRequeMyXML,
     SelectRequeDetalle,
     DeleteRequeDetalle,
+    SelectSaldoPresupReque,
+    RequeFuentes,
+    SelectSaldoPresupRequeItem
 )
 
 
@@ -405,8 +408,6 @@ class RequerimientoController(RetrieveAPIView):
         try:
             requerimiento_new = request.data.get("requerimiento")
 
-            print("********************** requerimiento_new **********************")
-            print(requerimiento_new)
             login = request.user.username
 
             if int(numero) == 0:
@@ -498,7 +499,6 @@ def removeNonRequiredItemsFromDatabase(requerimiento_new, login):
                 }
             )
 
-
     requerimientos_db = SelectRequeDetalle(anio, numero, tipo)
 
     for requerimiento_db in requerimientos_db:
@@ -515,4 +515,113 @@ def removeNonRequiredItemsFromDatabase(requerimiento_new, login):
         if requerimiento_db_format not in requerimiento_new_format:
             #  eliminar de la base de datos
             DeleteRequeDetalle(requerimiento_db_format["C_anipre"], requerimiento_db_format["C_reque"], requerimiento_db_format["C_secfun"], requerimiento_db_format["C_depen"], requerimiento_db_format["C_biesertipo"], requerimiento_db_format["C_bieser"], requerimiento_db_format["C_item"], login)
-            
+
+
+
+class SelectSaldoPresupRequeController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+
+        try:
+
+            anio = request.query_params.get("anio")
+            numero = request.query_params.get("numero")
+            bie_ser_tipo = request.query_params.get("tipo")
+
+            if anio and numero and bie_ser_tipo:
+                requerimiento = SelectSaldoPresupReque(anio, numero, bie_ser_tipo)
+
+                return Response(
+                    data={"message": None, "content": requerimiento}, status=200
+                )
+
+            else:
+                return Response(
+                    data={
+                        "message": "Debe de ingresar año, numero y tipo de requerimiento buscado",
+                        "content": None,
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
+
+class SelectRequeFuentesController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+
+        try:
+
+            anio = request.query_params.get("anio")
+            secfun = request.query_params.get("secfun")
+            depen = request.query_params.get("depen")
+            clasif = request.query_params.get("clasif")
+            fecha = request.query_params.get("fecha", None)
+            meta = request.query_params.get("meta", None)
+            obj = request.query_params.get("obj", None)
+            todo = request.query_params.get("todo", None)
+            fuente = request.query_params.get("fuente", None)
+            recurso = request.query_params.get("recurso", None)
+
+            if anio and secfun and depen and clasif and fecha:
+                saldos = RequeFuentes(anio, secfun, depen, clasif, fecha, meta, obj, todo, fuente, recurso)
+
+                return Response(
+                    data={"message": None, "content": saldos}, status=200
+                )
+
+            else:
+                return Response(
+                    data={
+                        "message": "Debe de ingresar año, secuencia funcional, dependencia, clasificador y fecha buscada",
+                        "content": None,
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )        
+        
+class SelectSaldoPresupRequeItemController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+
+        try:
+
+            anio = request.query_params.get("anio")
+            secfun = request.query_params.get("secfun")
+            depen = request.query_params.get("depen")
+            clasif = request.query_params.get("clasif")
+            meta = request.query_params.get("meta")
+            obj = request.query_params.get("obj")
+            actividad = request.query_params.get("actividad")
+
+            if anio and secfun and depen and clasif and meta and obj:
+                saldos = SelectSaldoPresupRequeItem(anio, secfun, depen, clasif, meta, obj, actividad)
+
+                return Response(
+                    data={"message": None, "content": saldos}, status=200
+                )
+
+            else:
+                return Response(
+                    data={
+                        "message": "Debe de ingresar año, secuencia funcional, dependencia, clasificador y fecha buscada",
+                        "content": None,
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )                
