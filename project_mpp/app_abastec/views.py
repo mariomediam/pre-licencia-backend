@@ -24,7 +24,8 @@ from app_abastec.abastec import (
     DeleteRequeDetalle,
     SelectSaldoPresupReque,
     RequeFuentes,
-    SelectSaldoPresupRequeItem
+    SelectSaldoPresupRequeItem,
+    PrecompromisoReque,
 )
 
 
@@ -625,3 +626,68 @@ class SelectSaldoPresupRequeItemController(RetrieveAPIView):
                 data={"message": str(e), "content": None},
                 status=status.HTTP_404_NOT_FOUND,
             )                
+        
+class RequePrecomprometerController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, anio, numero, tipo):
+
+        try:
+
+            print("01")
+
+            # requerimiento_new = request.data.get("requerimiento")
+
+            sf_dep = request.data.get("C_sf_dep")
+            dni = request.data.get("c_traba_dni")
+            libre = request.data.get("f_libre")
+            login = request.user.username
+            fecha = datetime.now().date()
+
+            my_xml = """<?xml version="1.0" encoding="utf-8" ?><root>"""
+
+            print(request.data.get("gastos"))
+            
+            for item in request.data.get("gastos"):
+                my_xml += """<Registro>"""
+                my_xml += """<Dato0>{}</Dato0>""".format(item["C_depen"])
+                my_xml += """<Dato1>{}</Dato1>""".format(item["C_secfun"])
+                my_xml += """<Dato2>{}</Dato2>""".format(item["C_clapre"])
+                my_xml += """<Dato3>{}</Dato3>""".format(item["C_fuefin"])
+                my_xml += """<Dato4>{}</Dato4>""".format(item["C_recurso"])
+                my_xml += """<Dato5>{}</Dato5>""".format(item["total_precompromiso"])
+                my_xml += """<Dato6>{}</Dato6>""".format(item["C_metapoi"])
+                my_xml += """<Dato7>{}</Dato7>""".format(item["C_objpoi"])
+                my_xml += """<Dato8>{}</Dato8>""".format(item["C_activpoi"])
+                my_xml += """</Registro>"""
+
+            my_xml += """</root>"""
+
+            print("03")
+        
+            params = {
+                "anipre": anio,
+                "reque": numero,
+                "biesertipo": tipo,
+                "my_xml": my_xml,
+                "fecha": fecha,
+                "user": login,
+                "depen": sf_dep,
+                "traba_dni": dni,
+                "libre": libre
+            }
+
+            print("************* params *************")
+            print(params)          
+                            
+            precompromiso = PrecompromisoReque(params)
+
+            return Response(
+                data={"message": "", "content": precompromiso[0]}, status=200
+            )
+
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )        

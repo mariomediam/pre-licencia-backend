@@ -33,7 +33,7 @@ def SelectBBSSDisponibleOrden(anio, sec_fun, cod_dep, bie_ser_tipo, file, valor)
         return dictfetchall(cursor)    
 
 def InsertRequeMyXML(params):    
-    anipre = params.get('anipre')
+    anio = params.get('anipre')
     numero = params.get('numero')
     fecha = params.get('fecha')
     obs = params.get('obs')
@@ -46,7 +46,7 @@ def InsertRequeMyXML(params):
     depen = params.get('depen')
     traba_dni = params.get('traba_dni')
     with connection.cursor() as cursor:
-        cursor.execute('EXEC SIGA.dbo.InsertRequeMyXML %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s', [anipre, numero, fecha, obs, tipogasto, biesertipo, sf_dep, my_xml, user, libre, depen, traba_dni])
+        cursor.execute('EXEC SIGA.dbo.InsertRequeMyXML %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s', [anio, numero, fecha, obs, tipogasto, biesertipo, sf_dep, my_xml, user, libre, depen, traba_dni])
         
         results = []
         do = True
@@ -64,9 +64,9 @@ def SelectRequeDetalle(anio, reque, bie_ser_tipo):
         return dictfetchall(cursor)        
     
     
-def DeleteRequeDetalle(anipre, numero, secfun, depen, bie_ser_tipo, bieser, item, user):
+def DeleteRequeDetalle(anio, numero, secfun, depen, bie_ser_tipo, bieser, item, user):
     with connection.cursor() as cursor:
-        cursor.execute('EXEC SIGA.dbo.DeleteRequeDetalle %s, %s, %s, %s, %s, %s, %s, %s', [anipre, numero, secfun, depen, bie_ser_tipo, bieser, item, user])        
+        cursor.execute('EXEC SIGA.dbo.DeleteRequeDetalle %s, %s, %s, %s, %s, %s, %s, %s', [anio, numero, secfun, depen, bie_ser_tipo, bieser, item, user])        
 
 def SelectSaldoPresupReque(anio, reque, bie_ser_tipo):
     with connection.cursor() as cursor:
@@ -82,3 +82,24 @@ def SelectSaldoPresupRequeItem(anio, secfun, depen, clasif, metapoi, objpoi, act
     with connection.cursor() as cursor:
         cursor.execute("EXEC SIGA.dbo.SelectSaldoPresupRequeItem %s, %s, %s, %s, %s, %s, %s", [anio, secfun, depen, clasif, metapoi, objpoi, activpoi])
         return dictfetchall(cursor)
+
+def PrecompromisoReque(params):
+    anio = params.get('anipre')
+    reque = params.get('reque')
+    biesertipo = params.get('biesertipo')
+    my_xml = params.get('my_xml')
+    fecha = params.get('fecha')
+    user = params.get('user')
+    depen = params.get('depen')
+    traba_dni = params.get('traba_dni')
+    libre = params.get('libre')
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.PrecompromisoReque %s, %s, %s, %s, %s, %s, %s, %s, %s', [anio, reque, biesertipo, my_xml, fecha, user, depen, traba_dni, libre])
+        results = []
+        do = True
+        while do:
+            row = dictfetchall(cursor)
+            if row:
+                results.append(row)
+            do = cursor.nextset()  # Move to the next result set, if available
+        return results
