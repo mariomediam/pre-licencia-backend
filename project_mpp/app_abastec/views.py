@@ -5,7 +5,7 @@ from datetime import datetime
 from operator import itemgetter
 
 from rest_framework.generics import (
-    RetrieveAPIView,
+    RetrieveAPIView, RetrieveUpdateDestroyAPIView
 )
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -26,6 +26,7 @@ from app_abastec.abastec import (
     RequeFuentes,
     SelectSaldoPresupRequeItem,
     PrecompromisoReque,
+    AnularDocumentos,
 )
 
 
@@ -328,7 +329,7 @@ class SelectBBSSDisponibleOrdenController(RetrieveAPIView):
             )
 
 
-class RequerimientoController(RetrieveAPIView):
+class RequerimientoController(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request, anio, numero, tipo):
@@ -475,6 +476,25 @@ class RequerimientoController(RetrieveAPIView):
             return Response(
                 data={"message": str(e), "content": None},
                 status=status.HTTP_404_NOT_FOUND,
+            )
+        
+    def delete(self, request: Request, anio, numero, tipo):
+        try:
+            observaciones = request.data.get("observaciones")
+            login = request.user.username
+
+            tabla = "REQUE_COMPRA" if tipo == "01" else "REQUE_SERVICIO"
+
+            AnularDocumentos(tabla, anio, numero, observaciones, login)
+
+            return Response(
+                data={"message": "Requerimiento anulado correctamente"},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                data={"message": e.args, "content": None},
+                status=400,
             )
 
 
@@ -634,10 +654,6 @@ class RequePrecomprometerController(RetrieveAPIView):
 
         try:
 
-            print("01")
-
-            # requerimiento_new = request.data.get("requerimiento")
-
             sf_dep = request.data.get("C_sf_dep")
             dni = request.data.get("c_traba_dni")
             libre = request.data.get("f_libre")
@@ -646,7 +662,6 @@ class RequePrecomprometerController(RetrieveAPIView):
 
             my_xml = """<?xml version="1.0" encoding="utf-8" ?><root>"""
 
-            print(request.data.get("gastos"))
             
             for item in request.data.get("gastos"):
                 my_xml += """<Registro>"""
@@ -662,8 +677,6 @@ class RequePrecomprometerController(RetrieveAPIView):
                 my_xml += """</Registro>"""
 
             my_xml += """</root>"""
-
-            print("03")
         
             params = {
                 "anipre": anio,
@@ -677,9 +690,6 @@ class RequePrecomprometerController(RetrieveAPIView):
                 "libre": libre
             }
 
-            print("************* params *************")
-            print(params)          
-                            
             precompromiso = PrecompromisoReque(params)
 
             return Response(

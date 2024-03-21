@@ -103,3 +103,18 @@ def PrecompromisoReque(params):
                 results.append(row)
             do = cursor.nextset()  # Move to the next result set, if available
         return results
+
+
+# EXEC SIGA.dbo.AnularDocumentos 'REQUE_COMPRA','2024','00119','PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION ','MMEDINA'
+
+
+# --ALTER    PROCEDURE [dbo].[AnularDocumentos]
+# --	@c_tabla		varchar(50),
+# --	@c_anipre		char(4),
+# --	@c_numero		char(5),
+# --	@t_obs			varchar(1024),
+# --	@n_user		varchar(50)
+
+def AnularDocumentos(tabla, anio, reque, obs, user):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.AnularDocumentos %s, %s, %s, %s, %s', [tabla, anio, reque, obs, user])        
