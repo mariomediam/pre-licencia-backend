@@ -12,6 +12,10 @@ from rest_framework.request import Request
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
+from django.template.loader import get_template, render_to_string
+from django.http import HttpResponse
+import pdfkit
+
 from app_abastec.abastec import (
     SelectAccesoDepenReque,
     SelectRequeSf_dep,
@@ -27,6 +31,10 @@ from app_abastec.abastec import (
     SelectSaldoPresupRequeItem,
     PrecompromisoReque,
     AnularDocumentos,
+    SelectExpedienteFase,
+    SelectTipo_Certificacion,
+    ListaRequeGasto,
+    ListaReque,
 )
 
 
@@ -701,3 +709,104 @@ class RequePrecomprometerController(RetrieveAPIView):
                 data={"message": str(e), "content": None},
                 status=status.HTTP_404_NOT_FOUND,
             )        
+
+
+def RequeImprimirController(request, anio, numero, tipo):
+    permission_classes = [IsAuthenticated]
+
+    try:
+
+        # anio = request.query_params.get("anio")
+        # numero = request.query_params.get("numero")
+        # bie_ser_tipo = request.query_params.get("tipo")
+
+        if anio and numero and tipo:
+            
+            requerimiento = SelectRequeById(anio, numero, tipo)
+
+            if len(requerimiento) == 0:
+                return Response(
+                    data={"message": None, "content": {}}, status=200
+                )
+            
+            requerimiento = requerimiento[0]
+
+            c_sf_dep = requerimiento["C_sf_dep"]
+
+            print("******************c_sf_dep ******************")
+            print(c_sf_dep)
+
+            requeSf_dep = SelectRequeSf_dep(anio, c_sf_dep, tipo, "NUMERO", numero, None, None)
+                            
+            requeSf_dep = requeSf_dep[0]
+
+            f_reque_estado = requeSf_dep["F_reque_estado"]
+            C_exp = requeSf_dep["C_exp"]
+            C_tipogasto = requeSf_dep["C_tipogasto"]
+            D_reque_fecha = requeSf_dep["D_reque_fecha"]
+
+            tipo_certificacion = {}
+            expediente_fase = {}
+
+            if f_reque_estado == "2":
+                ciclo = "G"
+                fase = "Q"
+                secu = "0001"
+
+                expediente_fase = SelectExpedienteFase(anio, C_exp, ciclo, fase, secu)
+
+                if len(expediente_fase) > 0:
+                    expediente_fase = expediente_fase[0]
+                    c_tipcertif = expediente_fase["c_tipcertif"]
+                    field = "CODIGO"
+                    tipo_certificacion = SelectTipo_Certificacion(field, c_tipcertif)
+                    if len(tipo_certificacion) > 0:
+                        tipo_certificacion = tipo_certificacion[0]
+
+            reque_gasto = ListaRequeGasto(anio, numero, C_tipogasto, tipo)
+
+            lista_reque = ListaReque(anio, numero, tipo)
+
+            # ********************* INCIO GENERANDO PDF ********************* #
+            context = {"C_reque" : numero,
+                       "C_exp" : C_exp, 
+                       "N_tipo": "BIENES" if tipo == "01" else "SERVICIOS",
+                       "D_reque_fecha": D_reque_fecha.strftime('%d/%m/%Y') if D_reque_fecha else None,
+                    }
+            
+            template = get_template('requerimiento.html')            
+            html = template.render(context = context)    
+            
+            options = {
+                'page-size': 'A4',
+                'margin-top': '0.25in',
+                'margin-right': '0.25in',
+                'margin-bottom': '0.25in',
+                'margin-left': '0.25in',
+                'encoding': "UTF-8",           
+                'no-outline': None
+            }                    
+        
+            file_generate = pdfkit.from_string(html, False, options=options)
+            
+            response = HttpResponse(file_generate, content_type="application/pdf")
+            file_name_download = "requerimiento{}.pdf".format(numero)
+            response['Content-Disposition'] = "attachment; filename={}".format(file_name_download)
+
+            # ********************* FIN GENERANDO PDF ********************* #
+
+            return response
+
+        else:
+            return Response(
+                data={
+                    "message": "Debe de ingresar año, numero y tipo de requerimiento buscado",
+                    "content": None,
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+    except Exception as e:
+        return Response(
+            data={"message": str(e), "content": None},
+            status=status.HTTP_404_NOT_FOUND,
+        )            

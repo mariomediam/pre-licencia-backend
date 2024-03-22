@@ -104,17 +104,26 @@ def PrecompromisoReque(params):
             do = cursor.nextset()  # Move to the next result set, if available
         return results
 
-
-# EXEC SIGA.dbo.AnularDocumentos 'REQUE_COMPRA','2024','00119','PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION PRUEBA DE ANULACION ','MMEDINA'
-
-
-# --ALTER    PROCEDURE [dbo].[AnularDocumentos]
-# --	@c_tabla		varchar(50),
-# --	@c_anipre		char(4),
-# --	@c_numero		char(5),
-# --	@t_obs			varchar(1024),
-# --	@n_user		varchar(50)
-
 def AnularDocumentos(tabla, anio, reque, obs, user):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIGA.dbo.AnularDocumentos %s, %s, %s, %s, %s', [tabla, anio, reque, obs, user])        
+
+def SelectExpedienteFase(anio, exp, ciclo = None, fase = None, secu = None, oper = None):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.SelectExpedienteFase %s, %s, %s, %s, %s, %s', [anio, exp, ciclo, fase, secu, oper])
+        return dictfetchall(cursor)
+        
+def SelectTipo_Certificacion(field = None, value = None):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.SelectTipo_Certificacion %s, %s', [field, value])
+        return dictfetchall(cursor)
+    
+def ListaRequeGasto(anio, reque, tipogasto, biesertipo):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.ListaRequeGasto %s, %s, %s, %s', [anio, reque, tipogasto, biesertipo])
+        return dictfetchall(cursor)
+        
+def ListaReque(anio, reque, biesertipo):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.ListaReque %s, %s, %s', [anio, reque, biesertipo])
+        return dictfetchall(cursor)

@@ -9,7 +9,8 @@ from .views import (SelectAccesoDepenRequeController
                     ,SelectSaldoPresupRequeController
                     ,SelectRequeFuentesController
                     ,SelectSaldoPresupRequeItemController
-                    ,RequePrecomprometerController)
+                    ,RequePrecomprometerController
+                    ,RequeImprimirController)
 
 urlpatterns = [
     path('acceso-depen', SelectAccesoDepenRequeController.as_view()),    
@@ -23,4 +24,5 @@ urlpatterns = [
     path('reque-fuentes', SelectRequeFuentesController.as_view()),
     path('reque-saldo-presup-item', SelectSaldoPresupRequeItemController.as_view()),
     path('reque-precompromete/<str:anio>/<str:numero>/<str:tipo>', RequePrecomprometerController.as_view()),
+    path('reque-imprime/<str:anio>/<str:numero>/<str:tipo>', RequeImprimirController),
 ]
