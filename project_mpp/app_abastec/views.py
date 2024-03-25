@@ -35,6 +35,7 @@ from app_abastec.abastec import (
     SelectTipo_Certificacion,
     ListaRequeGasto,
     ListaReque,
+    SelectReque,
 )
 
 
@@ -721,6 +722,12 @@ def RequeImprimirController(request, anio, numero, tipo):
         # bie_ser_tipo = request.query_params.get("tipo")
 
         if anio and numero and tipo:
+
+            tipo_gasto = [
+                {"1": "FUNCIONAMIENTO"},
+                {"2": "INVERSION"},
+                {"3": "NINGUNO"},
+            ]
             
             requerimiento = SelectRequeById(anio, numero, tipo)
 
@@ -733,10 +740,11 @@ def RequeImprimirController(request, anio, numero, tipo):
 
             c_sf_dep = requerimiento["C_sf_dep"]
 
-            print("******************c_sf_dep ******************")
-            print(c_sf_dep)
-
-            requeSf_dep = SelectRequeSf_dep(anio, c_sf_dep, tipo, "NUMERO", numero, None, None)
+            field = "NUMERO"
+            if c_sf_dep is None:
+                requeSf_dep = SelectReque(anio, field, numero, tipo)
+            else:
+                requeSf_dep = SelectRequeSf_dep(anio, c_sf_dep, tipo, field, numero, None, None)
                             
             requeSf_dep = requeSf_dep[0]
 
@@ -745,6 +753,23 @@ def RequeImprimirController(request, anio, numero, tipo):
             C_tipogasto = requeSf_dep["C_tipogasto"]
             D_reque_fecha = requeSf_dep["D_reque_fecha"]
 
+            # validar si existe n_proceso y c_prosel
+            # if requeSf_dep["n_proceso"] is None:
+            #     requeSf_dep["n_proceso"] = ""
+            # if requeSf_dep["C_prosel"] is None:
+            #     requeSf_dep["C_prosel"] = ""
+
+
+            n_proceso = requeSf_dep.get("n_proceso", "") or ""            
+            c_prosel = requeSf_dep.get("C_prosel", "") or ""
+            q_reque_total = requeSf_dep.get("Q_REQUE_TOTAL", 0)
+
+            print("******************q_reque_total ******************")
+            # q_reque_total 1838.000000
+            # convertir q_reque_total en dos decimales, con separacion de miles
+            q_reque_total = "{:,.2f}".format(q_reque_total)
+            print(q_reque_total)
+            
             tipo_certificacion = {}
             expediente_fase = {}
 
@@ -757,21 +782,75 @@ def RequeImprimirController(request, anio, numero, tipo):
 
                 if len(expediente_fase) > 0:
                     expediente_fase = expediente_fase[0]
-                    c_tipcertif = expediente_fase["c_tipcertif"]
-                    field = "CODIGO"
-                    tipo_certificacion = SelectTipo_Certificacion(field, c_tipcertif)
-                    if len(tipo_certificacion) > 0:
-                        tipo_certificacion = tipo_certificacion[0]
+                    c_tipcertif = expediente_fase.get("c_tipcertif", None)
+                    if c_tipcertif:
+                        field = "CODIGO"
+                        tipo_certificacion = SelectTipo_Certificacion(field, c_tipcertif)
+                        if len(tipo_certificacion) > 0:
+                            tipo_certificacion = tipo_certificacion[0]
 
             reque_gasto = ListaRequeGasto(anio, numero, C_tipogasto, tipo)
 
             lista_reque = ListaReque(anio, numero, tipo)
 
+            # print("******************lista_reque ******************")
+            # print(lista_reque)
+
+            reque_detalle_secfun = ""
+            reque_detalle_depen = ""
+            reque_gasto_format = []
+
+            for row_lista_reque in lista_reque:
+                if reque_detalle_secfun != row_lista_reque["C_SECFUN"]:
+                    reque_gasto_format.append({
+                        "C_secfun": row_lista_reque["C_SECFUN"],
+                        "N_secfun_desc": row_lista_reque["N_METAPRESUP_DESC"],
+                        "dependencias": []
+                    }
+                    )
+                    reque_detalle_depen = ""
+
+                if reque_detalle_depen != row_lista_reque["C_DEPEN"]:
+                    reque_gasto_format[-1]["dependencias"].append({
+                        "C_depen": row_lista_reque["C_DEPEN"],
+                        "N_depen_desc": row_lista_reque["N_DEPENDENCIA_DESC"],
+                        "items": []
+                    }
+                    )
+
+                reque_gasto_format[-1]["dependencias"][-1]["items"].append({
+                    "C_bieser": row_lista_reque["C_BIESER"],
+                    "N_bieser_desc": row_lista_reque["N_BIESER_DESC"],
+                    "N_unimed_desc": row_lista_reque["N_UNIMED_DESC"],
+                    "Q_requedet_cant": row_lista_reque["Q_REQUEDET_CANT"],
+                    "Q_requedet_precio": row_lista_reque["Q_REQUEDET_PRECIO"],
+                    "Q_requedet_subtotal": row_lista_reque["Q_REQUEDET_SUBTOTAL"],
+                    "N_cnespec_desc": row_lista_reque["N_cnespec_desc"]
+                })
+
+                reque_detalle_secfun = row_lista_reque["C_SECFUN"]
+                reque_detalle_depen = row_lista_reque["C_DEPEN"]
+
+
+            print("******************reque_gasto_format (0)******************")
+            print(reque_gasto_format[0])
+            
+            # print("******************C_tipogasto ******************")
+            # print(C_tipogasto)
+
             # ********************* INCIO GENERANDO PDF ********************* #
+
+            print("**** C_tipogasto ******")
+            print(C_tipogasto)
             context = {"C_reque" : numero,
                        "C_exp" : C_exp, 
                        "N_tipo": "BIENES" if tipo == "01" else "SERVICIOS",
                        "D_reque_fecha": D_reque_fecha.strftime('%d/%m/%Y') if D_reque_fecha else None,
+                        "N_tipogasto": tipo_gasto[int(C_tipogasto) - 1][C_tipogasto],
+                        "N_proceso": n_proceso,
+                        "C_prosel": c_prosel,
+                        "reque_gasto": reque_gasto_format,
+                        "Q_reque_total": q_reque_total,
                     }
             
             template = get_template('requerimiento.html')            
@@ -806,6 +885,7 @@ def RequeImprimirController(request, anio, numero, tipo):
                 status=status.HTTP_404_NOT_FOUND,
             )
     except Exception as e:
+        print("Error: ", e)
         return Response(
             data={"message": str(e), "content": None},
             status=status.HTTP_404_NOT_FOUND,

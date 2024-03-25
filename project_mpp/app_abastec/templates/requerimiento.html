@@ -45,6 +45,15 @@
         text-align: center;
        }
 
+        .align-right {
+        text-align: right;
+        }
+
+        .vertical-align-top {
+           vertical-align: top;
+        }
+
+        
     </style>
 
 
@@ -74,7 +83,7 @@
     </header>
         <table>
             <tr>
-                <td>
+                <td style="width: 200px;">
                     SOLICITUD DE {{ N_tipo }} 
                 </td>
                 <td>
@@ -89,79 +98,89 @@
                     {{ D_reque_fecha }}
                 </td>
             </tr>
-        </table>
-        <!-- <table class="tableTitle">
             <tr>
-                <td class="tdTitle">
-                    <h2>AUTORIZACIÓN Nº {{ M_LicProv_NroTitle }}</h2>
-                    <p class="exhibir">"Exhibir en un lugar visible"</p>
-                </td>
-                <td> 
-                    <img  class="imgFoto" src="data:image/png;base64,{{ N_Imagen_Base64 }}" alt="Red dot" />
-                </td>
-            </tr>
-        </table>
-
-        <table>
-            <tr class="tdMain">
-                <td class="tdLabel tdMain">TITULAR</td>
-                <td class="tdMain">: {{ N_Titular }}</td>
-            </tr>
-            <tr class="tdMain" >
-                <td class="tdLabel tdMain">{{ N_TipDoc}} Nº</td>
-                <td class="tdMain">: {{ M_LicProv_TitNroDoc }}</td>
-            </tr>
-            <tr class="tdMain" >
-                <td class="tdLabel tdMain">GIRO AUTORIZADO</td>
-                <td class="tdMain"> : {{ N_LicProv_Nombre|upper }}</td>
-            </tr>
-            <tr class="tdMain" >
-                <td class="tdLabel tdMain">CÓDIGO DE UBICACIÓN</td>
-                <td class="tdMain"> : {{ C_Ubica_Codigo }}</td>
-            </tr>
-            <tr class="tdMain" >
-                <td class="tdLabel tdMain">RUBRO</td>
-                <td class="tdMain"> : {{ N_Rubro_Descrip }} </td>
-            </tr>
-            <tr class="tdMain" >
-                <td class="tdLabel tdMain">UBICACIÓN DETALLADA</td>
-                <td class="tdMain"> : {{ N_Ubica_Descrip }}</td>                                
-            </tr>
-            <tr class="tdMain" >
-                <td class="tdLabel tdMain">MEDIDAS DEL MÓDULO</td>
-                <td class="tdMain"> : {{ N_Rubro_Dimension }}</td>
-            </tr>
-            <tr class="tdMain" >
-                <td class="tdLabel tdMain">HORARIO DE ATENCIÓN</td>
-                <td class="tdMain"> : {{ N_LicProv_HorAte }}</td>
-            </tr>
-            <tr class="tdMain" >
-                <td class="tdLabel tdMain">FECHA DE EMISIÓN</td>
-                <td class="tdMain"> : Piura, {{ D_LicProv_FecEmi }}</td>
-            </tr>
-            <tr class="tdMain" >
-                <td class="tdLabel tdMain">FECHA DE VENCIMIENTO</td>
-                <td class="tdMain"> : Piura, {{ D_LicProv_FinVig }}</td>
-            </tr>
-        </table>
-
-        <table class="table_QR">
-            <tr>
-                <td class="textTop">
-                    <p ><strong>Nota:</strong> La autorización municipal tiene carácter de provisional, personal e intransferible por lo que el titular de la misma deberá desempeñar la actividad no estando facultado a cederlo, traspasarlo o subarrendarlo.De no cumplir con las consideraciones establecidas, la autorización provisional se revocará.</p>
+                <td>
+                    TIPO DE GASTO
                 </td>
                 <td>
-                    <img class="imgQR showBorder" src="{{ url_QR }}">
+                    {{ N_tipogasto }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    PROCESO DE SELECCIÓN
+                </td>
+                <td>
+                    {{ C_prosel }} {{ N_proceso }}
                 </td>
             </tr>
         </table>
 
-        <div class="footer">
-            <small>FORMATO Nº {{ N_LicProv_Formato }}</small>
-            <p>La presente autorización provisional se ha emitido al titular de la misma al haber cumplido con los requisitos según ordenanzas: EMPRENDEDORES URBANOS O.M 367-00-CMPP del 16 de diciembre del 2022 y  D.A. 001-2023-A/MPP; EMOLIENTEROS Y MAQUEROS O.M. 370-00-CMPP del 23 de Diciembre del 2022  y D.A. 005-2023-A/MPP  y LUSTRADORES DE CALZADOS O.M. 371-00-CMPP del 28 de Diciembre del 2022 y D.A. 004-2023-A/MPP;  así mismo esta autorización será vigente desde la fecha de emisión, teniendo vigencia de un año, siempre que se respeten las condiciones por las que fue emitida, así como las disposiciones contenidas en las menciones normas.</p>
-        </div> -->
-        
-        
+        <!-- {{gasto.C_depen}} -->
+
+        <table style="width: 100%;">
+            <tr >
+                <td colspan="7" class="align-right">
+                    <hr>                 
+                </td>  
+                
+
+            </tr>
+            <tr>
+                <td>CODIGO</td>
+                <td>DESCRIPCION</td>
+                <td>ESPECIF. TEC.</td>
+                <td>UNIDAD</td>
+                <td>CANTIDAD</td>
+                <td>PRECIO</td>
+                <td>TOTAL</td>
+            </tr>
+            <tr >
+                <td colspan="7" class="align-right">
+                    <hr>                 
+                </td>  
+                
+
+            </tr>
+            {% for secfun_row in reque_gasto %}
+                <tr >
+                    <td colspan="7">
+                        <h4 style="padding: 0; margin: 0;">{{ secfun_row.C_secfun}} {{ secfun_row.N_secfun_desc }}</h4>                                                        
+                    </td>  
+                    
+
+                </tr>
+                {% for depen_row in secfun_row.dependencias %}
+                    <tr>
+                        <td colspan="7">
+                            <h4 style="padding: 0; margin: 0;">{{ depen_row.C_depen}} {{ depen_row.N_depen_desc }}</h4>                                                        
+                        </td>  
+                    </tr>
+                    {% for item_row in depen_row.items %}
+                        <tr>
+                            <td class="vertical-align-top">{{ item_row.C_bieser|striptags }}</td>
+                            <td class="vertical-align-top">{{ item_row.N_bieser_desc|striptags }}</td>
+                            <td class="vertical-align-top">{{ item_row.N_cnespec_desc|striptags }}</td>
+                            <td class="vertical-align-top">{{ item_row.N_unimed_desc|striptags }}</td>
+                            <td class="align-right">{{ item_row.Q_requedet_cant|floatformat:2 }}</td>
+                            <td class="align-right">{{ item_row.Q_requedet_precio|floatformat:2 }}</td>
+                            <td class="align-right">{{ item_row.Q_requedet_subtotal|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+
+                {% endfor %}
+                   
+            {% endfor %}
+            <tr >
+                <td colspan="7" class="align-right">
+                    <hr>
+                    <h4 style="padding: 0; margin: 0;">TOTAL {{ Q_reque_total }}</h4>                                                        
+                </td>  
+                
+
+            </tr>
+        </table>
+                
     </div>
     
 <body>

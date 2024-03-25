@@ -127,3 +127,8 @@ def ListaReque(anio, reque, biesertipo):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIGA.dbo.ListaReque %s, %s, %s', [anio, reque, biesertipo])
         return dictfetchall(cursor)
+        
+def SelectReque(anio, field = None, valor = None, c_biesertipo = None):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.SelectReque %s, %s, %s, %s', [anio, field, valor, c_biesertipo])
+        return dictfetchall(cursor)
