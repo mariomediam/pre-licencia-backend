@@ -1,5 +1,6 @@
 import sys
 import traceback
+import os
 from datetime import datetime
 
 from operator import itemgetter
@@ -11,9 +12,13 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 
 from django.template.loader import get_template, render_to_string
+from django.template import Context
 from django.http import HttpResponse
+from django.conf import settings
+
 import pdfkit
 
 from app_abastec.abastec import (
@@ -712,14 +717,10 @@ class RequePrecomprometerController(RetrieveAPIView):
             )        
 
 
-def RequeImprimirController(request, anio, numero, tipo):
-    permission_classes = [IsAuthenticated]
-
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def RequeImprimirController(request, anio, numero, tipo):    
     try:
-
-        # anio = request.query_params.get("anio")
-        # numero = request.query_params.get("numero")
-        # bie_ser_tipo = request.query_params.get("tipo")
 
         if anio and numero and tipo:
 
@@ -738,6 +739,9 @@ def RequeImprimirController(request, anio, numero, tipo):
             
             requerimiento = requerimiento[0]
 
+            login = request.user            
+            
+            fecha_print = datetime.now().strftime('%d/%m/%Y %I:%M:%S %p')            
             c_sf_dep = requerimiento["C_sf_dep"]
 
             field = "NUMERO"
@@ -752,26 +756,15 @@ def RequeImprimirController(request, anio, numero, tipo):
             C_exp = requeSf_dep["C_exp"]
             C_tipogasto = requeSf_dep["C_tipogasto"]
             D_reque_fecha = requeSf_dep["D_reque_fecha"]
-
-            # validar si existe n_proceso y c_prosel
-            # if requeSf_dep["n_proceso"] is None:
-            #     requeSf_dep["n_proceso"] = ""
-            # if requeSf_dep["C_prosel"] is None:
-            #     requeSf_dep["C_prosel"] = ""
-
-
             n_proceso = requeSf_dep.get("n_proceso", "") or ""            
             c_prosel = requeSf_dep.get("C_prosel", "") or ""
             q_reque_total = requeSf_dep.get("Q_REQUE_TOTAL", 0)
-
-            print("******************q_reque_total ******************")
-            # q_reque_total 1838.000000
-            # convertir q_reque_total en dos decimales, con separacion de miles
-            q_reque_total = "{:,.2f}".format(q_reque_total)
-            print(q_reque_total)
+            n_observaciones = requeSf_dep.get("T_reque_obs", "") or ""
             
             tipo_certificacion = {}
             expediente_fase = {}
+            n_tipcertif_desc = ""
+            c_tipceruser= ""
 
             if f_reque_estado == "2":
                 ciclo = "G"
@@ -783,6 +776,8 @@ def RequeImprimirController(request, anio, numero, tipo):
                 if len(expediente_fase) > 0:
                     expediente_fase = expediente_fase[0]
                     c_tipcertif = expediente_fase.get("c_tipcertif", None)
+                    n_tipcertif_desc = expediente_fase.get("n_tipcertif_desc", "")
+                    c_tipceruser = expediente_fase.get("C_TipCerUser", "")
                     if c_tipcertif:
                         field = "CODIGO"
                         tipo_certificacion = SelectTipo_Certificacion(field, c_tipcertif)
@@ -793,16 +788,13 @@ def RequeImprimirController(request, anio, numero, tipo):
 
             lista_reque = ListaReque(anio, numero, tipo)
 
-            # print("******************lista_reque ******************")
-            # print(lista_reque)
-
             reque_detalle_secfun = ""
             reque_detalle_depen = ""
-            reque_gasto_format = []
+            lista_reque_format = []
 
             for row_lista_reque in lista_reque:
                 if reque_detalle_secfun != row_lista_reque["C_SECFUN"]:
-                    reque_gasto_format.append({
+                    lista_reque_format.append({
                         "C_secfun": row_lista_reque["C_SECFUN"],
                         "N_secfun_desc": row_lista_reque["N_METAPRESUP_DESC"],
                         "dependencias": []
@@ -811,37 +803,40 @@ def RequeImprimirController(request, anio, numero, tipo):
                     reque_detalle_depen = ""
 
                 if reque_detalle_depen != row_lista_reque["C_DEPEN"]:
-                    reque_gasto_format[-1]["dependencias"].append({
+                    lista_reque_format[-1]["dependencias"].append({
                         "C_depen": row_lista_reque["C_DEPEN"],
                         "N_depen_desc": row_lista_reque["N_DEPENDENCIA_DESC"],
                         "items": []
                     }
                     )
 
-                reque_gasto_format[-1]["dependencias"][-1]["items"].append({
+                lista_reque_format[-1]["dependencias"][-1]["items"].append({
                     "C_bieser": row_lista_reque["C_BIESER"],
                     "N_bieser_desc": row_lista_reque["N_BIESER_DESC"],
                     "N_unimed_desc": row_lista_reque["N_UNIMED_DESC"],
                     "Q_requedet_cant": row_lista_reque["Q_REQUEDET_CANT"],
                     "Q_requedet_precio": row_lista_reque["Q_REQUEDET_PRECIO"],
                     "Q_requedet_subtotal": row_lista_reque["Q_REQUEDET_SUBTOTAL"],
-                    "N_cnespec_desc": row_lista_reque["N_cnespec_desc"]
+                    "N_cnespec_desc": row_lista_reque["N_cnespec_desc"]                    
                 })
 
                 reque_detalle_secfun = row_lista_reque["C_SECFUN"]
                 reque_detalle_depen = row_lista_reque["C_DEPEN"]
 
-
-            print("******************reque_gasto_format (0)******************")
-            print(reque_gasto_format[0])
-            
-            # print("******************C_tipogasto ******************")
-            # print(C_tipogasto)
-
             # ********************* INCIO GENERANDO PDF ********************* #
+            print(settings.MEDIA_URL)
+            template = get_template('reque-footer.html')
+            page_footer = template.render({})
+            footer_template_path = os.path.join(settings.MEDIA_ROOT, 'footer.html')
+            text_file = open(footer_template_path, "w")
+            text_file.write(page_footer)
+            text_file.close()
+                
+            
 
-            print("**** C_tipogasto ******")
-            print(C_tipogasto)
+                #***********************
+            print("*****************iniciando pdf*****************")
+
             context = {"C_reque" : numero,
                        "C_exp" : C_exp, 
                        "N_tipo": "BIENES" if tipo == "01" else "SERVICIOS",
@@ -849,9 +844,18 @@ def RequeImprimirController(request, anio, numero, tipo):
                         "N_tipogasto": tipo_gasto[int(C_tipogasto) - 1][C_tipogasto],
                         "N_proceso": n_proceso,
                         "C_prosel": c_prosel,
-                        "reque_gasto": reque_gasto_format,
+                        "lista_reque_format": lista_reque_format,
                         "Q_reque_total": q_reque_total,
+                        "reque_gasto": reque_gasto,
+                        "N_observaciones": n_observaciones.replace('\n', '<br>'),
+                        "N_tipcertif_desc": n_tipcertif_desc,
+                        "C_tipceruser": c_tipceruser,
+                        "tipo": tipo,
+                        "login": login,
+                        "fecha_print": fecha_print,                        
                     }
+            
+  
             
             template = get_template('requerimiento.html')            
             html = template.render(context = context)    
@@ -862,14 +866,18 @@ def RequeImprimirController(request, anio, numero, tipo):
                 'margin-right': '0.25in',
                 'margin-bottom': '0.25in',
                 'margin-left': '0.25in',
-                'encoding': "UTF-8",           
-                'no-outline': None
+                'encoding': "UTF-8",                           
+                'footer-html': footer_template_path,    
             }                    
         
+            print("**************** 1 *****************")
             file_generate = pdfkit.from_string(html, False, options=options)
+            print("**************** 2 *****************")
             
             response = HttpResponse(file_generate, content_type="application/pdf")
+            print("**************** 3 *****************")
             file_name_download = "requerimiento{}.pdf".format(numero)
+            print("**************** 4 *****************")
             response['Content-Disposition'] = "attachment; filename={}".format(file_name_download)
 
             # ********************* FIN GENERANDO PDF ********************* #
