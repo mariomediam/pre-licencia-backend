@@ -20,6 +20,7 @@ from django.http import HttpResponse
 from django.conf import settings
 
 import pdfkit
+import uuid
 
 from app_abastec.abastec import (
     SelectAccesoDepenReque,
@@ -823,18 +824,19 @@ def RequeImprimirController(request, anio, numero, tipo):
                 reque_detalle_secfun = row_lista_reque["C_SECFUN"]
                 reque_detalle_depen = row_lista_reque["C_DEPEN"]
 
-            # ********************* INCIO GENERANDO PDF ********************* #
+            # ********************* INCIO FOOTER PDF ********************* #
             print(settings.MEDIA_URL)
             template = get_template('reque-footer.html')
-            page_footer = template.render({})
-            footer_template_path = os.path.join(settings.MEDIA_ROOT, 'footer.html')
-            text_file = open(footer_template_path, "w")
+            page_footer = template.render({"login": login, "fecha_print": fecha_print})
+            footer_template_path = os.path.join(settings.MEDIA_ROOT, 'reque-footer' + str(uuid.uuid4()) + '.html')
+            
+            text_file = open(footer_template_path, "w")            
             text_file.write(page_footer)
             text_file.close()
-                
+                            
             
 
-                #***********************
+            #***********************
             print("*****************iniciando pdf*****************")
 
             context = {"C_reque" : numero,
@@ -864,7 +866,7 @@ def RequeImprimirController(request, anio, numero, tipo):
                 'page-size': 'A4',
                 'margin-top': '0.25in',
                 'margin-right': '0.25in',
-                'margin-bottom': '0.25in',
+                'margin-bottom': '0.50in',
                 'margin-left': '0.25in',
                 'encoding': "UTF-8",                           
                 'footer-html': footer_template_path,    
@@ -881,6 +883,7 @@ def RequeImprimirController(request, anio, numero, tipo):
             response['Content-Disposition'] = "attachment; filename={}".format(file_name_download)
 
             # ********************* FIN GENERANDO PDF ********************* #
+            os.remove(footer_template_path)
 
             return response
 
