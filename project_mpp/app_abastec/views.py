@@ -824,8 +824,33 @@ def RequeImprimirController(request, anio, numero, tipo):
                 reque_detalle_secfun = row_lista_reque["C_SECFUN"]
                 reque_detalle_depen = row_lista_reque["C_DEPEN"]
 
+            # ********************* INCIO HEADER PDF ********************* #
+                
+            
+            
+            template = get_template('reque-header.html')
+            context = {"C_reque" : numero,
+                       "C_exp" : C_exp, 
+                       "N_tipo": "BIENES" if tipo == "01" else "SERVICIOS",
+                       "D_reque_fecha": D_reque_fecha.strftime('%d/%m/%Y') if D_reque_fecha else None,
+                        "N_tipogasto": tipo_gasto[int(C_tipogasto) - 1][C_tipogasto],
+                        "N_proceso": n_proceso,
+                        "C_prosel": c_prosel
+                    }
+            
+            options = {
+                'encoding': "UTF-8",                           
+            }  
+
+            page_header = template.render(context = context)
+            header_template_path = os.path.join(settings.MEDIA_ROOT, 'reque-header' + str(uuid.uuid4()) + '.html')
+            
+            text_file = open(header_template_path, "w")            
+            text_file.write(page_header)
+            text_file.close()
+
             # ********************* INCIO FOOTER PDF ********************* #
-            print(settings.MEDIA_URL)
+            
             template = get_template('reque-footer.html')
             page_footer = template.render({"login": login, "fecha_print": fecha_print})
             footer_template_path = os.path.join(settings.MEDIA_ROOT, 'reque-footer' + str(uuid.uuid4()) + '.html')
@@ -833,11 +858,9 @@ def RequeImprimirController(request, anio, numero, tipo):
             text_file = open(footer_template_path, "w")            
             text_file.write(page_footer)
             text_file.close()
-                            
-            
 
-            #***********************
-            print("*****************iniciando pdf*****************")
+            # ********************* INCIO MAIN PDF ********************* #
+                            
 
             context = {"C_reque" : numero,
                        "C_exp" : C_exp, 
@@ -864,25 +887,24 @@ def RequeImprimirController(request, anio, numero, tipo):
             
             options = {
                 'page-size': 'A4',
-                'margin-top': '0.25in',
+                'margin-top': '2.0in',
                 'margin-right': '0.25in',
                 'margin-bottom': '0.50in',
                 'margin-left': '0.25in',
                 'encoding': "UTF-8",                           
                 'footer-html': footer_template_path,    
+                'header-html': header_template_path,
+                'footer-font-size':'7',
+                'footer-right': 'Página [page] de [topage]',
             }                    
-        
-            print("**************** 1 *****************")
+                    
             file_generate = pdfkit.from_string(html, False, options=options)
-            print("**************** 2 *****************")
-            
             response = HttpResponse(file_generate, content_type="application/pdf")
-            print("**************** 3 *****************")
             file_name_download = "requerimiento{}.pdf".format(numero)
-            print("**************** 4 *****************")
             response['Content-Disposition'] = "attachment; filename={}".format(file_name_download)
 
             # ********************* FIN GENERANDO PDF ********************* #
+            os.remove(header_template_path)
             os.remove(footer_template_path)
 
             return response
