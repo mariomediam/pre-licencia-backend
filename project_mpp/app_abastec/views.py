@@ -895,17 +895,20 @@ def RequeImprimirController(request, anio, numero, tipo):
                 'footer-html': footer_template_path,    
                 'header-html': header_template_path,
                 'footer-font-size':'7',
-                'footer-right': 'Página [page] de [topage]',
+                'footer-right': 'Página [page] de [topage]',                
             }                    
                     
             file_generate = pdfkit.from_string(html, False, options=options)
             response = HttpResponse(file_generate, content_type="application/pdf")
             file_name_download = "requerimiento{}.pdf".format(numero)
-            response['Content-Disposition'] = "attachment; filename={}".format(file_name_download)
+            # response['Content-Disposition'] = "attachment; filename={}".format(file_name_download)
+            response['Content-Disposition'] = "inline; filename={}".format(file_name_download)
+
 
             # ********************* FIN GENERANDO PDF ********************* #
             os.remove(header_template_path)
             os.remove(footer_template_path)
+
 
             return response
 
@@ -918,7 +921,7 @@ def RequeImprimirController(request, anio, numero, tipo):
                 status=status.HTTP_404_NOT_FOUND,
             )
     except Exception as e:
-        print("Error: ", e)
+        
         return Response(
             data={"message": str(e), "content": None},
             status=status.HTTP_404_NOT_FOUND,
