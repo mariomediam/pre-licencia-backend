@@ -1,6 +1,7 @@
 import sys
 import traceback
 import os
+from os import environ
 from datetime import datetime
 
 from operator import itemgetter
@@ -824,9 +825,7 @@ def RequeImprimirController(request, anio, numero, tipo):
                 reque_detalle_secfun = row_lista_reque["C_SECFUN"]
                 reque_detalle_depen = row_lista_reque["C_DEPEN"]
 
-            # ********************* INCIO HEADER PDF ********************* #
-                
-            
+            # ********************* INCIO HEADER PDF ********************* #                            
             
             template = get_template('reque-header.html')
             context = {"C_reque" : numero,
@@ -844,6 +843,7 @@ def RequeImprimirController(request, anio, numero, tipo):
 
             page_header = template.render(context = context)
             header_template_path = os.path.join(settings.MEDIA_ROOT, 'reque-header' + str(uuid.uuid4()) + '.html')
+            # header_template_path = os.path.join(environ.get('RUTA_BOLETAS_PAGO'), 'reque-header' + str(uuid.uuid4()) + '.html')
             
             text_file = open(header_template_path, "w")            
             text_file.write(page_header)
@@ -859,8 +859,7 @@ def RequeImprimirController(request, anio, numero, tipo):
             text_file.write(page_footer)
             text_file.close()
 
-            # ********************* INCIO MAIN PDF ********************* #
-                            
+            # ********************* INCIO MAIN PDF ********************* #            
 
             context = {"C_reque" : numero,
                        "C_exp" : C_exp, 
@@ -895,15 +894,22 @@ def RequeImprimirController(request, anio, numero, tipo):
                 'footer-html': footer_template_path,    
                 'header-html': header_template_path,
                 'footer-font-size':'7',
-                'footer-right': 'Página [page] de [topage]',                
-            }                    
+                'footer-right': 'Pagina [page] de [topage]',
+                           
+            }        
+            #  'footer-html': footer_template_path,    
+            #     'header-html': header_template_path,
+            #     'footer-font-size':'7',
+            #     'footer-right': 'Página [page] de [topage]',        
+
+            # 'footer-html': 'file://' + os.path.abspath(footer_template_path),    
+            #     'header-html': 'file://' + os.path.abspath(header_template_path),        
                     
             file_generate = pdfkit.from_string(html, False, options=options)
-            response = HttpResponse(file_generate, content_type="application/pdf")
-            file_name_download = "requerimiento{}.pdf".format(numero)
-            # response['Content-Disposition'] = "attachment; filename={}".format(file_name_download)
-            response['Content-Disposition'] = "inline; filename={}".format(file_name_download)
-
+            response = HttpResponse(file_generate, content_type="application/pdf")            
+            file_name_download = "requerimiento{}.pdf".format(numero)            
+            response['Content-Disposition'] = "attachment; filename={}".format(file_name_download)
+            # response['Content-Disposition'] = "inline; filename={}".format(file_name_download)")
 
             # ********************* FIN GENERANDO PDF ********************* #
             os.remove(header_template_path)

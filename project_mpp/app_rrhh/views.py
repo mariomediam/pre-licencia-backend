@@ -470,9 +470,6 @@ class InsertUpdateTrabajadorCorreoController(UpdateAPIView):
         correo = request.data.get('correo')
         login = request.user.username       
 
-        print("dni: ", dni)
-        print("correo: ", correo) 
-
         try:
             if dni and correo:
                 trabajador_correo = InsertUpdateTrabajadorCorreo(dni, correo, login)
