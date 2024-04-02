@@ -193,8 +193,14 @@ class SelectSaldoPresupDepenController(RetrieveAPIView):
             bie_ser_tipo = request.query_params.get("tipo")
             formato = request.query_params.get("formato")
 
+            print("******************************* 1 *****************************")
+
             if anio and cod_dep:
                 saldo = SelectSaldoPresupDepen(anio, cod_dep, bie_ser_tipo)
+
+                print("******************************* 2 *****************************")
+
+                print(saldo)
 
                 if formato == "reque":
                     keys = [
@@ -210,6 +216,8 @@ class SelectSaldoPresupDepenController(RetrieveAPIView):
                     ]
                     saldo.sort(key=itemgetter(*keys))
 
+                    print("******************************* 3 *****************************")
+
                     saldo_format = []
 
                     i = 0
@@ -220,6 +228,8 @@ class SelectSaldoPresupDepenController(RetrieveAPIView):
                     objpoi = ""
                     metapoi = ""
                     row = {}
+
+                    
 
                     while i < len(saldo):
                         if secfun != saldo[i]["C_secfun"]:
