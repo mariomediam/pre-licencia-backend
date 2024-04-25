@@ -43,6 +43,7 @@ from app_abastec.abastec import (
     ListaRequeGasto,
     ListaReque,
     SelectReque,
+    SelectBBSSDisponibleCuadro_real,
 )
 
 
@@ -942,3 +943,56 @@ def RequeImprimirController(request, anio, numero, tipo):
             data={"message": str(e), "content": None},
             status=status.HTTP_404_NOT_FOUND,
         )            
+    
+class SelectBBSSDisponibleCuadro_realController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+
+        try:
+            
+            anio = request.query_params.get("anio")
+            cod_dep = request.query_params.get("coddep")
+            bie_ser_tipo = request.query_params.get("tipo")
+            mes = request.query_params.get("mes")
+            file = request.query_params.get("file", "")
+            bieser = request.query_params.get("bieser")
+            clapre = request.query_params.get("clapre")
+
+            if anio and mes:
+                bienes_servicios = SelectBBSSDisponibleCuadro_real(
+                    anio, cod_dep, bie_ser_tipo, mes, file, bieser, clapre
+                )
+
+                key_mapping = {
+                        "C_Bieser": "C_BIESER",
+                        "N_bieser_desc": "N_BIESER_DESC",
+                        "N_unimed_desc": "N_UNIMED_DESC",                        
+                    }
+                
+                bienes_servicios_format = []
+
+                for item in bienes_servicios:
+                    updated_json = {
+                        key_mapping.get(key, key): value
+                        for key, value in item.items()
+                    }
+                    bienes_servicios_format.append(updated_json)
+
+                return Response(
+                    data={"message": None, "content": bienes_servicios_format}, status=200
+                )
+
+            else:
+                return Response(
+                    data={
+                        "message": "Debe de ingresar año y mes buscado",
+                        "content": None,
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )

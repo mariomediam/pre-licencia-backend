@@ -132,3 +132,9 @@ def SelectReque(anio, field = None, valor = None, c_biesertipo = None):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIGA.dbo.SelectReque %s, %s, %s, %s', [anio, field, valor, c_biesertipo])
         return dictfetchall(cursor)
+ 
+def SelectBBSSDisponibleCuadro_real(anio, depen, biesertipo, mes, file, bieser, clapre):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.SelectBBSSDisponibleCuadro_real %s, %s, %s, %s, %s, %s, %s', [anio, depen, biesertipo, mes, file, bieser, clapre])
+        return dictfetchall(cursor) 
+    
