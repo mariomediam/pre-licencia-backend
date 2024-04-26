@@ -22,9 +22,9 @@ def SelectAniosDepenById(anio, cod_dep):
         cursor.execute('EXEC SIGA.dbo.SelectDependencia %s, %s, %s', [anio, field, cod_dep])
         return dictfetchall(cursor)     
     
-def SelectSaldoPresupDepen(anio, cod_dep, bie_ser_tipo):
+def SelectSaldoPresupDepen(anio, cod_dep, bie_ser_tipo, secfun=None):
     with connection.cursor() as cursor:
-        cursor.execute('EXEC SIGA.dbo.SelectSaldoPresupDepen %s, %s, %s', [anio, cod_dep, bie_ser_tipo])
+        cursor.execute('EXEC SIGA.dbo.SelectSaldoPresupDepen %s, %s, %s, %s', [anio, cod_dep, bie_ser_tipo, secfun])
         return dictfetchall(cursor)    
 
 def SelectBBSSDisponibleOrden(anio, sec_fun, cod_dep, bie_ser_tipo, file, valor):
@@ -138,3 +138,8 @@ def SelectBBSSDisponibleCuadro_real(anio, depen, biesertipo, mes, file, bieser, 
         cursor.execute('EXEC SIGA.dbo.SelectBBSSDisponibleCuadro_real %s, %s, %s, %s, %s, %s, %s', [anio, depen, biesertipo, mes, file, bieser, clapre])
         return dictfetchall(cursor) 
     
+    
+def SelectMetas(anio, field = None, valor = None, valor_aux = None):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.SelectMetas %s, %s, %s, %s', [anio, field, valor, valor_aux])
+        return dictfetchall(cursor)

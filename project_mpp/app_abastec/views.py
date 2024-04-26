@@ -44,6 +44,7 @@ from app_abastec.abastec import (
     ListaReque,
     SelectReque,
     SelectBBSSDisponibleCuadro_real,
+    SelectMetas
 )
 
 
@@ -192,16 +193,11 @@ class SelectSaldoPresupDepenController(RetrieveAPIView):
             anio = request.query_params.get("anio")
             cod_dep = request.query_params.get("coddep")
             bie_ser_tipo = request.query_params.get("tipo")
+            secfun = request.query_params.get("secfun")
             formato = request.query_params.get("formato")
 
-            print("******************************* 1 *****************************")
-
-            if anio and cod_dep:
-                saldo = SelectSaldoPresupDepen(anio, cod_dep, bie_ser_tipo)
-
-                print("******************************* 2 *****************************")
-
-                print(saldo)
+            if anio and (cod_dep or secfun):
+                saldo = SelectSaldoPresupDepen(anio, cod_dep, bie_ser_tipo, secfun)
 
                 if formato == "reque":
                     keys = [
@@ -216,8 +212,6 @@ class SelectSaldoPresupDepenController(RetrieveAPIView):
                         "C_metapoi",
                     ]
                     saldo.sort(key=itemgetter(*keys))
-
-                    print("******************************* 3 *****************************")
 
                     saldo_format = []
 
@@ -995,4 +989,37 @@ class SelectBBSSDisponibleCuadro_realController(RetrieveAPIView):
             return Response(
                 data={"message": str(e), "content": None},
                 status=status.HTTP_404_NOT_FOUND,
+            )
+        
+class SelectMetasController(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+
+        try:
+
+            anio = request.query_params.get("anio")
+            field = request.query_params.get("field")
+            valor = request.query_params.get("valor")
+            valor_aux = request.query_params.get("valoraux")
+
+            if anio and field and valor:
+                saldos = SelectMetas(anio, field, valor, valor_aux)
+
+                return Response(
+                    data={"message": None, "content": saldos}, status=200
+                )
+
+            else:
+                return Response(
+                    data={
+                        "message": "Debe de ingresar año, campo y valor buscado",
+                        "content": None,
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_404_NOT_FOUND,        
             )
