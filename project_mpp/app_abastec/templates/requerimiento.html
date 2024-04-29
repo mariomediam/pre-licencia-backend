@@ -66,6 +66,7 @@
 
 </head>
 <body>
+    {% load humanize %}
     <div>
         <!-- <header>
 
@@ -131,9 +132,9 @@
                             <td class="vertical-align-top">{{ item_row.N_bieser_desc|striptags }}</td>
                             <td class="vertical-align-top">{{ item_row.N_cnespec_desc|striptags }}</td>
                             <td class="vertical-align-top">{{ item_row.N_unimed_desc|striptags }}</td>
-                            <td class="vertical-align-top align-right">{{ item_row.Q_requedet_cant|floatformat:2 }}</td>
-                            <td class="vertical-align-top align-right">{{ item_row.Q_requedet_precio|floatformat:2 }}</td>
-                            <td class="vertical-align-top align-right">{{ item_row.Q_requedet_subtotal|floatformat:2 }}</td>
+                            <td class="vertical-align-top align-right">{{ item_row.Q_requedet_cant|floatformat:2|intcomma }}</td>
+                            <td class="vertical-align-top align-right">{{ item_row.Q_requedet_precio|floatformat:2|intcomma }}</td>
+                            <td class="vertical-align-top align-right">{{ item_row.Q_requedet_subtotal|floatformat:2|intcomma }}</td>
                         </tr>
                     {% endfor %}
 
@@ -143,7 +144,7 @@
             <tr >
                 <td colspan="7" class="align-right">
                     <hr>
-                    <h4 style="padding: 0; margin: 0;">TOTAL {{ Q_reque_total|floatformat:2 }}</h4>                                                        
+                    <h4 style="padding: 0; margin: 0;">TOTAL {{ Q_reque_total|floatformat:2|intcomma }}</h4>                                                        
                 </td>  
                 
 
@@ -161,7 +162,7 @@
             <tr>
                 <td class="align-left">SecFun</td>
                 <td class="align-left">Depen.</td>
-                <td colspan="2" class="text-center">Asignación</td>
+                <td class="align-left">Asignación / Tarea</td>                
                 <td class="align-left">FF</td>
                 <td class="align-left">RC</td>
                 <td class="align-right">Total</td>
@@ -175,11 +176,10 @@
                 <tr>
                     <td class="vertical-align-top">{{ gasto.C_SECFUN|striptags }}</td>
                     <td class="vertical-align-top">{{ gasto.C_DEPEN|striptags }}</td>
-                    <td class="vertical-align-top">{{ gasto.C_CLAPRE|striptags }}</td>
-                    <td class="vertical-align-top">{{ gasto.N_CLAPRE_DESC|striptags }}</td>
+                    <td class="vertical-align-top">{{ gasto.C_CLAPRE|striptags }} {{ gasto.N_CLAPRE_DESC|striptags }} <br> <small>{{ gasto.c_activpoi }} {{ gasto.N_activpoi_desc }}</small></td>                    
                     <td class="vertical-align-top">{{ gasto.C_fuefin }}</td>
                     <td class="vertical-align-top">{{ gasto.C_recurso }}</td>
-                    <td class="vertical-align-top align-right">{{ gasto.Q_requegasto_monto|floatformat:2 }}</td>
+                    <td class="vertical-align-top align-right">{{ gasto.Q_requegasto_monto|floatformat:2|intcomma }}</td>
                 </tr>
             {% endfor %}
             <tr >

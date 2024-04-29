@@ -750,6 +750,10 @@ def RequeImprimirController(request, anio, numero, tipo):
             
             fecha_print = datetime.now().strftime('%d/%m/%Y %I:%M:%S %p')            
             c_sf_dep = requerimiento["C_sf_dep"]
+            n_tipo_reque = requerimiento["tipo_reque"]
+            tipo_dependencia = requerimiento["tipo_dependencia"]
+            n_sf_dep_descrip = requerimiento["n_sf_dep_descrip"]
+            f_libre = requerimiento["f_libre"]
 
             field = "NUMERO"
             if c_sf_dep is None:
@@ -839,7 +843,12 @@ def RequeImprimirController(request, anio, numero, tipo):
                        "D_reque_fecha": D_reque_fecha.strftime('%d/%m/%Y') if D_reque_fecha else None,
                         "N_tipogasto": tipo_gasto[int(C_tipogasto) - 1][C_tipogasto],
                         "N_proceso": n_proceso,
-                        "C_prosel": c_prosel
+                        "C_prosel": c_prosel,                        
+                        "n_tipo_reque": n_tipo_reque,
+                        "f_libre": f_libre,
+                        "c_sf_dep": c_sf_dep,
+                        "n_sf_dep_descrip": n_sf_dep_descrip,
+                        
                     }
             
             options = {
@@ -857,12 +866,20 @@ def RequeImprimirController(request, anio, numero, tipo):
             # ********************* INCIO FOOTER PDF ********************* #
             
             template = get_template('reque-footer.html')
-            page_footer = template.render({"login": login, "fecha_print": fecha_print})
+
+            context = {"login": login, "fecha_print": fecha_print}
+           
+            # page_footer = template.render({"login": login, "fecha_print": fecha_print})
+
+            page_footer = template.render(context = context)
+            
             footer_template_path = os.path.join(settings.MEDIA_ROOT, 'reque-footer' + str(uuid.uuid4()) + '.html')
             
-            text_file = open(footer_template_path, "w")            
+            text_file = open(footer_template_path, "w", encoding='utf-8')            
             text_file.write(page_footer)
             text_file.close()
+
+            
 
             # ********************* INCIO MAIN PDF ********************* #            
 
@@ -881,8 +898,10 @@ def RequeImprimirController(request, anio, numero, tipo):
                         "C_tipceruser": c_tipceruser,
                         "tipo": tipo,
                         "login": login,
-                        "fecha_print": fecha_print,                        
+                        "fecha_print": fecha_print,                          
                     }
+            
+
             
   
             
