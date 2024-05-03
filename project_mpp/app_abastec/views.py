@@ -265,6 +265,7 @@ class SelectSaldoPresupDepenController(RetrieveAPIView):
                                 "C_clapre": saldo[i]["C_clapre"],
                                 "C_objpoi": saldo[i]["C_objpoi"],
                                 "C_metapoi": saldo[i]["C_metapoi"],
+                                "N_clapre_desc": saldo[i]["N_clapre_desc"],
                                 "saldos": [],
                                 "selecc": False,
                             }
@@ -371,6 +372,7 @@ class RequerimientoController(RetrieveUpdateDestroyAPIView):
                         "C_ITEM": "C_item",
                         "N_BIESER_DESC": "N_bieser_desc",
                         "N_UNIMED_DESC": "N_unimed_desc",
+                        "N_METAPRESUP_DESC": "N_metapresup_desc"
                     }
                     datalle_format = []
 
@@ -388,6 +390,9 @@ class RequerimientoController(RetrieveUpdateDestroyAPIView):
                         "C_activpoi",
                         "C_objpoi",
                         "C_metapoi",
+                        "N_metapresup_desc",
+                        "N_clapre_desc",
+                        "N_activpoi_desc",
                     ]
                     clasificadores_dict = {}
 
