@@ -143,3 +143,14 @@ def SelectMetas(anio, field = None, valor = None, valor_aux = None):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIGA.dbo.SelectMetas %s, %s, %s, %s', [anio, field, valor, valor_aux])
         return dictfetchall(cursor)
+    
+
+# CREATE PROCEDURE [dbo].[UpdateGlosaExpediente]  
+# @C_anipre char(4),  
+# @C_Exp char(10),  
+# @T_glosa Varchar(4000),  
+# @N_user varchar(20)      
+
+def UpdateGlosaExpediente(anio, exp, glosa, user):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIGA.dbo.UpdateGlosaExpediente %s, %s, %s, %s', [anio, exp, glosa, user])

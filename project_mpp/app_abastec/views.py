@@ -7,7 +7,7 @@ from datetime import datetime
 from operator import itemgetter
 
 from rest_framework.generics import (
-    RetrieveAPIView, RetrieveUpdateDestroyAPIView
+    RetrieveAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView
 )
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -44,7 +44,8 @@ from app_abastec.abastec import (
     ListaReque,
     SelectReque,
     SelectBBSSDisponibleCuadro_real,
-    SelectMetas
+    SelectMetas,
+    UpdateGlosaExpediente
 )
 
 
@@ -1046,4 +1047,35 @@ class SelectMetasController(RetrieveAPIView):
             return Response(
                 data={"message": str(e), "content": None},
                 status=status.HTTP_404_NOT_FOUND,        
+            )
+        
+
+class UpdateGlosaExpedienteController(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request: Request, anio:str, exp:str):
+
+        glosa = request.data.get("glosa")  
+        user = request.user.username        
+        
+        if glosa:
+
+            try:                            
+                UpdateGlosaExpediente(anio, exp, glosa, user)
+                return Response(
+                    data={"message": "Glosa actualizada correctamente", "content": None},
+                    status=status.HTTP_201_CREATED,
+                )
+            except Exception as e:
+                return Response(
+                    data={"message": e.args, "content": None},
+                    status=400,
+                )
+        else:
+            return Response(
+                    data={
+                        "message": "Debe de ingresar glosa a actualizar",
+                        "content": None,
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
             )
