@@ -865,7 +865,7 @@ def RequeImprimirController(request, anio, numero, tipo):
             header_template_path = os.path.join(settings.MEDIA_ROOT, 'reque-header' + str(uuid.uuid4()) + '.html')
             # header_template_path = os.path.join(environ.get('RUTA_BOLETAS_PAGO'), 'reque-header' + str(uuid.uuid4()) + '.html')
             
-            text_file = open(header_template_path, "w")            
+            text_file = open(header_template_path, "w", encoding='utf-8')            
             text_file.write(page_header)
             text_file.close()
 
