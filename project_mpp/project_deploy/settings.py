@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'app_rrhh',
     'app_planif',
     'app_tradoc',
+    'app_tesorero',
     'app_abastec',
     "rest_framework",
     'corsheaders'

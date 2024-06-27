@@ -28,6 +28,7 @@ urlpatterns = [
     path('api/planif/', include('app_planif.urls')),
     path("api/tradoc/", include("app_tradoc.urls")),
     path("api/abastec/", include("app_abastec.urls")),
+    path("api/tesorero/", include("app_tesorero.urls")),
     
 ]
 
