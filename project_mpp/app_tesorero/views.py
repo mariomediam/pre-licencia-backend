@@ -23,7 +23,11 @@ from .models import *
 PATH_TEMP = os.path.join(os.path.dirname(__file__),"temp")
 
 TABLE_NAME = {
-    "EMISION": "TRIBUTO_EMISION"
+    "EMISION": "TRIBUTO_EMISION",
+    "ALTAS": "TRIBUTO_ALTA",
+    "BAJAS": "TRIBUTO_BAJA",
+    "RECAUDACION": "TRIBUTO_RECAUDACION",
+    "BENEFICIOS": "TRIBUTO_BENEFICIO"
 }
 
 DTYPE_TRIBUTOS = {
@@ -32,16 +36,99 @@ DTYPE_TRIBUTOS = {
                 'cod-partida': str, 
                 'nombre-partida': str,
                 'importe': float, 
-                'cuenta-contable': str}
+                'cuenta-contable': str},
+    "ALTAS": {'fecha': datetime, 
+              'cod-contribuyente': str, 
+              'nombre-contribuyente': str, 
+              'anio': int,
+              'cod-partida': str, 
+              'nombre-partida': str, 
+              'importe': float, 
+              'cuenta-contable': str},
+    "BAJAS": {'fecha': datetime,
+                'cod-contribuyente': str, 
+                'nombre-contribuyente': str, 
+                'anio': int,
+                'cod-partida': str, 
+                'nombre-partida': str, 
+                'importe': float, 
+                'cuenta-contable': str},
+    "RECAUDACION": {'fecha': datetime,
+                    'recibo': str,
+                    'cod-contribuyente': str, 
+                    'nombre-contribuyente': str, 
+                    'cod-partida': str, 
+                    'nombre-partida': str, 
+                    'anio': int,
+                    'importe': float, 
+                    'cuenta-contable': str},
+    "BENEFICIOS": {'cod-contribuyente': str, 
+                    'nombre-contribuyente': str, 
+                    'recibo': str,
+                    'anio': int,
+                    'cod-partida': str, 
+                    'nombre-partida': str, 
+                    'fecha': datetime,  
+                    'base-legal': str,                 
+                    'importe': float, 
+                    'cuenta-contable': str}
+                   
+
 }
 
+# C_Benefi_Contrib
+# N_Benefi_Contrib
+# M_Benefi_Recibo
+# M_Benefi_Anio
+# C_Benefi_Partida
+# N_Benefi_Partida
+# D_Benefi_Pago
+# N_Benefi_BasLeg
+# Q_Benefi_Monto
+# C_Benefi_CtaCon
 RENAME_COLUMNS = {
     "EMISION": {'cod-contribuyente': 'C_Emision_Contrib',
                 'nombre-contribuyente': 'N_Emision_Contrib',
                 'cod-partida': 'C_Emision_Partida',
                 'nombre-partida': 'N_Emision_Partida',
                 'importe': 'Q_Emision_Monto',
-                'cuenta-contable': 'C_Emision_CtaCon'}
+                'cuenta-contable': 'C_Emision_CtaCon'},
+    "ALTAS": {'fecha': 'D_Alta',
+                'cod-contribuyente': 'C_Alta_Contrib',
+                'nombre-contribuyente': 'N_Alta_Contrib',
+                'anio': 'M_Alta_Anio',
+                'cod-partida': 'C_Alta_Partida',
+                'nombre-partida': 'N_Alta_Partida',
+                'importe': 'Q_Alta_Monto',
+                'cuenta-contable': 'C_Alta_CtaCon'},
+    "BAJAS": {'fecha': 'D_Baja',
+                'cod-contribuyente': 'C_Baja_Contrib',
+                'nombre-contribuyente': 'N_Baja_Contrib',
+                'anio': 'M_Baja_Anio',
+                'cod-partida': 'C_Baja_Partida',
+                'nombre-partida': 'N_Baja_Partida',
+                'importe': 'Q_Baja_Monto',
+                'cuenta-contable': 'C_Baja_CtaCon'},
+    "RECAUDACION": {'fecha': 'D_Recaud',
+                'recibo': 'M_Recaud_Recibo',
+                'cod-contribuyente': 'C_Recaud_Contrib',
+                'nombre-contribuyente': 'N_Recaud_Contrib',
+                'cod-partida': 'C_Recaud_Partida',
+                'nombre-partida': 'N_Reacud_Partida',
+                'anio': 'M_Recaud_Anio',
+                'importe': 'Q_Recaud_Monto',
+                'cuenta-contable': 'C_Recaud_CtaCon'},
+    "BENEFICIOS": {'cod-contribuyente': 'C_Benefi_Contrib',
+                    'nombre-contribuyente': 'N_Benefi_Contrib',
+                    'recibo': 'M_Benefi_Recibo',
+                    'anio': 'M_Benefi_Anio',
+                    'cod-partida': 'C_Benefi_Partida',
+                    'nombre-partida': 'N_Benefi_Partida',
+                    'fecha': 'D_Benefi_Pago',
+                    'base-legal': 'N_Benefi_BasLeg',
+                    'importe': 'Q_Benefi_Monto',
+                    'cuenta-contable': 'C_Benefi_CtaCon'}
+
 }
 
 
@@ -85,6 +172,10 @@ def convert_excel_to_panda(file_path, type_tax):
     
     # Quitar espacios de la derecha e izquierda en columnas de tipo str
     df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+
+    # si columna anio esta vacia poner el valor de cero
+    if "anio" in df.columns:
+        df["anio"] = df["anio"].fillna(0).astype(int)
     
     return df
 
@@ -247,5 +338,25 @@ def setFormatDf(df, type_tax, **kwargs):
         df["D_Emision_FecDig"] = datetime.now()
         df["C_Usuari_Login"] = kwargs.get("c_usuari_login")
         df["N_Emision_PC"] = kwargs.get("n_pc")
+
+    if type_tax == "ALTAS":
+        df["D_Alta_FecDig"] = datetime.now()
+        df["C_Usuari_Login"] = kwargs.get("c_usuari_login")
+        df["N_Alta_PC"] = kwargs.get("n_pc")
+
+    if type_tax == "BAJAS":
+        df["D_Baja_FecDig"] = datetime.now()
+        df["C_Usuari_Login"] = kwargs.get("c_usuari_login")
+        df["N_Baja_PC"] = kwargs.get("n_pc")
+
+    if type_tax == "RECAUDACION":
+        df["D_Recaud_FecDig"] = datetime.now()
+        df["C_Usuari_Login"] = kwargs.get("c_usuari_login")
+        df["N_Recaud_PC"] = kwargs.get("n_pc")
+
+    if type_tax == "BENEFICIOS":
+        df["D_Benefi_FecDig"] = datetime.now()
+        df["C_Usuari_Login"] = kwargs.get("c_usuari_login")
+        df["N_Benefi_PC"] = kwargs.get("n_pc")
     
     return df
