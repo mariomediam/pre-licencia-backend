@@ -129,6 +129,18 @@ DATABASES = {
             'OPTIONS': {
                 'driver': 'ODBC Driver 17 for SQL Server',
             },
+        },        
+        'BDSIGA': {
+            'ENGINE': 'mssql',
+            'NAME': environ.get('DB_SIGA'),
+            'USER': environ.get('DB_USERNAME'),
+            'PASSWORD': environ.get('DB_PASSWORD'),
+            'HOST': environ.get('DB_HOST'),
+            'PORT': '',
+
+            'OPTIONS': {
+                'driver': 'ODBC Driver 17 for SQL Server',
+            },
         },
 
    }
