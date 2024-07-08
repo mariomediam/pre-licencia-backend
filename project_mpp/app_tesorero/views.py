@@ -76,16 +76,6 @@ DTYPE_TRIBUTOS = {
 
 }
 
-# C_Benefi_Contrib
-# N_Benefi_Contrib
-# M_Benefi_Recibo
-# M_Benefi_Anio
-# C_Benefi_Partida
-# N_Benefi_Partida
-# D_Benefi_Pago
-# N_Benefi_BasLeg
-# Q_Benefi_Monto
-# C_Benefi_CtaCon
 RENAME_COLUMNS = {
     "EMISION": {'cod-contribuyente': 'C_Emision_Contrib',
                 'nombre-contribuyente': 'N_Emision_Contrib',
@@ -360,3 +350,39 @@ def setFormatDf(df, type_tax, **kwargs):
         df["N_Benefi_PC"] = kwargs.get("n_pc")
     
     return df
+
+class TributoPeriodosDisponiblesView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        c_tip_ope = request.query_params.get("tipo", None)
+        m_archivo_anio = request.query_params.get("anio", None)
+
+        try:
+
+            if c_tip_ope is None:
+                return Response(
+                    data={"message": "Error", "content": "Falta el parámetro 'tipo'"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if m_archivo_anio is None and c_tip_ope != "01":
+                return Response(
+                    data={"message": "Error", "content": "Falta el parámetro 'anio'"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
+            if m_archivo_anio:
+                m_archivo_anio = int(m_archivo_anio)
+
+            data = TributoPeriodosDisponibles(c_tip_ope, m_archivo_anio)
+            return Response(
+                data={"message": "Lista de periodos disponibles", "content": data},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        

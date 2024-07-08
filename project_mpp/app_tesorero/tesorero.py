@@ -44,11 +44,6 @@ def TributoInsertArchivo(C_TipOpe, M_Archivo_Anio, M_Archivo_Mes, C_Usuari_Login
         
         return result
     
-# CREATE PROCEDURE TributoDeleteArchivo
-# @C_Archivo int,
-# @C_Usuari_Login char(20),
-# @N_PC varchar(20)    
-        
 def TributoDeleteArchivo(C_Archivo, C_Usuari_Login, N_PC):
     with connection.cursor() as cursor:
         sql = """                
@@ -56,3 +51,17 @@ def TributoDeleteArchivo(C_Archivo, C_Usuari_Login, N_PC):
         """
         cursor.execute(sql, [C_Archivo, C_Usuari_Login, N_PC])   
         
+# go
+# ALTER PROCEDURE TributoPeriodosDisponibles
+# @C_TipOpe char(2),
+# @M_Archivo_Anio int
+
+
+def TributoPeriodosDisponibles(C_TipOpe, M_Archivo_Anio):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoPeriodosDisponibles %s, %s;
+        """
+        cursor.execute(sql, [C_TipOpe, M_Archivo_Anio])        
+        return dictfetchall(cursor)
