@@ -51,11 +51,6 @@ def TributoDeleteArchivo(C_Archivo, C_Usuari_Login, N_PC):
         """
         cursor.execute(sql, [C_Archivo, C_Usuari_Login, N_PC])   
         
-# go
-# ALTER PROCEDURE TributoPeriodosDisponibles
-# @C_TipOpe char(2),
-# @M_Archivo_Anio int
-
 
 def TributoPeriodosDisponibles(C_TipOpe, M_Archivo_Anio):
     with connection.cursor() as cursor:

@@ -314,6 +314,28 @@ class TributoArchivoView(RetrieveUpdateDestroyAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
     
+    def delete(self, request: Request, id=None):        
+        c_archivo = id
+        c_usuari_login = request.user.username        
+        n_pc = request.META.get("COMPUTERNAME")
+
+        if c_archivo is None:
+            return Response(
+                data={"message": "Error", "content": "Falta el parámetro 'id'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            TributoDeleteArchivo(c_archivo, c_usuari_login, n_pc)
+            return Response(
+                data={"message": "Archivo eliminado", "content": None},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 def getNombreTipoOpeFin(c_tip_ope):
     data = TributoSelect(c_tip_ope)
@@ -386,3 +408,83 @@ class TributoPeriodosDisponiblesView(RetrieveAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
+class DownloadTributoArchivoView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        c_archivo = request.query_params.get("id", None)
+        c_usuari_login = request.user.username        
+        n_pc = request.META.get("COMPUTERNAME")
+
+        if c_archivo is None:
+            return Response(
+                data={"message": "Error", "content": "Falta el parámetro 'id'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            sql = f"EXEC TributoArchivoSelectDetalle {c_archivo}"
+            df = sql_to_pandas(sql)            
+            df = df.drop(columns=["C_OpeFin", "C_Archivo"])
+            name_file = getNameFile(c_archivo)
+            df.to_excel(f"{PATH_TEMP}/{name_file}.xlsx", index=False)
+            return Response(
+                data={"message": "Archivo descargado", "content": None},
+                status=status.HTTP_200_OK,
+            )
+            
+            
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_400_BAD_REQUEST,
+            )        
+        
+
+def sql_to_pandas(sql):    
+    server = os.environ.get("DB_HOST")
+    database = "SIGA"
+    username = os.environ.get("DB_USERNAME")
+    password = os.environ.get("DB_PASSWORD")
+    driver = 'ODBC Driver 17 for SQL Server'
+    connection_string = f"mssql+pyodbc://{username}:{urllib.parse.quote_plus(password)}@{server}/{database}?driver={driver}"
+
+    engine = create_engine(connection_string)
+
+    df = pd.read_sql(sql, engine)
+
+    # Cierra la conexión
+    engine.dispose()
+
+    return df
+
+
+def getNameFile(c_archivo):
+    opcion = "02"
+    tributo_archivo = TributoArchivoSelect(opcion, c_archivo)
+
+    if len(tributo_archivo) == 0:
+        return ""
+    
+    c_tip_ope = tributo_archivo[0]["C_TipOpe"]
+    m_archivo_anio = tributo_archivo[0]["M_Archivo_Anio"]
+    m_archivo_mes = tributo_archivo[0]["M_Archivo_Mes"]
+
+    tipo_tributo = TributoSelect(c_tip_ope)
+
+    if len(tipo_tributo) == 0:
+        return ""
+    
+    nombre_tributo = tipo_tributo[0]["N_TipOpe"]
+
+    name_file = f"{nombre_tributo}"
+
+    if m_archivo_anio is not None:
+        name_file = f"{name_file}_{m_archivo_anio}"
+
+    if m_archivo_mes is not None:
+        name_file = f"{name_file}_{m_archivo_mes}"
+
+    return name_file
+
+
