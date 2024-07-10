@@ -1,6 +1,7 @@
 import os
 from django.shortcuts import render
 from django.db import transaction
+from django.http import HttpResponse
 from datetime import datetime
 
 from rest_framework import status
@@ -8,6 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.generics import CreateAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 
 import pandas as pd
 from sqlalchemy import create_engine
@@ -407,38 +409,40 @@ class TributoPeriodosDisponiblesView(RetrieveAPIView):
                 data={"message": str(e), "content": None},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])        
+def DownloadTributoArchivoView(request, id):    
+    
+    c_archivo = id
+
+    if c_archivo is None:
+        return Response(
+            data={"message": "Error", "content": "Falta el parámetro 'id'"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        sql = f"EXEC TributoArchivoSelectDetalle {c_archivo}"
+        df = sql_to_pandas(sql)            
+        df = df.drop(columns=["C_OpeFin", "C_Archivo"])
+        name_file = getNameFile(c_archivo)
+        full_path_file = f"{PATH_TEMP}/{name_file}.xlsx"
+        df.to_excel(full_path_file, index=False)
+        with open(full_path_file, 'rb') as excel_file:
+            response = HttpResponse(excel_file.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response['Content-Disposition'] = "attachment; filename={}".format(name_file)
+        os.remove(full_path_file)
+
+
+
+        return response
         
-class DownloadTributoArchivoView(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request: Request):
-        c_archivo = request.query_params.get("id", None)
-        c_usuari_login = request.user.username        
-        n_pc = request.META.get("COMPUTERNAME")
-
-        if c_archivo is None:
-            return Response(
-                data={"message": "Error", "content": "Falta el parámetro 'id'"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        try:
-            sql = f"EXEC TributoArchivoSelectDetalle {c_archivo}"
-            df = sql_to_pandas(sql)            
-            df = df.drop(columns=["C_OpeFin", "C_Archivo"])
-            name_file = getNameFile(c_archivo)
-            df.to_excel(f"{PATH_TEMP}/{name_file}.xlsx", index=False)
-            return Response(
-                data={"message": "Archivo descargado", "content": None},
-                status=status.HTTP_200_OK,
-            )
-            
-            
-        except Exception as e:
-            return Response(
-                data={"message": str(e), "content": None},
-                status=status.HTTP_400_BAD_REQUEST,
-            )        
+    except Exception as e:
+        return Response(
+            data={"message": str(e), "content": None},
+            status=status.HTTP_400_BAD_REQUEST,
+        )        
         
 
 def sql_to_pandas(sql):    

@@ -10,6 +10,6 @@ urlpatterns= [
     path("tributo-archivo/", TributoArchivoView.as_view()),
     path("tributo-archivo/<int:id>", TributoArchivoView.as_view()),
     path("tributo-periodos-disponibles/", TributoPeriodosDisponiblesView.as_view()),    
-    path("download-tributo-archivo", DownloadTributoArchivoView.as_view()),
+    path("download-tributo-archivo/<int:id>", DownloadTributoArchivoView),
    
 ]
