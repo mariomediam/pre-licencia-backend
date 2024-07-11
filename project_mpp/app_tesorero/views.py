@@ -491,4 +491,148 @@ def getNameFile(c_archivo):
 
     return name_file
 
+def getTributoSelectContrib(valor, anio):
+
+    tributos = []
+
+    saldo_inicial = TributoSaldoInicialSelectContrib(valor)
+
+    if len(saldo_inicial) > 0:
+        nombre_tipo_tributo = saldo_inicial[0]["N_TipOpe"]
+        tributos.append({
+            "tipo": nombre_tipo_tributo,
+            "anio": 0,
+            "mes": 0,
+            "detalle": saldo_inicial,
+            "prioridad": 1
+        })
+
+    emision = TributoEmisionSelectContrib(valor, anio)
+
+    if len(emision) > 0:
+        nombre_tipo_tributo = emision[0]["N_TipOpe"]
+
+        tributos.append({
+            "tipo": nombre_tipo_tributo,
+            "anio": anio,
+            "mes": 0,
+            "detalle": emision,
+            "prioridad": 2
+        })
+
+    altas = TributoAltaSelectContrib(valor, anio)
+    
+    if altas:
+        nombre_tipo_tributo = altas[0]["N_TipOpe"]
+        tributos_dict = {}
+
+        for alta in altas:
+            clave = (nombre_tipo_tributo, alta["M_Archivo_Mes"])
+            if clave not in tributos_dict:
+                tributos_dict[clave] = {
+                    "tipo": nombre_tipo_tributo,
+                    "anio": anio,
+                    "mes": alta["M_Archivo_Mes"],
+                    "detalle": [],
+                    "prioridad": 3                    
+                }
+            tributos_dict[clave]["detalle"].append(alta)    
+
+        tributos += list(tributos_dict.values())
+
+    bajas = TributoBajaSelectContrib(valor, anio)
+
+    if bajas:
+        nombre_tipo_tributo = bajas[0]["N_TipOpe"]
+        tributos_dict = {}
+
+        for baja in bajas:
+            clave = (nombre_tipo_tributo, baja["M_Archivo_Mes"])
+            if clave not in tributos_dict:
+                tributos_dict[clave] = {
+                    "tipo": nombre_tipo_tributo,
+                    "anio": anio,
+                    "mes": baja["M_Archivo_Mes"],
+                    "detalle": [],
+                    "prioridad": 4
+                }
+            tributos_dict[clave]["detalle"].append(baja)    
+
+        tributos += list(tributos_dict.values())
+
+    recaudacion = TributoRecaudacionSelectContrib(valor, anio)
+
+    if recaudacion:
+        nombre_tipo_tributo = recaudacion[0]["N_TipOpe"]
+        tributos_dict = {}
+
+        for rec in recaudacion:
+            clave = (nombre_tipo_tributo, rec["M_Archivo_Mes"])
+            if clave not in tributos_dict:
+                tributos_dict[clave] = {
+                    "tipo": nombre_tipo_tributo,
+                    "anio": anio,
+                    "mes": rec["M_Archivo_Mes"],
+                    "detalle": [],
+                    "prioridad": 5
+                }
+            tributos_dict[clave]["detalle"].append(rec)    
+
+        tributos += list(tributos_dict.values())
+
+    beneficios = TributoBeneficioSelectContrib(valor, anio)
+
+    if beneficios:
+        nombre_tipo_tributo = beneficios[0]["N_TipOpe"]
+        tributos_dict = {}
+
+        for ben in beneficios:
+            clave = (nombre_tipo_tributo, ben["M_Archivo_Mes"])
+            if clave not in tributos_dict:
+                tributos_dict[clave] = {
+                    "tipo": nombre_tipo_tributo,
+                    "anio": anio,
+                    "mes": ben["M_Archivo_Mes"],
+                    "detalle": [],
+                    "prioridad": 6
+                }
+            tributos_dict[clave]["detalle"].append(ben)    
+
+        tributos += list(tributos_dict.values())
+
+    # ordenar tributos por mes y prioridad
+
+    tributos = sorted(tributos, key=lambda x: (x["mes"], x["prioridad"]))
+
+    return tributos
+
+
+class TributoSelectContribView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        valor = request.query_params.get("valor", None)
+        anio = request.query_params.get("anio", None)
+
+        try:
+
+            if valor is None:
+                return Response(
+                    data={"message": "Error", "content": "Falta el parámetro 'valor'"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if anio is not None:
+                anio = int(anio)
+
+            data = getTributoSelectContrib(valor, anio)
+            return Response(
+                data={"message": "Lista de tributos", "content": data},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 

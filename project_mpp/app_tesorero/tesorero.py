@@ -60,3 +60,57 @@ def TributoPeriodosDisponibles(C_TipOpe, M_Archivo_Anio):
         """
         cursor.execute(sql, [C_TipOpe, M_Archivo_Anio])        
         return dictfetchall(cursor)
+
+def TributoSaldoInicialSelectContrib(Valor):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoSaldoInicialSelectContrib %s;
+        """
+        cursor.execute(sql, [Valor])        
+        return dictfetchall(cursor)
+
+def TributoEmisionSelectContrib(Valor, anio):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoEmisionSelectContrib %s, %s;
+        """
+        cursor.execute(sql, [Valor, anio])        
+        return dictfetchall(cursor)
+    
+def TributoAltaSelectContrib(Valor, anio):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoAltaSelectContrib %s, %s;
+        """
+        cursor.execute(sql, [Valor, anio])        
+        return dictfetchall(cursor)
+    
+def TributoBajaSelectContrib(Valor, anio):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoBajaSelectContrib %s, %s;
+        """
+        cursor.execute(sql, [Valor, anio])        
+        return dictfetchall(cursor)
+    
+def TributoRecaudacionSelectContrib(Valor, anio):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoRecaudacionSelectContrib %s, %s;
+        """
+        cursor.execute(sql, [Valor, anio])        
+        return dictfetchall(cursor)
+    
+def TributoBeneficioSelectContrib(Valor, anio):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoBeneficioSelectContrib %s, %s;
+        """
+        cursor.execute(sql, [Valor, anio])        
+        return dictfetchall(cursor)

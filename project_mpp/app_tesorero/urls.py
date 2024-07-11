@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UploadFileTributo, TributoTipoOperacionView, TributoArchivoView, TributoPeriodosDisponiblesView, DownloadTributoArchivoView
+from .views import UploadFileTributo, TributoTipoOperacionView, TributoArchivoView, TributoPeriodosDisponiblesView, DownloadTributoArchivoView, TributoSelectContribView
 
 
 
@@ -11,5 +11,6 @@ urlpatterns= [
     path("tributo-archivo/<int:id>", TributoArchivoView.as_view()),
     path("tributo-periodos-disponibles/", TributoPeriodosDisponiblesView.as_view()),    
     path("download-tributo-archivo/<int:id>", DownloadTributoArchivoView),
+    path("tributo-select-contrib/", TributoSelectContribView.as_view())
    
 ]
