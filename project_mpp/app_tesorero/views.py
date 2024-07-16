@@ -1,4 +1,6 @@
 import os
+import locale
+
 from django.shortcuts import render
 from django.db import transaction
 from django.http import HttpResponse
@@ -19,7 +21,8 @@ from .serializers import UploadFileSerializer
 from .tesorero import *
 from .models import *
 
-# Create your views here.
+# Establecer la configuración regional a español
+locale.setlocale(locale.LC_ALL, 'es_PE.UTF-8')
 
 # PATH_TEMP ruta donde se guardaran los archivos de excel temporalmente
 PATH_TEMP = os.path.join(os.path.dirname(__file__),"temp")
@@ -491,187 +494,68 @@ def getNameFile(c_archivo):
 
     return name_file
 
-def getTributoSelectContrib(valor, anio):
+def actualizar_contrib_dict(contrib_dict, item, tipo):
+    contrib_key = item[f"C_{tipo}_Contrib"].strip()
+    tipo_tributo_key = item["C_TipOpe"]
+    mes_key = item.get("M_Archivo_Mes")
 
-    tributos = []
+    contrib = contrib_dict.setdefault(contrib_key, {
+        "C_Contrib": contrib_key,
+        "N_Contrib": item[f"N_{tipo}_Contrib"].strip(),
+        "detalle": {}
+    })
+
+    tipo_tributo = contrib["detalle"].setdefault(tipo_tributo_key, {
+        "C_TipOpe": tipo_tributo_key,
+        "N_TipOpe": item["N_TipOpe"],
+        "detalle": {} if mes_key else []
+    })
+
+    if mes_key:
+        mes_detalle = tipo_tributo["detalle"].setdefault(mes_key, {"detalle": []})
+        mes_detalle["detalle"].append(item)
+    else:
+        tipo_tributo["detalle"].append(item)
+
+def getTributoSelectContrib(valor, anio):
     contrib_dict = {}
 
-    saldo_inicial = TributoSaldoInicialSelectContrib(valor)
-    
-    if len(saldo_inicial) > 0:     
-        for saldo in saldo_inicial:
-
-            searched_contrib_key = (saldo["C_SalIni_Contrib"].strip())
-            if searched_contrib_key not in contrib_dict:
-                contrib_dict[searched_contrib_key] = {
-                        "C_Contrib": saldo["C_SalIni_Contrib"].strip(),
-                        "N_Contrib": saldo["N_SalIni_Contrib"].strip(),
-                        "detalle": {}
-                    }
-                            
-            searched_tipo_tributo_key = (saldo["C_TipOpe"])            
-            if searched_tipo_tributo_key not in contrib_dict[searched_contrib_key]["detalle"]:                
-                contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key] = {
-                     "C_TipOpe" : saldo["C_TipOpe"],
-                     "N_TipOpe" : saldo["N_TipOpe"],
-                     "detalle" : []    
-                }
-
-            contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"].append(saldo)
-
-            
-    emisiones = TributoEmisionSelectContrib(valor, anio)
-
-    if len(emisiones) > 0:
+    for tipo, funcion in [("SalIni", TributoSaldoInicialSelectContrib), 
+                          ("Emision", TributoEmisionSelectContrib), 
+                          ("Alta", TributoAltaSelectContrib), 
+                          ("Baja", TributoBajaSelectContrib), 
+                          ("Recaud", TributoRecaudacionSelectContrib), 
+                          ("Benefi", TributoBeneficioSelectContrib)]:
         
-        for emision in emisiones:
-            searched_contrib_key = (emision["C_Emision_Contrib"].strip())
-            if searched_contrib_key not in contrib_dict:
-                contrib_dict[searched_contrib_key] = {
-                        "C_Contrib": emision["C_Emision_Contrib"].strip(),
-                        "N_Contrib": emision["N_Emision_Contrib"].strip(),
-                        "detalle": {}
-                    }
+        if tipo=="SalIni":
+            items = funcion(valor)
+        else:
+            items = funcion(valor, anio)
 
-            searched_tipo_tributo_key = (emision["C_TipOpe"])            
-            if searched_tipo_tributo_key not in contrib_dict[searched_contrib_key]["detalle"]:                
-                contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key] = {
-                     "C_TipOpe" : emision["C_TipOpe"],
-                     "N_TipOpe" : emision["N_TipOpe"],
-                     "detalle" : []    
-                }
+        for item in items:
+            actualizar_contrib_dict(contrib_dict, item, tipo)
 
-            contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"].append(emision)
+    # return list(contrib_dict.values())
+    sorted_contribs = sorted(contrib_dict.values(), key=lambda x: (locale.strxfrm(x['N_Contrib']), locale.strxfrm(x['C_Contrib'])))
+    # sorted_contribs_values = [extract_values(item) for item in sorted_contribs]
 
-        emision = None
+    for contrib in sorted_contribs:
+        if "detalle" in contrib:
+            # Reemplazar el diccionario en 'detalle' por una lista de sus valores
+            contrib["detalle"] = list(contrib["detalle"].values())
 
-    altas = TributoAltaSelectContrib(valor, anio)
+    return sorted_contribs
 
-    if len(altas) > 0:
-
-        for alta in altas:
-            searched_contrib_key = (alta["C_Alta_Contrib"].strip())
-            if searched_contrib_key not in contrib_dict:
-                contrib_dict[searched_contrib_key] = {
-                        "C_Contrib": alta["C_Alta_Contrib"].strip(),
-                        "N_Contrib": alta["N_Alta_Contrib"].strip(),
-                        "detalle": {}
-                    }
-                
-            searched_tipo_tributo_key = (alta["C_TipOpe"])            
-            if searched_tipo_tributo_key not in contrib_dict[searched_contrib_key]["detalle"]:                
-                contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key] = {
-                     "C_TipOpe" : alta["C_TipOpe"],
-                     "N_TipOpe" : alta["N_TipOpe"],
-                     "detalle" : {}    
-                }
-
-            searched_mes_key = (alta["M_Archivo_Mes"])
-            if searched_mes_key not in contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"]:
-                contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"][searched_mes_key] = {
-                    "detalle": []
-                }
-
-            contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"][searched_mes_key]["detalle"].append(alta)
-
-        alta = None
-
-    
-    bajas = TributoBajaSelectContrib(valor, anio)
-
-    if len(bajas) > 0:
-       
-        for baja in bajas:            
-            searched_contrib_key = (baja["C_Baja_Contrib"].strip())
-            if searched_contrib_key not in contrib_dict:
-                contrib_dict[searched_contrib_key] = {
-                        "C_Contrib": baja["C_Baja_Contrib"].strip(),
-                        "N_Contrib": baja["N_Baja_Contrib"].strip(),
-                        "detalle": {}
-                    }
-                
-            searched_tipo_tributo_key = (baja["C_TipOpe"])            
-            if searched_tipo_tributo_key not in contrib_dict[searched_contrib_key]["detalle"]:                
-                contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key] = {
-                     "C_TipOpe" : baja["C_TipOpe"],
-                     "N_TipOpe" : baja["N_TipOpe"],
-                     "detalle" : {}    
-                }
-
-            searched_mes_key = (baja["M_Archivo_Mes"])
-            if searched_mes_key not in contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"]:
-                contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"][searched_mes_key] = {
-                    "detalle": []
-                }
-
-            contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"][searched_mes_key]["detalle"].append(baja)
-        
-        baja = None
-
-    recaudaciones = TributoRecaudacionSelectContrib(valor, anio)
-
-    if len(recaudaciones)> 0:
-
-        for recaudacion in recaudaciones:
-            searched_contrib_key = (recaudacion["C_Recaud_Contrib"].strip())
-            if searched_contrib_key not in contrib_dict:
-                contrib_dict[searched_contrib_key] = {
-                        "C_Contrib": recaudacion["C_Recaud_Contrib"].strip(),
-                        "N_Contrib": recaudacion["N_Recaud_Contrib"].strip(),
-                        "detalle": {}
-                    }
-        
-            searched_tipo_tributo_key = (recaudacion["C_TipOpe"])            
-            if searched_tipo_tributo_key not in contrib_dict[searched_contrib_key]["detalle"]:                
-                contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key] = {
-                     "C_TipOpe" : recaudacion["C_TipOpe"],
-                     "N_TipOpe" : recaudacion["N_TipOpe"],
-                     "detalle" : {}    
-                }
-            
-            searched_mes_key = (recaudacion["M_Archivo_Mes"])
-            if searched_mes_key not in contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"]:
-                contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"][searched_mes_key] = {
-                    "detalle": []
-                }
-
-            contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"][searched_mes_key]["detalle"].append(recaudacion)
-
-        recaudacion = None
-
-
-    beneficios = TributoBeneficioSelectContrib(valor, anio)
-
-    if len(beneficios) > 0:    
-        for beneficio in beneficios:
-            searched_contrib_key = (beneficio["C_Benefi_Contrib"].strip())
-            if searched_contrib_key not in contrib_dict:
-                contrib_dict[searched_contrib_key] = {
-                        "C_Contrib": beneficio["C_Benefi_Contrib"].strip(),
-                        "N_Contrib": beneficio["N_Benefi_Contrib"].strip(),
-                        "detalle": {}
-                    }
-                
-            searched_tipo_tributo_key = (beneficio["C_TipOpe"])            
-            if searched_tipo_tributo_key not in contrib_dict[searched_contrib_key]["detalle"]:                
-                contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key] = {
-                     "C_TipOpe" : beneficio["C_TipOpe"],
-                     "N_TipOpe" : beneficio["N_TipOpe"],
-                     "detalle" : {}    
-                }
-
-            searched_mes_key = (beneficio["M_Archivo_Mes"])
-            if searched_mes_key not in contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"]:
-                contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"][searched_mes_key] = {
-                    "detalle": []
-                }
-
-            contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"][searched_mes_key]["detalle"].append(beneficio)
-
-    tributos += list(contrib_dict.values())
-
-    return tributos
-
+def extract_values(item):
+    if isinstance(item, dict):
+        # Extraer y procesar recursivamente los valores del diccionario
+        return [extract_values(value) for value in item.values()]
+    elif isinstance(item, list):
+        # Aplicar la función a cada elemento de la lista
+        return [extract_values(element) for element in item]
+    else:
+        # Retornar el elemento si no es ni lista ni diccionario
+        return item
 
 class TributoSelectContribView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
