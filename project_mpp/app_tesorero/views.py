@@ -494,115 +494,163 @@ def getNameFile(c_archivo):
 def getTributoSelectContrib(valor, anio):
 
     tributos = []
+    contrib_dict = {}
 
     saldo_inicial = TributoSaldoInicialSelectContrib(valor)
-
-    if len(saldo_inicial) > 0:
-        nombre_tipo_tributo = saldo_inicial[0]["N_TipOpe"]
-        tributos.append({
-            "tipo": nombre_tipo_tributo,
-            "anio": 0,
-            "mes": 0,
-            "detalle": saldo_inicial,
-            "prioridad": 1
-        })
-
-    emision = TributoEmisionSelectContrib(valor, anio)
-
-    if len(emision) > 0:
-        nombre_tipo_tributo = emision[0]["N_TipOpe"]
-
-        tributos.append({
-            "tipo": nombre_tipo_tributo,
-            "anio": anio,
-            "mes": 0,
-            "detalle": emision,
-            "prioridad": 2
-        })
-
-    altas = TributoAltaSelectContrib(valor, anio)
     
-    if altas:
-        nombre_tipo_tributo = altas[0]["N_TipOpe"]
-        tributos_dict = {}
+    if len(saldo_inicial) > 0:     
+        for saldo in saldo_inicial:
 
-        for alta in altas:
-            clave = (nombre_tipo_tributo, alta["M_Archivo_Mes"])
-            if clave not in tributos_dict:
-                tributos_dict[clave] = {
-                    "tipo": nombre_tipo_tributo,
-                    "anio": anio,
-                    "mes": alta["M_Archivo_Mes"],
-                    "detalle": [],
-                    "prioridad": 3                    
+            searched_contrib_key = (saldo["C_SalIni_Contrib"].strip())
+            if searched_contrib_key not in contrib_dict:
+                contrib_dict[searched_contrib_key] = {
+                        "C_Contrib": saldo["C_SalIni_Contrib"].strip(),
+                        "N_Contrib": saldo["N_SalIni_Contrib"].strip(),
+                        "detalle": {}
+                    }
+                            
+            searched_tipo_tributo_key = (saldo["C_TipOpe"])            
+            if searched_tipo_tributo_key not in contrib_dict[searched_contrib_key]["detalle"]:                
+                contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key] = {
+                     "C_TipOpe" : saldo["C_TipOpe"],
+                     "N_TipOpe" : saldo["N_TipOpe"],
+                     "detalle" : []    
                 }
-            tributos_dict[clave]["detalle"].append(alta)    
 
-        tributos += list(tributos_dict.values())
+            contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"].append(saldo)
 
-    bajas = TributoBajaSelectContrib(valor, anio)
+            
+    emisiones = TributoEmisionSelectContrib(valor, anio)
 
-    if bajas:
-        nombre_tipo_tributo = bajas[0]["N_TipOpe"]
-        tributos_dict = {}
+    if len(emisiones) > 0:
+        
+        for emision in emisiones:
+            searched_contrib_key = (emision["C_Emision_Contrib"].strip())
+            if searched_contrib_key not in contrib_dict:
+                contrib_dict[searched_contrib_key] = {
+                        "C_Contrib": emision["C_Emision_Contrib"].strip(),
+                        "N_Contrib": emision["N_Emision_Contrib"].strip(),
+                        "detalle": {}
+                    }
 
-        for baja in bajas:
-            clave = (nombre_tipo_tributo, baja["M_Archivo_Mes"])
-            if clave not in tributos_dict:
-                tributos_dict[clave] = {
-                    "tipo": nombre_tipo_tributo,
-                    "anio": anio,
-                    "mes": baja["M_Archivo_Mes"],
-                    "detalle": [],
-                    "prioridad": 4
+            searched_tipo_tributo_key = (emision["C_TipOpe"])            
+            if searched_tipo_tributo_key not in contrib_dict[searched_contrib_key]["detalle"]:                
+                contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key] = {
+                     "C_TipOpe" : emision["C_TipOpe"],
+                     "N_TipOpe" : emision["N_TipOpe"],
+                     "detalle" : []    
                 }
-            tributos_dict[clave]["detalle"].append(baja)    
 
-        tributos += list(tributos_dict.values())
+            contrib_dict[searched_contrib_key]["detalle"][searched_tipo_tributo_key]["detalle"].append(emision)
 
-    recaudacion = TributoRecaudacionSelectContrib(valor, anio)
+    
 
-    if recaudacion:
-        nombre_tipo_tributo = recaudacion[0]["N_TipOpe"]
-        tributos_dict = {}
+            
+        
+            
+            
 
-        for rec in recaudacion:
-            clave = (nombre_tipo_tributo, rec["M_Archivo_Mes"])
-            if clave not in tributos_dict:
-                tributos_dict[clave] = {
-                    "tipo": nombre_tipo_tributo,
-                    "anio": anio,
-                    "mes": rec["M_Archivo_Mes"],
-                    "detalle": [],
-                    "prioridad": 5
-                }
-            tributos_dict[clave]["detalle"].append(rec)    
+    # emision = TributoEmisionSelectContrib(valor, anio)
 
-        tributos += list(tributos_dict.values())
+    # if len(emision) > 0:
+    #     nombre_tipo_tributo = emision[0]["N_TipOpe"]
 
-    beneficios = TributoBeneficioSelectContrib(valor, anio)
+    #     tributos.append({
+    #         "tipo": nombre_tipo_tributo,
+    #         "anio": anio,
+    #         "mes": 0,
+    #         "detalle": emision,
+    #         "prioridad": 2
+    #     })
 
-    if beneficios:
-        nombre_tipo_tributo = beneficios[0]["N_TipOpe"]
-        tributos_dict = {}
+    # altas = TributoAltaSelectContrib(valor, anio)
+    
+    # if altas:
+    #     nombre_tipo_tributo = altas[0]["N_TipOpe"]
+    #     tributos_dict = {}
 
-        for ben in beneficios:
-            clave = (nombre_tipo_tributo, ben["M_Archivo_Mes"])
-            if clave not in tributos_dict:
-                tributos_dict[clave] = {
-                    "tipo": nombre_tipo_tributo,
-                    "anio": anio,
-                    "mes": ben["M_Archivo_Mes"],
-                    "detalle": [],
-                    "prioridad": 6
-                }
-            tributos_dict[clave]["detalle"].append(ben)    
+    #     for alta in altas:
+    #         clave = (nombre_tipo_tributo, alta["M_Archivo_Mes"])
+    #         if clave not in tributos_dict:
+    #             tributos_dict[clave] = {
+    #                 "tipo": nombre_tipo_tributo,
+    #                 "anio": anio,
+    #                 "mes": alta["M_Archivo_Mes"],
+    #                 "detalle": [],
+    #                 "prioridad": 3                    
+    #             }
+    #         tributos_dict[clave]["detalle"].append(alta)    
 
-        tributos += list(tributos_dict.values())
+    #     tributos += list(tributos_dict.values())
 
-    # ordenar tributos por mes y prioridad
+    # bajas = TributoBajaSelectContrib(valor, anio)
 
-    tributos = sorted(tributos, key=lambda x: (x["mes"], x["prioridad"]))
+    # if bajas:
+    #     nombre_tipo_tributo = bajas[0]["N_TipOpe"]
+    #     tributos_dict = {}
+
+    #     for baja in bajas:
+    #         clave = (nombre_tipo_tributo, baja["M_Archivo_Mes"])
+    #         if clave not in tributos_dict:
+    #             tributos_dict[clave] = {
+    #                 "tipo": nombre_tipo_tributo,
+    #                 "anio": anio,
+    #                 "mes": baja["M_Archivo_Mes"],
+    #                 "detalle": [],
+    #                 "prioridad": 4
+    #             }
+    #         tributos_dict[clave]["detalle"].append(baja)    
+
+    #     tributos += list(tributos_dict.values())
+
+    # recaudacion = TributoRecaudacionSelectContrib(valor, anio)
+
+    # if recaudacion:
+    #     nombre_tipo_tributo = recaudacion[0]["N_TipOpe"]
+    #     tributos_dict = {}
+
+    #     for rec in recaudacion:
+    #         clave = (nombre_tipo_tributo, rec["M_Archivo_Mes"])
+    #         if clave not in tributos_dict:
+    #             tributos_dict[clave] = {
+    #                 "tipo": nombre_tipo_tributo,
+    #                 "anio": anio,
+    #                 "mes": rec["M_Archivo_Mes"],
+    #                 "detalle": [],
+    #                 "prioridad": 5
+    #             }
+    #         tributos_dict[clave]["detalle"].append(rec)    
+
+    #     tributos += list(tributos_dict.values())
+
+    # beneficios = TributoBeneficioSelectContrib(valor, anio)
+
+    # if beneficios:
+    #     nombre_tipo_tributo = beneficios[0]["N_TipOpe"]
+    #     tributos_dict = {}
+
+    #     for ben in beneficios:
+    #         clave = (nombre_tipo_tributo, ben["M_Archivo_Mes"])
+    #         if clave not in tributos_dict:
+    #             tributos_dict[clave] = {
+    #                 "tipo": nombre_tipo_tributo,
+    #                 "anio": anio,
+    #                 "mes": ben["M_Archivo_Mes"],
+    #                 "detalle": [],
+    #                 "prioridad": 6
+    #             }
+    #         tributos_dict[clave]["detalle"].append(ben)    
+
+    #     tributos += list(tributos_dict.values())
+
+    # # ordenar tributos por mes y prioridad
+
+    # tributos = sorted(tributos, key=lambda x: (x["mes"], x["prioridad"]))
+
+    print("**************** contrib_dict **************")
+    print(contrib_dict)
+
+    tributos += list(contrib_dict.values())
 
     return tributos
 
