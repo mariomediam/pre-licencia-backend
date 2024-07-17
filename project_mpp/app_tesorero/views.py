@@ -512,7 +512,7 @@ def actualizar_contrib_dict(contrib_dict, item, tipo):
     })
 
     if mes_key:
-        mes_detalle = tipo_tributo["detalle"].setdefault(mes_key, {"detalle": []})
+        mes_detalle = tipo_tributo["detalle"].setdefault(mes_key, {"M_Archivo_Mes": mes_key,  "detalle": []})
         mes_detalle["detalle"].append(item)
     else:
         tipo_tributo["detalle"].append(item)
@@ -520,42 +520,31 @@ def actualizar_contrib_dict(contrib_dict, item, tipo):
 def getTributoSelectContrib(valor, anio):
     contrib_dict = {}
 
+    # Simplificar la obtención de items y su procesamiento
     for tipo, funcion in [("SalIni", TributoSaldoInicialSelectContrib), 
                           ("Emision", TributoEmisionSelectContrib), 
                           ("Alta", TributoAltaSelectContrib), 
                           ("Baja", TributoBajaSelectContrib), 
                           ("Recaud", TributoRecaudacionSelectContrib), 
                           ("Benefi", TributoBeneficioSelectContrib)]:
-        
-        if tipo=="SalIni":
-            items = funcion(valor)
-        else:
-            items = funcion(valor, anio)
-
+        items = funcion(valor) if tipo == "SalIni" else funcion(valor, anio)
         for item in items:
             actualizar_contrib_dict(contrib_dict, item, tipo)
 
-    # return list(contrib_dict.values())
+    # Ordenar contribuciones
     sorted_contribs = sorted(contrib_dict.values(), key=lambda x: (locale.strxfrm(x['N_Contrib']), locale.strxfrm(x['C_Contrib'])))
-    # sorted_contribs_values = [extract_values(item) for item in sorted_contribs]
 
+    # Procesar y limpiar detalles
     for contrib in sorted_contribs:
         if "detalle" in contrib:
-            # Reemplazar el diccionario en 'detalle' por una lista de sus valores
+            for tipo_tributo, detalle in list(contrib["detalle"].items()): 
+                if tipo_tributo not in ["01", "02"]:
+                    detalle["detalle"] = list(detalle["detalle"].values())               
+                    pass
             contrib["detalle"] = list(contrib["detalle"].values())
 
     return sorted_contribs
 
-def extract_values(item):
-    if isinstance(item, dict):
-        # Extraer y procesar recursivamente los valores del diccionario
-        return [extract_values(value) for value in item.values()]
-    elif isinstance(item, list):
-        # Aplicar la función a cada elemento de la lista
-        return [extract_values(element) for element in item]
-    else:
-        # Retornar el elemento si no es ni lista ni diccionario
-        return item
 
 class TributoSelectContribView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
@@ -586,3 +575,35 @@ class TributoSelectContribView(RetrieveAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+class TributoOpeFinView(RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request: Request):        
+        list_ope_fin = request.data.get("listOpeFin", None)
+        c_usuari_login = request.user.username        
+        n_pc = request.META.get("COMPUTERNAME")
+
+        if list_ope_fin is None:
+            return Response(
+                data={"message": "Error", "content": "Falta el listado a eliminar"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        try: 
+            with transaction.atomic():             
+                for ope_fin in list_ope_fin:
+                    c_ope_fin = ope_fin.get("C_OpeFin")
+                    c_archivo = ope_fin.get("C_Archivo")
+                    TributoOpeFinDelete(c_ope_fin, c_archivo, c_usuari_login, n_pc)
+                
+                return Response(
+                    data={"message": "Operaciones financieras eliminadas exitosamente", "content": None},
+                    status=status.HTTP_200_OK,
+                )
+            
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+            

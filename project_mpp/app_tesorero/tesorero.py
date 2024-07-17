@@ -114,3 +114,11 @@ def TributoBeneficioSelectContrib(Valor, anio):
         """
         cursor.execute(sql, [Valor, anio])        
         return dictfetchall(cursor)
+
+def TributoOpeFinDelete(C_OpeFin, C_Archivo, C_Usuari_Login, N_PC):
+    with connection.cursor() as cursor:
+        sql = """           
+        EXEC SIGA.dbo.TributoOpeFinDelete %s, %s, %s, %s;
+        """
+        cursor.execute(sql, [C_OpeFin, C_Archivo, C_Usuari_Login, N_PC])        
+        
