@@ -578,7 +578,7 @@ class TributoSelectContribView(RetrieveAPIView):
 class TributoOpeFinView(RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
-    def delete(self, request: Request):        
+    def delete(self, request: Request):       
         list_ope_fin = request.data.get("listOpeFin", None)
         c_usuari_login = request.user.username        
         n_pc = request.META.get("COMPUTERNAME")
@@ -606,4 +606,129 @@ class TributoOpeFinView(RetrieveUpdateDestroyAPIView):
                 data={"message": str(e), "content": None},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-            
+        
+    def post(self, request: Request):
+        # c_tipope = request.data.get("C_TipOpe", None)
+        # d_fecha = request.data.get("D_Fecha", None)
+        # c_contrib = request.data.get("C_Contrib", None)
+        # n_contrib = request.data.get("N_Contrib", None)
+        # c_partida = request.data.get("C_Partida", None)
+        # n_partida = request.data.get("N_Partida", None)
+        # m_anio = request.data.get("M_Anio", None)
+        # q_monto = request.data.get("Q_Monto", None)
+        # c_ctacon = request.data.get("C_CtaCon", None)
+        # m_recibo = request.data.get("M_Recibo", None)
+        # n_basleg = request.data.get("N_BasLeg", None)
+        # m_archivo_anio = request.data.get("M_Archivo_Anio", None)
+        # m_archivo_mes = request.data.get("M_Archivo_Mes", None)
+        # c_usuari_login = request.user.username
+        # n_pc = request.META.get("COMPUTERNAME")
+
+        print("*************  request.data *************")
+        print(request.data)
+
+        request_data = {key: request.data.get(key, None) for key in [
+        "C_TipOpe", "D_Fecha", "C_Contrib", "N_Contrib", "C_Partida", "N_Partida",
+        "M_Anio", "Q_Monto", "C_CtaCon", "M_Recibo", "N_BasLeg", "M_Archivo_Anio", "M_Archivo_Mes"
+        ]}
+
+        c_usuari_login = request.user.username
+        n_pc = request.META.get("COMPUTERNAME")
+
+        # Mapeo de tipos de operación a funciones y argumentos
+        operaciones = {
+            "01": ("03", TributoSaldoInicialInsert, ["C_Archivo", "C_Contrib", "N_Contrib", "M_Anio", "Q_Monto", "C_Partida", "N_Partida", "C_CtaCon"]),
+            "02": ("04", TributoEmisionInsert, ["C_Archivo", "C_Contrib", "N_Contrib", "C_Partida", "N_Partida", "Q_Monto", "C_CtaCon"]),
+            "03": ("05", TributoAltaInsert, ["C_Archivo", "D_Fecha", "C_Contrib", "N_Contrib", "M_Anio", "C_Partida", "N_Partida", "Q_Monto", "C_CtaCon"]),
+            "04": ("05", TributoBajaInsert, ["C_Archivo", "D_Fecha", "C_Contrib", "N_Contrib", "M_Anio", "C_Partida", "N_Partida", "Q_Monto", "C_CtaCon"]),
+            "05": ("05", TributoRecaudacionInsert, ["C_Archivo", "D_Fecha", "M_Recibo", "C_Contrib", "N_Contrib", "C_Partida", "N_Partida", "M_Anio", "Q_Monto", "C_CtaCon"]),
+            "06": ("05", TributoBeneficioInsert, ["C_Archivo", "C_Contrib", "N_Contrib", "M_Recibo", "M_Anio", "C_Partida", "N_Partida", "D_Fecha", "N_BasLeg", "Q_Monto", "C_CtaCon"])
+        }
+        
+        c_tipope = request_data["C_TipOpe"]
+        if c_tipope not in operaciones:
+            return Response(data={"message": "Tipo de operación no válido", "content": None}, status=status.HTTP_400_BAD_REQUEST)
+
+        archivo_tipo, funcion_insert, campos = operaciones[c_tipope]
+        m_archivo_anio, m_archivo_mes = request_data["M_Archivo_Anio"], request_data["M_Archivo_Mes"]
+        tributo_archivo = TributoArchivoSelect(archivo_tipo, c_tipope, m_archivo_anio, m_archivo_mes)
+
+        if not tributo_archivo:
+            return Response(data={"message": "No se encontró el archivo requerido", "content": None}, status=status.HTTP_400_BAD_REQUEST)
+
+        c_archivo = tributo_archivo[0]["C_Archivo"]
+
+        request_data["C_Archivo"] = c_archivo
+        
+        args = [request_data[campo] for campo in campos] + [c_usuari_login, n_pc]
+
+        try:
+            with transaction.atomic():
+                funcion_insert(*args)
+                return Response(data={"message": "Operación financiera insertada exitosamente", "content": None}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(str(e))
+            return Response(data={"message": str(e), "content": None}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(
+                    data={"message": "Operación financiera insertada exitosamente", "content": None},
+                    status=status.HTTP_201_CREATED,
+                )
+
+        try:
+            with transaction.atomic():
+                if c_tipope == "01":
+                    tributo_archivo = TributoArchivoSelect("03", c_tipope)
+                    if len(tributo_archivo) == 0:
+                        raise Exception("No se encontró el archivo de saldo inicial")
+                    c_archivo = tributo_archivo[0]["C_Archivo"]
+                    TributoSaldoInicialInsert(c_archivo, c_contrib, n_contrib, m_anio, q_monto, c_partida, n_partida, c_ctacon, c_usuari_login, n_pc)
+                
+                elif c_tipope == "02":
+                    tributo_archivo = TributoArchivoSelect("04", c_tipope, m_archivo_anio)
+                    if len(tributo_archivo) == 0:
+                        raise Exception("No se encontró el archivo de emisión")
+                    c_archivo = tributo_archivo[0]["C_Archivo"]
+                    TributoEmisionInsert(c_archivo, c_contrib, n_contrib, c_partida, n_partida, q_monto, c_ctacon, c_usuari_login, n_pc)
+                
+                elif c_tipope == "03":
+                    tributo_archivo = TributoArchivoSelect("05", c_tipope, m_archivo_anio, m_archivo_mes)
+                    if len(tributo_archivo) == 0:
+                        raise Exception("No se encontró el archivo de alta")
+                    c_archivo = tributo_archivo[0]["C_Archivo"]
+                    TributoAltaInsert(c_archivo, d_fecha, c_contrib, n_contrib, m_anio, c_partida, n_partida, q_monto, c_ctacon, c_usuari_login, n_pc)
+                
+                elif c_tipope == "04":
+                    tributo_archivo = TributoArchivoSelect("05", c_tipope, m_archivo_anio, m_archivo_mes)
+                    if len(tributo_archivo) == 0:
+                        raise Exception("No se encontró el archivo de baja")
+                    c_archivo = tributo_archivo[0]["C_Archivo"]
+                    TributoBajaInsert(c_archivo, d_fecha, c_contrib, n_contrib, m_anio, c_partida, n_partida, q_monto, c_ctacon, c_usuari_login, n_pc)
+
+                elif c_tipope == "05":
+                    tributo_archivo = TributoArchivoSelect("05", c_tipope, m_archivo_anio, m_archivo_mes)
+                    if len(tributo_archivo) == 0:
+                        raise Exception("No se encontró el archivo de recaudación")
+                    c_archivo = tributo_archivo[0]["C_Archivo"]
+                    TributoRecaudacionInsert(c_archivo, d_fecha, m_recibo, c_contrib, n_contrib, c_partida, n_partida, m_anio, q_monto, c_ctacon, c_usuari_login, n_pc)
+                
+                elif c_tipope == "06":
+                    tributo_archivo = TributoArchivoSelect("05", c_tipope, m_archivo_anio, m_archivo_mes)
+                    if len(tributo_archivo) == 0:
+                        raise Exception("No se encontró el archivo de beneficios")
+                    c_archivo = tributo_archivo[0]["C_Archivo"]
+                    TributoBeneficioInsert(c_archivo, c_contrib, n_contrib, m_recibo, m_anio, c_partida, n_partida, d_fecha, n_basleg, q_monto, c_ctacon, c_usuari_login, n_pc)
+             
+                
+                else:
+                    raise Exception("Tipo de operación no válido")
+                
+                return Response(
+                    data={"message": "Operación financiera insertada exitosamente", "content": None},
+                    status=status.HTTP_201_CREATED,
+                )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
