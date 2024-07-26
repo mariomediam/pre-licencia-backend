@@ -732,3 +732,51 @@ class TributoOpeFinView(RetrieveUpdateDestroyAPIView):
                 data={"message": str(e), "content": None},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
+    def put(self, request: Request, opeFinId: int, archivoId: int):
+
+        request_data = {key: request.data.get(key, None) for key in [
+        "D_Fecha", "C_Contrib", "N_Contrib", "C_Partida", "N_Partida",
+        "M_Anio", "Q_Monto", "C_CtaCon", "M_Recibo", "N_BasLeg", 
+        ]}
+
+        c_ope_fin = opeFinId
+        c_archivo = archivoId
+        c_usuari_login = request.user.username
+        n_pc = request.META.get("COMPUTERNAME")     
+        request_data["C_OpeFin"] = c_ope_fin
+       
+        operaciones = {
+            "01": (TributoSaldoInicialUpdate, ["C_OpeFin", "C_Contrib", "N_Contrib", "M_Anio", "Q_Monto", "C_Partida", "N_Partida", "C_CtaCon"]),
+            "02": (TributoEmisionUpdate, ["C_OpeFin", "C_Contrib", "N_Contrib", "C_Partida", "N_Partida", "Q_Monto", "C_CtaCon"]),
+            "03": (TributoAltaUpdate, ["C_OpeFin", "D_Fecha", "C_Contrib", "N_Contrib", "M_Anio", "C_Partida", "N_Partida", "Q_Monto", "C_CtaCon"]),
+            "04": (TributoBajaUpdate, ["C_OpeFin", "D_Fecha", "C_Contrib", "N_Contrib", "M_Anio", "C_Partida", "N_Partida", "Q_Monto", "C_CtaCon"]),
+            "05": (TributoRecaudacionUpdate, ["C_OpeFin", "D_Fecha", "M_Recibo", "C_Contrib", "N_Contrib", "C_Partida", "N_Partida", "M_Anio", "Q_Monto", "C_CtaCon"]),
+            "06": (TributoBeneficioUpdate, ["C_OpeFin", "C_Contrib", "N_Contrib", "M_Recibo", "M_Anio", "C_Partida", "N_Partida", "D_Fecha", "N_BasLeg", "Q_Monto", "C_CtaCon"])
+        }
+
+        try:  
+
+            tributo_archivo = TributoArchivoSelect("02", c_archivo)
+            if len(tributo_archivo) == 0:
+                raise Exception("No se encontró el archivo requerido")
+            
+            c_tipope = tributo_archivo[0]["C_TipOpe"]
+
+            if c_tipope not in operaciones:
+                return Response(data={"message": "Tipo de operación no válido", "content": None}, status=status.HTTP_400_BAD_REQUEST)
+            
+            funcion_update, campos = operaciones[c_tipope]
+
+            args = [request_data[campo] for campo in campos] + [c_usuari_login, n_pc]
+
+            with transaction.atomic():
+                funcion_update(*args)
+                return Response(data={"message": "Operación financiera actualizada exitosamente", "content": None}, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response(
+                data={"message": e.args, "content": None},
+                status=400,
+            )
+    

@@ -288,3 +288,132 @@ def TributoBeneficioInsert(C_Archivo, C_Benefi_Contrib, N_Benefi_Contrib, M_Bene
             result = None
 
         return result
+
+def TributoSaldoInicialUpdate(C_OpeFin, C_SalIni_Contrib, N_SalIni_Contrib, M_SalIni_Anio, Q_SalIni_Monto, C_SalIni_Partida, N_SalIni_Partida, C_SalIni_CtaCon, C_Usuari_Login, N_PC):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoSaldoInicialUpdate
+        @C_OpeFin = %s,
+        @C_SalIni_Contrib = %s,
+        @N_SalIni_Contrib = %s,
+        @M_SalIni_Anio = %s,
+        @Q_SalIni_Monto = %s,
+        @C_SalIni_Partida = %s,
+        @N_SalIni_Partida = %s,
+        @C_SalIni_CtaCon = %s,
+        @C_Usuari_Login = %s,
+        @N_SalIni_PC = %s;
+        """
+        cursor.execute(sql, [C_OpeFin, C_SalIni_Contrib, N_SalIni_Contrib, M_SalIni_Anio, Q_SalIni_Monto, C_SalIni_Partida, N_SalIni_Partida, C_SalIni_CtaCon, C_Usuari_Login, N_PC])
+
+def TributoEmisionUpdate(C_OpeFin, C_Emision_Contrib, N_Emision_Contrib, C_Emision_Partida, N_Emision_Partida, Q_Emision_Monto, C_Emision_CtaCon, C_Usuari_Login, N_Emision_PC):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoEmisionUpdate
+        @C_OpeFin = %s,
+        @C_Emision_Contrib = %s,
+        @N_Emision_Contrib = %s,
+        @C_Emision_Partida = %s,
+        @N_Emision_Partida = %s,
+        @Q_Emision_Monto = %s,
+        @C_Emision_CtaCon = %s,
+        @C_Usuari_Login = %s,
+        @N_Emision_PC = %s;
+        """
+        cursor.execute(sql, [C_OpeFin, C_Emision_Contrib, N_Emision_Contrib, C_Emision_Partida, N_Emision_Partida, Q_Emision_Monto, C_Emision_CtaCon, C_Usuari_Login, N_Emision_PC])
+
+
+def TributoAltaUpdate(C_OpeFin, D_Alta, C_Alta_Contrib, N_Alta_Contrib, M_Alta_Anio, C_Alta_Partida, N_Alta_Partida, Q_Alta_Monto, C_Alta_CtaCon, C_Usuari_Login, N_Alta_PC):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoAltaUpdate
+        @C_OpeFin = %s,
+        @D_Alta = %s,
+        @C_Alta_Contrib = %s,
+        @N_Alta_Contrib = %s,
+        @M_Alta_Anio = %s,
+        @C_Alta_Partida = %s,
+        @N_Alta_Partida = %s,
+        @Q_Alta_Monto = %s,
+        @C_Alta_CtaCon = %s,
+        @C_Usuari_Login = %s,
+        @N_Alta_PC = %s;
+        """
+        cursor.execute(sql, [C_OpeFin, D_Alta, C_Alta_Contrib, N_Alta_Contrib, M_Alta_Anio, C_Alta_Partida, N_Alta_Partida, Q_Alta_Monto, C_Alta_CtaCon, C_Usuari_Login, N_Alta_PC])
+
+
+def TributoBajaUpdate(C_OpeFin, D_Baja, C_Baja_Contrib, N_Baja_Contrib, M_Baja_Anio, C_Baja_Partida, N_Baja_Partida, Q_Baja_Monto, C_Baja_CtaCon, C_Usuari_Login, N_Baja_PC):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoBajaUpdate
+        @C_OpeFin = %s,
+        @D_Baja = %s,
+        @C_Baja_Contrib = %s,
+        @N_Baja_Contrib = %s,
+        @M_Baja_Anio = %s,
+        @C_Baja_Partida = %s,
+        @N_Baja_Partida = %s,
+        @Q_Baja_Monto = %s,
+        @C_Baja_CtaCon = %s,
+        @C_Usuari_Login = %s,
+        @N_Baja_PC = %s;
+        """
+        cursor.execute(sql, [C_OpeFin, D_Baja, C_Baja_Contrib, N_Baja_Contrib, M_Baja_Anio, C_Baja_Partida, N_Baja_Partida, Q_Baja_Monto, C_Baja_CtaCon, C_Usuari_Login, N_Baja_PC])
+
+
+def TributoRecaudacionUpdate(C_OpeFin, D_Recaud, M_Recaud_Recibo, C_Recaud_Contrib, N_Recaud_Contrib, C_Recaud_Partida, N_Reacud_Partida, M_Recaud_Anio, Q_Recaud_Monto, C_Recaud_CtaCon, C_Usuari_Login, N_Recaud_PC):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoRecaudacionUpdate
+        @C_OpeFin = %s,
+        @D_Recaud = %s,
+        @M_Recaud_Recibo = %s,
+        @C_Recaud_Contrib = %s,
+        @N_Recaud_Contrib = %s,
+        @C_Recaud_Partida = %s,
+        @N_Reacud_Partida = %s,
+        @M_Recaud_Anio = %s,
+        @Q_Recaud_Monto = %s,
+        @C_Recaud_CtaCon = %s,
+        @C_Usuari_Login = %s,
+        @N_Recaud_PC = %s;
+        """
+        cursor.execute(sql, [C_OpeFin, D_Recaud, M_Recaud_Recibo, C_Recaud_Contrib, N_Recaud_Contrib, C_Recaud_Partida, N_Reacud_Partida, M_Recaud_Anio, Q_Recaud_Monto, C_Recaud_CtaCon, C_Usuari_Login, N_Recaud_PC])
+
+def TributoBeneficioUpdate(C_OpeFin, C_Benefi_Contrib, N_Benefi_Contrib, M_Benefi_Recibo, M_Benefi_Anio, C_Benefi_Partida, N_Benefi_Partida, D_Benefi_Pago, N_Benefi_BasLeg, Q_Benefi_Monto, C_Benefi_CtaCon, C_Usuari_Login, N_Benefi_PC):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoBeneficioUpdate
+        @C_OpeFin = %s,
+        @C_Benefi_Contrib = %s,
+        @N_Benefi_Contrib = %s,
+        @M_Benefi_Recibo = %s,
+        @M_Benefi_Anio = %s,
+        @C_Benefi_Partida = %s,
+        @N_Benefi_Partida = %s,
+        @D_Benefi_Pago = %s,
+        @N_Benefi_BasLeg = %s,
+        @Q_Benefi_Monto = %s,
+        @C_Benefi_CtaCon = %s,
+        @C_Usuari_Login = %s,
+        @N_Benefi_PC = %s;
+        """
+        cursor.execute(sql, [C_OpeFin, C_Benefi_Contrib, N_Benefi_Contrib, M_Benefi_Recibo, M_Benefi_Anio, C_Benefi_Partida, N_Benefi_Partida, D_Benefi_Pago, N_Benefi_BasLeg, Q_Benefi_Monto, C_Benefi_CtaCon, C_Usuari_Login, N_Benefi_PC])
+
+
+def TributoOpeFinSelect(C_OpeFin, C_Archivo):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoOpeFinSelect
+        @C_OpeFin = %s,
+        @C_Archivo = %s;
+        """
+        cursor.execute(sql, [C_OpeFin, C_Archivo])        
+        return dictfetchall(cursor)

@@ -13,6 +13,5 @@ urlpatterns= [
     path("download-tributo-archivo/<int:id>", DownloadTributoArchivoView),
     path("tributo-select-contrib/", TributoSelectContribView.as_view()),
     path("tributo-ope-fin/", TributoOpeFinView.as_view()),
-
-   
+    path("tributo-ope-fin/<int:opeFinId>/<int:archivoId>", TributoOpeFinView.as_view()),
 ]
