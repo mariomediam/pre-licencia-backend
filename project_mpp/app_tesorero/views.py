@@ -28,6 +28,7 @@ locale.setlocale(locale.LC_ALL, 'es_PE.UTF-8')
 PATH_TEMP = os.path.join(os.path.dirname(__file__),"temp")
 
 TABLE_NAME = {
+    "SALDO INICIAL": "TRIBUTO_SALDO_INICIAL",
     "EMISION": "TRIBUTO_EMISION",
     "ALTAS": "TRIBUTO_ALTA",
     "BAJAS": "TRIBUTO_BAJA",
@@ -36,6 +37,14 @@ TABLE_NAME = {
 }
 
 DTYPE_TRIBUTOS = {
+    "SALDO INICIAL": {'cod-contribuyente': str, 
+                'nombre-contribuyente': str,
+                'anio': int,
+                'importe': float, 
+                'cod-partida': str, 
+                'nombre-partida': str,
+                'cuenta-contable': str
+    },
     "EMISION": {'cod-contribuyente': str, 
                 'nombre-contribuyente': str,
                 'cod-partida': str, 
@@ -82,6 +91,13 @@ DTYPE_TRIBUTOS = {
 }
 
 RENAME_COLUMNS = {
+    "SALDO INICIAL": {'cod-contribuyente': 'C_SalIni_Contrib',
+                'nombre-contribuyente': 'N_SalIni_Contrib',
+                'anio': 'M_SalIni_Anio',
+                'cod-partida': 'C_SalIni_Partida',
+                'nombre-partida': 'N_SalIni_Partida',
+                'importe': 'Q_SalIni_Monto',
+                'cuenta-contable': 'C_SalIni_CtaCon'},                
     "EMISION": {'cod-contribuyente': 'C_Emision_Contrib',
                 'nombre-contribuyente': 'N_Emision_Contrib',
                 'cod-partida': 'C_Emision_Partida',
@@ -257,7 +273,7 @@ class TributoArchivoView(RetrieveUpdateDestroyAPIView):
         m_archivo_anio = request.data.get("anio", None)
         m_archivo_mes = request.data.get("mes", None)
         c_usuari_login = request.user.username        
-        n_pc = request.META.get("COMPUTERNAME")
+        n_pc = request.META.get("REMOTE_ADDR")
 
         c_archivo = None
                 
@@ -286,8 +302,11 @@ class TributoArchivoView(RetrieveUpdateDestroyAPIView):
 
             if data.is_valid():
                 file_name_upload = data.save()   
-                data = TributoInsertArchivo(c_tip_ope, m_archivo_anio, m_archivo_mes, c_usuari_login, n_pc)
-                c_archivo = data.get("C_Archivo", None)
+                if (c_tip_ope != "01" ):
+                    data = TributoInsertArchivo(c_tip_ope, m_archivo_anio, m_archivo_mes, c_usuari_login, n_pc)
+                    c_archivo = data.get("C_Archivo", None)
+                else:
+                    c_archivo = 1
                 
                 
                 df = convert_excel_to_panda(f"{PATH_TEMP}/{file_name_upload}", type_tax_add)
@@ -311,7 +330,7 @@ class TributoArchivoView(RetrieveUpdateDestroyAPIView):
                 )
         
         except Exception as e:
-            if c_archivo is not None:
+            if c_archivo is not None and c_tip_ope != "01":
                 TributoDeleteArchivo(c_archivo, c_usuari_login, n_pc)
 
             return Response(
@@ -322,7 +341,7 @@ class TributoArchivoView(RetrieveUpdateDestroyAPIView):
     def delete(self, request: Request, id=None):        
         c_archivo = id
         c_usuari_login = request.user.username        
-        n_pc = request.META.get("COMPUTERNAME")
+        n_pc = request.META.get("REMOTE_ADDR")
 
         if c_archivo is None:
             return Response(
@@ -350,6 +369,11 @@ def getNombreTipoOpeFin(c_tip_ope):
         return None 
     
 def setFormatDf(df, type_tax, **kwargs):
+
+    if type_tax == "SALDO INICIAL":
+        df["D_SalIni_FecDig"] = datetime.now()
+        df["C_Usuari_Login"] = kwargs.get("c_usuari_login")
+        df["N_SalIni_PC"] = kwargs.get("n_pc")
 
     if type_tax == "EMISION":
         df["D_Emision_FecDig"] = datetime.now()
@@ -581,7 +605,7 @@ class TributoOpeFinView(RetrieveUpdateDestroyAPIView):
     def delete(self, request: Request):       
         list_ope_fin = request.data.get("listOpeFin", None)
         c_usuari_login = request.user.username        
-        n_pc = request.META.get("COMPUTERNAME")
+        n_pc = request.META.get("REMOTE_ADDR")
 
         if list_ope_fin is None:
             return Response(
@@ -622,7 +646,7 @@ class TributoOpeFinView(RetrieveUpdateDestroyAPIView):
         # m_archivo_anio = request.data.get("M_Archivo_Anio", None)
         # m_archivo_mes = request.data.get("M_Archivo_Mes", None)
         # c_usuari_login = request.user.username
-        # n_pc = request.META.get("COMPUTERNAME")
+        # n_pc = request.META.get("REMOTE_ADDR")
 
         print("*************  request.data *************")
         print(request.data)
@@ -633,7 +657,7 @@ class TributoOpeFinView(RetrieveUpdateDestroyAPIView):
         ]}
 
         c_usuari_login = request.user.username
-        n_pc = request.META.get("COMPUTERNAME")
+        n_pc = request.META.get("REMOTE_ADDR")
 
         # Mapeo de tipos de operación a funciones y argumentos
         operaciones = {
@@ -743,7 +767,7 @@ class TributoOpeFinView(RetrieveUpdateDestroyAPIView):
         c_ope_fin = opeFinId
         c_archivo = archivoId
         c_usuari_login = request.user.username
-        n_pc = request.META.get("COMPUTERNAME")     
+        n_pc = request.META.get("REMOTE_ADDR")
         request_data["C_OpeFin"] = c_ope_fin
        
         operaciones = {
