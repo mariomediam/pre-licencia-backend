@@ -302,11 +302,8 @@ class TributoArchivoView(RetrieveUpdateDestroyAPIView):
 
             if data.is_valid():
                 file_name_upload = data.save()   
-                if (c_tip_ope != "01" ):
-                    data = TributoInsertArchivo(c_tip_ope, m_archivo_anio, m_archivo_mes, c_usuari_login, n_pc)
-                    c_archivo = data.get("C_Archivo", None)
-                else:
-                    c_archivo = 1
+                data = TributoInsertArchivo(c_tip_ope, m_archivo_anio, m_archivo_mes, c_usuari_login, n_pc)
+                c_archivo = data.get("C_Archivo", None)
                 
                 
                 df = convert_excel_to_panda(f"{PATH_TEMP}/{file_name_upload}", type_tax_add)
@@ -330,7 +327,7 @@ class TributoArchivoView(RetrieveUpdateDestroyAPIView):
                 )
         
         except Exception as e:
-            if c_archivo is not None and c_tip_ope != "01":
+            if c_archivo is not None:
                 TributoDeleteArchivo(c_archivo, c_usuari_login, n_pc)
 
             return Response(
@@ -551,7 +548,8 @@ def getTributoSelectContrib(valor, anio):
                           ("Baja", TributoBajaSelectContrib), 
                           ("Recaud", TributoRecaudacionSelectContrib), 
                           ("Benefi", TributoBeneficioSelectContrib)]:
-        items = funcion(valor) if tipo == "SalIni" else funcion(valor, anio)
+        # items = funcion(valor) if tipo == "SalIni" else funcion(valor, anio)
+        items = funcion(valor, anio)
         for item in items:
             actualizar_contrib_dict(contrib_dict, item, tipo)
 

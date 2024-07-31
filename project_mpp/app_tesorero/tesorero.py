@@ -61,13 +61,13 @@ def TributoPeriodosDisponibles(C_TipOpe, M_Archivo_Anio):
         cursor.execute(sql, [C_TipOpe, M_Archivo_Anio])        
         return dictfetchall(cursor)
 
-def TributoSaldoInicialSelectContrib(Valor):
+def TributoSaldoInicialSelectContrib(Valor, anio):
     with connection.cursor() as cursor:
         sql = """           
         SET NOCOUNT ON;
-        EXEC SIGA.dbo.TributoSaldoInicialSelectContrib %s;
+        EXEC SIGA.dbo.TributoSaldoInicialSelectContrib %s, %s;
         """
-        cursor.execute(sql, [Valor])        
+        cursor.execute(sql, [Valor, anio])        
         return dictfetchall(cursor)
 
 def TributoEmisionSelectContrib(Valor, anio):
