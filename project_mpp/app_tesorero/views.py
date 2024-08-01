@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.generics import CreateAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
+from django.http import HttpRequest
 
 import pandas as pd
 from sqlalchemy import create_engine
@@ -802,3 +803,56 @@ class TributoOpeFinView(RetrieveUpdateDestroyAPIView):
                 status=400,
             )
     
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])        
+def DownloadTributoReporteView(request):    
+    
+    opcion = request.data.get("opcion", None)
+    M_Archivo_Anio = request.data.get("M_Archivo_Anio", None)
+    mes_hasta = request.data.get("mes_hasta", None)
+    contrib = request.data.get("contrib", None)
+
+    try:
+        if opcion is None:
+            return Response(
+                data={"message": "Error", "content": "Falta el parámetro opcion"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if M_Archivo_Anio is None:
+            return Response(
+                data={"message": "Error", "content": "Falta el parámetro M_Archivo_Anio"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        if mes_hasta is None:
+            return Response(
+                data={"message": "Error", "content": "Falta el parámetro mes_hasta"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        M_Archivo_Anio = int(M_Archivo_Anio)
+        mes_hasta = int(mes_hasta)
+        if contrib is not None and len(contrib) == 0:
+            contrib = ""
+
+        sql = f"EXEC TributoContibuyentePartida {M_Archivo_Anio}, {mes_hasta}, {contrib}"
+
+        df = sql_to_pandas(sql)            
+
+        name_file = "Reporte"
+        full_path_file = f"{PATH_TEMP}/{name_file}.xlsx"
+        df.to_excel(full_path_file, index=False)
+        with open(full_path_file, 'rb') as excel_file:
+            response = HttpResponse(excel_file.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response['Content-Disposition'] = "attachment; filename={}".format(name_file)
+        os.remove(full_path_file)
+
+        return response
+        
+    except Exception as e:
+        return Response(
+            data={"message": str(e), "content": None},
+            status=status.HTTP_400_BAD_REQUEST,
+        )

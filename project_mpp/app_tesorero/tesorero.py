@@ -416,4 +416,16 @@ def TributoOpeFinSelect(C_OpeFin, C_Archivo):
         @C_Archivo = %s;
         """
         cursor.execute(sql, [C_OpeFin, C_Archivo])        
+        return dictfetchall(cursor) 
+
+def TributoContibuyentePartida(M_Archivo_Anio, mes_hasta, contrib):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoContibuyentePartida
+        @M_Archivo_Anio = %s,
+        @mes_hasta = %s,
+        @contrib = %s;
+        """
+        cursor.execute(sql, [M_Archivo_Anio, mes_hasta, contrib])        
         return dictfetchall(cursor)
