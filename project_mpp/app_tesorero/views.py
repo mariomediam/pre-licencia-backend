@@ -837,9 +837,22 @@ def DownloadTributoReporteView(request):
         if contrib is not None and len(contrib) == 0:
             contrib = ""
 
-        sql = f"EXEC TributoContibuyentePartida {M_Archivo_Anio}, {mes_hasta}, {contrib}"
+        sql = ""
+        if opcion == "01":
+            sql = f"EXEC TributoContibuyentePartida {M_Archivo_Anio}, {mes_hasta}, {contrib}"
+        elif opcion == "02":
+            sql = f"EXEC TributoCuentasxCobrarContribuyente {M_Archivo_Anio}, {mes_hasta}, {contrib}"
+        elif opcion == "03":
+            sql = f"EXEC TributoCuentasxCobrarPartida {M_Archivo_Anio}, {mes_hasta}, {contrib}"
 
-        df = sql_to_pandas(sql)            
+        df = sql_to_pandas(sql)      
+
+        if len(df) > 0 and opcion =="02" :                  
+            df["Cuentas_por_ cobrar"] = df.iloc[:, 2:].sum(axis=1)
+
+        if len(df) > 0 and opcion =="03" :                  
+            df["Cuentas_por_ cobrar"] = df.iloc[:, 1:].sum(axis=1)
+            
 
         name_file = "Reporte"
         full_path_file = f"{PATH_TEMP}/{name_file}.xlsx"

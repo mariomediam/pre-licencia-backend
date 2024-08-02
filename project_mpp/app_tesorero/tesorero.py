@@ -429,3 +429,28 @@ def TributoContibuyentePartida(M_Archivo_Anio, mes_hasta, contrib):
         """
         cursor.execute(sql, [M_Archivo_Anio, mes_hasta, contrib])        
         return dictfetchall(cursor)
+
+
+def TributoCuentasxCobrarContribuyente(M_Archivo_Anio, mes_hasta, contrib):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoCuentasxCobrarContribuyente
+        @M_Archivo_Anio = %s,
+        @mes_hasta = %s,
+        @contrib = %s;
+        """
+        cursor.execute(sql, [M_Archivo_Anio, mes_hasta, contrib])        
+        return dictfetchall(cursor)
+
+def TributoCuentasxCobrarPartida(M_Archivo_Anio, mes_hasta, contrib):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.TributoCuentasxCobrarPartida
+        @M_Archivo_Anio = %s,
+        @mes_hasta = %s,
+        @contrib = %s;
+        """
+        cursor.execute(sql, [M_Archivo_Anio, mes_hasta, contrib])        
+        return dictfetchall(cursor)
