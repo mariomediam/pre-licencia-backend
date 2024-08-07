@@ -811,7 +811,7 @@ def DownloadTributoReporteView(request):
     opcion = request.data.get("opcion", None)
     M_Archivo_Anio = request.data.get("M_Archivo_Anio", None)
     mes_hasta = request.data.get("mes_hasta", None)
-    contrib = request.data.get("contrib", None)
+    contrib = request.data.get("contrib", "")
 
     try:
         if opcion is None:
@@ -834,35 +834,51 @@ def DownloadTributoReporteView(request):
         
         M_Archivo_Anio = int(M_Archivo_Anio)
         mes_hasta = int(mes_hasta)
-        if contrib is not None and len(contrib) == 0:
-            contrib = ""
-
+        
         sql = ""
         if opcion == "01":
-            sql = f"EXEC TributoContibuyentePartida {M_Archivo_Anio}, {mes_hasta}, {contrib}"
+            sql = f"EXEC TributoContibuyentePartida {M_Archivo_Anio}, {mes_hasta}, '{contrib}'"
         elif opcion == "02":
-            sql = f"EXEC TributoCuentasxCobrarContribuyente {M_Archivo_Anio}, {mes_hasta}, {contrib}"
+            sql = f"EXEC TributoCuentasxCobrarContribuyente {M_Archivo_Anio}, {mes_hasta}, '{contrib}'"
         elif opcion == "03":
-            sql = f"EXEC TributoCuentasxCobrarPartida {M_Archivo_Anio}, {mes_hasta}, {contrib}"
+            sql = f"EXEC TributoCuentasxCobrarPartida {M_Archivo_Anio}, {mes_hasta}, '{contrib}'"
 
-        df = sql_to_pandas(sql)      
+        df = sql_to_pandas(sql)     
+        
+        if "C_Contrib" in df.columns:
+            df = df.rename(columns={"C_Contrib": "cod-contribuyente"})
+        if "N_Contrib" in df.columns:
+            df = df.rename(columns={"N_Contrib": "nombre-contribuyente"})
 
         if len(df) > 0 and opcion =="02" :                  
-            df["Cuentas_por_ cobrar"] = df.iloc[:, 2:].sum(axis=1)
+            df["Cuentas_por_cobrar"] = df.iloc[:, 2:].sum(axis=1)
 
         if len(df) > 0 and opcion =="03" :                  
-            df["Cuentas_por_ cobrar"] = df.iloc[:, 1:].sum(axis=1)
-            
+            df["Cuentas_por_cobrar"] = df.iloc[:, 1:].sum(axis=1)
 
-        name_file = "Reporte"
-        full_path_file = f"{PATH_TEMP}/{name_file}.xlsx"
-        df.to_excel(full_path_file, index=False)
-        with open(full_path_file, 'rb') as excel_file:
-            response = HttpResponse(excel_file.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        response['Content-Disposition'] = "attachment; filename={}".format(name_file)
-        os.remove(full_path_file)
+        if "Cuentas_por_cobrar" in df.columns:
+            df["Cuentas_por_cobrar"] = pd.to_numeric(df["Cuentas_por_cobrar"], errors='coerce')
+            df["Cuentas_por_cobrar"] = df["Cuentas_por_cobrar"].round(2)
 
-        return response
+       
+
+
+        if len(contrib) == 0:            
+            name_file = "Reporte"
+            full_path_file = f"{PATH_TEMP}/{name_file}.xlsx"
+            df.to_excel(full_path_file, index=False)
+            with open(full_path_file, 'rb') as excel_file:
+                response = HttpResponse(excel_file.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response['Content-Disposition'] = "attachment; filename={}".format(name_file)
+            os.remove(full_path_file)
+
+            return response
+        else:            
+            data = df.to_dict(orient="records")
+            return Response(
+                data={"message": "Reporte", "content": data},
+                status=status.HTTP_200_OK,
+            )
         
     except Exception as e:
         return Response(
