@@ -86,9 +86,11 @@ DTYPE_TRIBUTOS = {
                     'fecha': datetime,  
                     'base-legal': str,                 
                     'importe': float, 
-                    'cuenta-contable': str}
-                   
-
+                    'cuenta-contable': str},
+    "CONCILIACION": {
+                    'cod-contribuyente': str, 
+                    'nombre-contribuyente': str,                    
+                    'importe': float}                 
 }
 
 RENAME_COLUMNS = {
@@ -631,24 +633,6 @@ class TributoOpeFinView(RetrieveUpdateDestroyAPIView):
             )
         
     def post(self, request: Request):
-        # c_tipope = request.data.get("C_TipOpe", None)
-        # d_fecha = request.data.get("D_Fecha", None)
-        # c_contrib = request.data.get("C_Contrib", None)
-        # n_contrib = request.data.get("N_Contrib", None)
-        # c_partida = request.data.get("C_Partida", None)
-        # n_partida = request.data.get("N_Partida", None)
-        # m_anio = request.data.get("M_Anio", None)
-        # q_monto = request.data.get("Q_Monto", None)
-        # c_ctacon = request.data.get("C_CtaCon", None)
-        # m_recibo = request.data.get("M_Recibo", None)
-        # n_basleg = request.data.get("N_BasLeg", None)
-        # m_archivo_anio = request.data.get("M_Archivo_Anio", None)
-        # m_archivo_mes = request.data.get("M_Archivo_Mes", None)
-        # c_usuari_login = request.user.username
-        # n_pc = request.META.get("REMOTE_ADDR")
-
-        print("*************  request.data *************")
-        print(request.data)
 
         request_data = {key: request.data.get(key, None) for key in [
         "C_TipOpe", "D_Fecha", "C_Contrib", "N_Contrib", "C_Partida", "N_Partida",
@@ -692,69 +676,6 @@ class TributoOpeFinView(RetrieveUpdateDestroyAPIView):
         except Exception as e:
             print(str(e))
             return Response(data={"message": str(e), "content": None}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response(
-                    data={"message": "Operación financiera insertada exitosamente", "content": None},
-                    status=status.HTTP_201_CREATED,
-                )
-
-        try:
-            with transaction.atomic():
-                if c_tipope == "01":
-                    tributo_archivo = TributoArchivoSelect("03", c_tipope)
-                    if len(tributo_archivo) == 0:
-                        raise Exception("No se encontró el archivo de saldo inicial")
-                    c_archivo = tributo_archivo[0]["C_Archivo"]
-                    TributoSaldoInicialInsert(c_archivo, c_contrib, n_contrib, m_anio, q_monto, c_partida, n_partida, c_ctacon, c_usuari_login, n_pc)
-                
-                elif c_tipope == "02":
-                    tributo_archivo = TributoArchivoSelect("04", c_tipope, m_archivo_anio)
-                    if len(tributo_archivo) == 0:
-                        raise Exception("No se encontró el archivo de emisión")
-                    c_archivo = tributo_archivo[0]["C_Archivo"]
-                    TributoEmisionInsert(c_archivo, c_contrib, n_contrib, c_partida, n_partida, q_monto, c_ctacon, c_usuari_login, n_pc)
-                
-                elif c_tipope == "03":
-                    tributo_archivo = TributoArchivoSelect("05", c_tipope, m_archivo_anio, m_archivo_mes)
-                    if len(tributo_archivo) == 0:
-                        raise Exception("No se encontró el archivo de alta")
-                    c_archivo = tributo_archivo[0]["C_Archivo"]
-                    TributoAltaInsert(c_archivo, d_fecha, c_contrib, n_contrib, m_anio, c_partida, n_partida, q_monto, c_ctacon, c_usuari_login, n_pc)
-                
-                elif c_tipope == "04":
-                    tributo_archivo = TributoArchivoSelect("05", c_tipope, m_archivo_anio, m_archivo_mes)
-                    if len(tributo_archivo) == 0:
-                        raise Exception("No se encontró el archivo de baja")
-                    c_archivo = tributo_archivo[0]["C_Archivo"]
-                    TributoBajaInsert(c_archivo, d_fecha, c_contrib, n_contrib, m_anio, c_partida, n_partida, q_monto, c_ctacon, c_usuari_login, n_pc)
-
-                elif c_tipope == "05":
-                    tributo_archivo = TributoArchivoSelect("05", c_tipope, m_archivo_anio, m_archivo_mes)
-                    if len(tributo_archivo) == 0:
-                        raise Exception("No se encontró el archivo de recaudación")
-                    c_archivo = tributo_archivo[0]["C_Archivo"]
-                    TributoRecaudacionInsert(c_archivo, d_fecha, m_recibo, c_contrib, n_contrib, c_partida, n_partida, m_anio, q_monto, c_ctacon, c_usuari_login, n_pc)
-                
-                elif c_tipope == "06":
-                    tributo_archivo = TributoArchivoSelect("05", c_tipope, m_archivo_anio, m_archivo_mes)
-                    if len(tributo_archivo) == 0:
-                        raise Exception("No se encontró el archivo de beneficios")
-                    c_archivo = tributo_archivo[0]["C_Archivo"]
-                    TributoBeneficioInsert(c_archivo, c_contrib, n_contrib, m_recibo, m_anio, c_partida, n_partida, d_fecha, n_basleg, q_monto, c_ctacon, c_usuari_login, n_pc)
-             
-                
-                else:
-                    raise Exception("Tipo de operación no válido")
-                
-                return Response(
-                    data={"message": "Operación financiera insertada exitosamente", "content": None},
-                    status=status.HTTP_201_CREATED,
-                )
-        except Exception as e:
-            return Response(
-                data={"message": str(e), "content": None},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
         
     def put(self, request: Request, opeFinId: int, archivoId: int):
 
@@ -849,7 +770,7 @@ def DownloadTributoReporteView(request):
             df = df.rename(columns={"C_Contrib": "cod-contribuyente"})
         if "N_Contrib" in df.columns:
             df = df.rename(columns={"N_Contrib": "nombre-contribuyente"})
-
+        
         if len(df) > 0 and opcion =="02" :                  
             df["Cuentas_por_cobrar"] = df.iloc[:, 2:].sum(axis=1)
 
@@ -859,9 +780,6 @@ def DownloadTributoReporteView(request):
         if "Cuentas_por_cobrar" in df.columns:
             df["Cuentas_por_cobrar"] = pd.to_numeric(df["Cuentas_por_cobrar"], errors='coerce')
             df["Cuentas_por_cobrar"] = df["Cuentas_por_cobrar"].round(2)
-
-       
-
 
         if len(contrib) == 0:            
             name_file = "Reporte"
@@ -885,3 +803,88 @@ def DownloadTributoReporteView(request):
             data={"message": str(e), "content": None},
             status=status.HTTP_400_BAD_REQUEST,
         )
+    
+
+class TributoConciliaView(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request):
+        m_archivo_anio = request.data.get("anio", None)
+        mes_hasta = request.data.get("mes", None)
+        c_usuari_login = request.user.username        
+        n_pc = request.META.get("REMOTE_ADDR")
+
+        try:
+        
+            if m_archivo_anio is None:
+                return Response(
+                    data={"message": "Error", "content": "Falta el parámetro 'anio'"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            
+            if m_archivo_anio:
+                m_archivo_anio = int(m_archivo_anio)
+
+            if mes_hasta:
+                mes_hasta = int(mes_hasta)
+
+            # Subiendo el archivo
+            file_name = "file_temp.xlsx"        
+            
+            dataArchivo = request.FILES.copy()
+            dataArchivo["location"] = PATH_TEMP
+            dataArchivo["file_name"] = file_name
+            data = UploadFileSerializer(data=dataArchivo,allowed_extensions=['xls', 'xlsx'])
+
+            if data.is_valid():
+                file_name_upload = data.save()   
+
+                df_satp = convert_excel_to_panda(f"{PATH_TEMP}/{file_name_upload}", "CONCILIACION")
+                
+                os.remove(f"{PATH_TEMP}/{file_name_upload}")
+
+                sql = f"EXEC TributoConciliacion {m_archivo_anio}, {mes_hasta}"
+
+                df_mpp = sql_to_pandas(sql) 
+
+                
+                if "C_Contrib" in df_mpp.columns:
+                    df_mpp = df_mpp.rename(columns={"C_Contrib": "cod-contribuyente"})
+                if "N_Contrib" in df_mpp.columns:
+                    df_mpp = df_mpp.rename(columns={"N_Contrib": "nombre-contribuyente"})
+                if "Q_Monto" in df_mpp.columns:
+                    df_mpp = df_mpp.rename(columns={"Q_Monto": "importe"})
+
+                #  quitar espacios en blanco al inicio y final de columna cod-contribuyente
+                df_mpp["cod-contribuyente"] = df_mpp["cod-contribuyente"].str.strip()
+                df_satp["cod-contribuyente"] = df_satp["cod-contribuyente"].str.strip()
+
+
+                # Merge de los dataframes
+
+                df = pd.merge(df_satp, df_mpp, how="outer", on="cod-contribuyente", suffixes=("_satp", "_mpp"))
+                
+                df["importe_satp"] = df["importe_satp"].fillna(0)
+                df["importe_mpp"] = df["importe_mpp"].fillna(0)
+                
+
+                df["diferencia"] = df["importe_satp"] - df["importe_mpp"]
+
+                print(df.head())
+
+                name_file = "Reporte"
+                full_path_file = f"{PATH_TEMP}/{name_file}.xlsx"
+                df.to_excel(full_path_file, index=False)
+                with open(full_path_file, 'rb') as excel_file:
+                    response = HttpResponse(excel_file.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                response['Content-Disposition'] = "attachment; filename={}".format(name_file)
+                os.remove(full_path_file)
+
+                return response
+
+             
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
