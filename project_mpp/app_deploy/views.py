@@ -82,6 +82,9 @@ class LoginController(RetrieveAPIView):
             password = data.validated_data.get('password')
 
             resultado = login(usuario, password)
+
+            print("****************** resultado ******************")
+            print(resultado)
             
             return Response({'data': resultado}, status=status.HTTP_200_OK)
 
@@ -136,7 +139,8 @@ class BuscarReniecDNIController(RetrieveAPIView):
                 restriccion = None
                 ubigeo = None
 
-                ciudadano_reniec = requests.get("https://ws5.pide.gob.pe/Rest/Reniec/Consultar?nuDniConsulta={}&nuDniUsuario={}&nuRucUsuario={}&password={}&out=json".format(numero, os.environ.get('RENIEC_NUDNIUSUARIO'), os.environ.get('RENIEC_NURUCUSUARIO'), os.environ.get('RENIEC_PASSWORD'))).json()
+                # ciudadano_reniec = requests.get("https://ws5.pide.gob.pe/Rest/Reniec/Consultar?nuDniConsulta={}&nuDniUsuario={}&nuRucUsuario={}&password={}&out=json".format(numero, os.environ.get('RENIEC_NUDNIUSUARIO'), os.environ.get('RENIEC_NURUCUSUARIO'), os.environ.get('RENIEC_PASSWORD'))).json()
+                ciudadano_reniec = requests.get("https://ws2.pide.gob.pe/Rest/RENIEC/Consultar?nuDniConsulta={}&nuDniUsuario={}&nuRucUsuario={}&password={}&out=json".format(numero, os.environ.get('RENIEC_NUDNIUSUARIO'), os.environ.get('RENIEC_NURUCUSUARIO'), os.environ.get('RENIEC_PASSWORD'))).json()
                 
                 co_resultado = ciudadano_reniec["consultarResponse"]["return"]["coResultado"]    
 
