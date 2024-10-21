@@ -9,7 +9,7 @@ from datetime import datetime
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.generics import CreateAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import CreateAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView, ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from django.http import HttpRequest
@@ -280,7 +280,6 @@ class TributoArchivoView(RetrieveUpdateDestroyAPIView):
 
         c_archivo = None
                 
-
         try:            
             if c_tip_ope is None:
                 return Response(
@@ -888,3 +887,47 @@ class TributoConciliaView(CreateAPIView):
                 data={"message": str(e), "content": None},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
+
+class EjecucionDetalladaView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request):
+        desde = request.data.get("desde", None)
+        hasta = request.data.get("hasta", None)
+        ciclo = request.data.get("ciclo", None)
+        fase = request.data.get("fase", None)
+        secfun = request.data.get("secfun", None)
+        depen = request.data.get("depen", None)
+        prov = request.data.get("prov", None)
+        clapre = request.data.get("clapre", None)
+        fuefin = request.data.get("fuefin", None)
+        plancon = request.data.get("plancon", None)
+        exp = request.data.get("exp", None)
+        cp = request.data.get("cp", None)
+        oper = request.data.get("oper", None)
+        scompro = request.data.get("scompro", None)
+        obs = request.data.get("obs", None)
+        tipdoc = request.data.get("tipdoc", None)
+        docum = request.data.get("docum", None)
+        recurso = request.data.get("recurso", None)
+        exp_q = request.data.get("exp_q", None)
+
+        if desde is None or hasta is None or ciclo is None:
+            return Response(
+                data={"message": "Error", "content": "Falta el parámetro 'desde', 'hasta' o 'ciclo'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            data = SelectEjecucionDetallada(desde, hasta, ciclo, fase, secfun, depen, prov, clapre, fuefin, plancon, exp, cp, oper, scompro, obs, tipdoc, docum, recurso, exp_q)
+            return Response(
+                data={"message": "Lista de ejecución detallada", "content": data},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_400_BAD_REQUEST,
+            )   
+        

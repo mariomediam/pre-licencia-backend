@@ -465,3 +465,31 @@ def TributoConciliacion(M_Archivo_Anio, mes_hasta):
         """
         cursor.execute(sql, [M_Archivo_Anio, mes_hasta])        
         return dictfetchall(cursor)
+    
+def SelectEjecucionDetallada(D_FECHA1, D_FECHA2, C_CICLO, C_FASE = None, C_SECFUN = None, C_DEPEN = None, C_PROV = None, C_CLAPRE = None, C_FUEFIN = None, C_PLANCON = None, C_EXP = None, C_CP = None, C_OPER = None, SCOMPRO = None, T_OBS = None, C_TIPDOC = None, C_DOCUM = None, C_RECURSO = None, C_EXP_Q = None):
+    with connection.cursor() as cursor:
+        sql = """           
+        SET NOCOUNT ON;
+        EXEC SIGA.dbo.SelectEjecucionDetallada
+        @D_FECHA1 = %s,
+        @D_FECHA2 = %s,
+        @C_CICLO = %s,
+        @C_FASE = %s,
+        @C_SECFUN = %s,
+        @C_DEPEN = %s,
+        @C_PROV = %s,
+        @C_CLAPRE = %s,
+        @C_FUEFIN = %s,
+        @C_PLANCON = %s,
+        @C_EXP = %s,
+        @C_CP = %s,
+        @C_OPER = %s,
+        @SCOMPRO = %s,
+        @T_OBS = %s,
+        @C_TIPDOC = %s,
+        @C_DOCUM = %s,
+        @C_RECURSO = %s,
+        @C_EXP_Q = %s;
+        """
+        cursor.execute(sql, [D_FECHA1, D_FECHA2, C_CICLO, C_FASE, C_SECFUN, C_DEPEN, C_PROV, C_CLAPRE, C_FUEFIN, C_PLANCON, C_EXP, C_CP, C_OPER, SCOMPRO, T_OBS, C_TIPDOC, C_DOCUM, C_RECURSO, C_EXP_Q])        
+        return dictfetchall(cursor)
