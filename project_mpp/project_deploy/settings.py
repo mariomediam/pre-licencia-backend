@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'app_tradoc',
     'app_tesorero',
     'app_abastec',
+    'app_siaf',
     "rest_framework",
     'corsheaders'
 ]
