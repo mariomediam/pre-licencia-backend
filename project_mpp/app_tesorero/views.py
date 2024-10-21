@@ -892,37 +892,62 @@ class TributoConciliaView(CreateAPIView):
 class EjecucionDetalladaView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
+    
+    # ciclo: "G",
+    # fase: "",
+    # rubro: "",
+    # recurso: "",
+    # clasificador: "",
+    # meta: "",
+    # operacion: "",
+    # documento: "",
+    # numerodoc: "",
+    # glosa: "",
+    # siafexped: "",
+    # siafcertifanual: "",
+    # siafprov: "",
+    # siafctacte: "",
+    # sigaexped: "",
+    # sigaprecomp: "",
+    # sigaprov: "",
+    # sigaplancont: "",
+
     def post(self, request: Request):
+        search_sources = request.data.get("sources", None)
         desde = request.data.get("desde", None)
         hasta = request.data.get("hasta", None)
         ciclo = request.data.get("ciclo", None)
         fase = request.data.get("fase", None)
-        secfun = request.data.get("secfun", None)
+        secfun = request.data.get("meta", None)
         depen = request.data.get("depen", None)
-        prov = request.data.get("prov", None)
-        clapre = request.data.get("clapre", None)
-        fuefin = request.data.get("fuefin", None)
-        plancon = request.data.get("plancon", None)
-        exp = request.data.get("exp", None)
+        siga_prov = request.data.get("sigaprov", None)
+        clapre = request.data.get("clasificador", None)
+        fuefin = request.data.get("rubro", None)
+        siga_plancon = request.data.get("sigaplancont", None)
+        siga_exp = request.data.get("sigaexped", None)
         cp = request.data.get("cp", None)
-        oper = request.data.get("oper", None)
+        oper = request.data.get("operacion", None)
         scompro = request.data.get("scompro", None)
-        obs = request.data.get("obs", None)
-        tipdoc = request.data.get("tipdoc", None)
-        docum = request.data.get("docum", None)
+        obs = request.data.get("glosa", None)
+        tipdoc = request.data.get("documento", None)
+        docum = request.data.get("numerodoc", None)
         recurso = request.data.get("recurso", None)
-        exp_q = request.data.get("exp_q", None)
+        siga_exp_q = request.data.get("sigaprecomp", None)
 
-        if desde is None or hasta is None or ciclo is None:
+        if search_sources is None or desde is None or hasta is None or ciclo is None:
             return Response(
                 data={"message": "Error", "content": "Falta el parámetro 'desde', 'hasta' o 'ciclo'"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
-            data = SelectEjecucionDetallada(desde, hasta, ciclo, fase, secfun, depen, prov, clapre, fuefin, plancon, exp, cp, oper, scompro, obs, tipdoc, docum, recurso, exp_q)
+            detailed_execution = {}
+            if "siga.net" in search_sources:
+
+                detailed_execution["siga.net"] = SelectEjecucionDetallada(D_FECHA1=desde, D_FECHA2=hasta, C_CICLO=ciclo, C_FASE=fase, C_SECFUN=secfun, C_DEPEN=depen, C_PROV=siga_prov, C_CLAPRE=clapre, C_FUEFIN=fuefin, C_PLANCON=siga_plancon, C_EXPED_NRO=siga_exp, C_CP=cp, C_OPER=oper, SCOMPRO=scompro, T_OBS=obs, C_TIPDOC=tipdoc, C_DOCUM=docum, C_RECURSO=recurso, C_EXP_Q=siga_exp_q)
+
             return Response(
-                data={"message": "Lista de ejecución detallada", "content": data},
+                data={"message": "Lista de ejecución detallada", "content": detailed_execution},
                 status=status.HTTP_200_OK,
             )
         except Exception as e:

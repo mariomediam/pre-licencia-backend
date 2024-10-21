@@ -466,7 +466,7 @@ def TributoConciliacion(M_Archivo_Anio, mes_hasta):
         cursor.execute(sql, [M_Archivo_Anio, mes_hasta])        
         return dictfetchall(cursor)
     
-def SelectEjecucionDetallada(D_FECHA1, D_FECHA2, C_CICLO, C_FASE = None, C_SECFUN = None, C_DEPEN = None, C_PROV = None, C_CLAPRE = None, C_FUEFIN = None, C_PLANCON = None, C_EXP = None, C_CP = None, C_OPER = None, SCOMPRO = None, T_OBS = None, C_TIPDOC = None, C_DOCUM = None, C_RECURSO = None, C_EXP_Q = None):
+def SelectEjecucionDetallada(D_FECHA1, D_FECHA2, C_CICLO, C_FASE = None, C_SECFUN = None, C_DEPEN = None, C_PROV = None, C_CLAPRE = None, C_FUEFIN = None, C_PLANCON = None, C_EXP = None, C_CP = None, C_OPER = None, SCOMPRO = None, T_OBS = None, C_TIPDOC = None, C_DOCUM = None, C_RECURSO = None, C_EXP_Q = None, C_EXPED_NRO = None):
     with connection.cursor() as cursor:
         sql = """           
         SET NOCOUNT ON;
@@ -489,7 +489,8 @@ def SelectEjecucionDetallada(D_FECHA1, D_FECHA2, C_CICLO, C_FASE = None, C_SECFU
         @C_TIPDOC = %s,
         @C_DOCUM = %s,
         @C_RECURSO = %s,
-        @C_EXP_Q = %s;
+        @C_EXP_Q = %s,
+        @C_EXPED_NRO = %s;
         """
-        cursor.execute(sql, [D_FECHA1, D_FECHA2, C_CICLO, C_FASE, C_SECFUN, C_DEPEN, C_PROV, C_CLAPRE, C_FUEFIN, C_PLANCON, C_EXP, C_CP, C_OPER, SCOMPRO, T_OBS, C_TIPDOC, C_DOCUM, C_RECURSO, C_EXP_Q])        
+        cursor.execute(sql, [D_FECHA1, D_FECHA2, C_CICLO, C_FASE, C_SECFUN, C_DEPEN, C_PROV, C_CLAPRE, C_FUEFIN, C_PLANCON, C_EXP, C_CP, C_OPER, SCOMPRO, T_OBS, C_TIPDOC, C_DOCUM, C_RECURSO, C_EXP_Q, C_EXPED_NRO])        
         return dictfetchall(cursor)
