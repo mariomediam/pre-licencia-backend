@@ -21,6 +21,7 @@ import urllib
 from .serializers import UploadFileSerializer
 from .tesorero import *
 from .models import *
+from app_siaf.siaf import sf_seleccionar_registros
 
 # Establecer la configuración regional a español
 locale.setlocale(locale.LC_ALL, 'es_PE.UTF-8')
@@ -913,6 +914,9 @@ class EjecucionDetalladaView(ListCreateAPIView):
         docum = request.data.get("numerodoc")
         recurso = request.data.get("recurso")
         siga_exp_q = request.data.get("sigaprecomp")
+        siaf_prov = request.data.get("siafprov")
+        siaf_ctacte = request.data.get("siafctacte")
+        siaf_certificado = request.data.get("siafcertificado")
 
         if search_sources is None or desde is None or hasta is None or ciclo is None:
             return Response(
@@ -921,8 +925,25 @@ class EjecucionDetalladaView(ListCreateAPIView):
             )
         try:
             detailed_execution = {}
-            if "siaf" in search_sources:
-                detailed_execution["siaf"] = []
+            if "siaf" in search_sources:                
+                detailed_execution["siaf"] = sf_seleccionar_registros(**{
+                    "fecha1": desde,
+                    "fecha2": hasta,
+                    "ciclo": ciclo,
+                    "fase": fase,
+                    "rubro": fuefin,
+                    "tipo_recurso": recurso,
+                    "meta": secfun,
+                    "tipo_operacion": oper,
+                    "cod_doc": tipdoc,
+                    "num_doc": docum,
+                    "glosa": obs,
+                    "clasificador": clapre,
+                    "certificado": siaf_certificado,
+                    "proveedor": siaf_prov,
+                    "ctacte": siaf_ctacte
+                })
+                
             if "siga.net" in search_sources:
                 detailed_execution["siga.net"] = SelectEjecucionDetallada(D_FECHA1=desde, D_FECHA2=hasta, C_CICLO=ciclo, C_FASE=fase, C_SECFUN=secfun, C_DEPEN=depen, C_PROV=siga_prov, C_CLAPRE=clapre, C_FUEFIN=fuefin, C_PLANCON=siga_plancon, C_EXPED_NRO=siga_exp, C_CP=cp, C_OPER=oper, SCOMPRO=scompro, T_OBS=obs, C_TIPDOC=tipdoc, C_DOCUM=docum, C_RECURSO=recurso, C_EXP_Q=siga_exp_q)
 
