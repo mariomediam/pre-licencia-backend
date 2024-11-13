@@ -917,6 +917,7 @@ class EjecucionDetalladaView(ListCreateAPIView):
         siaf_prov = request.data.get("siafprov")
         siaf_ctacte = request.data.get("siafctacte")
         siaf_certificado = request.data.get("siafcertificado")
+        siaf_expediente = request.data.get("siafexped")
 
         if search_sources is None or desde is None or hasta is None or ciclo is None:
             return Response(
@@ -956,4 +957,110 @@ class EjecucionDetalladaView(ListCreateAPIView):
                 data={"message": str(e), "content": None},
                 status=status.HTTP_400_BAD_REQUEST,
             )   
-        
+
+
+def format_sql_value(value):
+    if value is None:
+        return 'NULL'
+    elif isinstance(value, str):
+        return f"'{value}'"
+    else:
+        return value
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])        
+def DownloadDetailedExecutionView(request):    
+    source = request.data.get("source")
+    desde = request.data.get("desde")
+    hasta = request.data.get("hasta")
+    ciclo = request.data.get("ciclo")
+    fase = request.data.get("fase")
+    secfun = request.data.get("meta")
+    depen = request.data.get("depen")
+    siga_prov = request.data.get("sigaprov")
+    clapre = request.data.get("clasificador")
+    fuefin = request.data.get("rubro")
+    siga_plancon = request.data.get("sigaplancont")
+    siga_exp = request.data.get("sigaexped")
+    cp = request.data.get("cp")
+    oper = request.data.get("operacion")    
+    obs = request.data.get("glosa")
+    tipdoc = request.data.get("documento")
+    docum = request.data.get("numerodoc")
+    recurso = request.data.get("recurso")
+    siga_exp_q = request.data.get("sigaprecomp")
+    siaf_prov = request.data.get("siafprov")
+    siaf_ctacte = request.data.get("siafctacte")
+    siaf_certificado = request.data.get("siafcertificado")
+    siaf_expediente = request.data.get("siafexped")
+
+    try:
+        sql = ""
+
+        if source == "siaf":
+            sql = f"""
+            DECLARE @fecha1 date = {format_sql_value(desde)}
+            DECLARE @fecha2 date = {format_sql_value(hasta)}
+            DECLARE @expediente varchar(10) = {format_sql_value(siaf_expediente)}
+            DECLARE @ciclo char(1) = {format_sql_value(ciclo)}
+            DECLARE @fase char(1) = {format_sql_value(fase)}
+            DECLARE @rubro char(2) = {format_sql_value(fuefin)}
+            DECLARE @tipo_recurso char(2) = {format_sql_value(recurso)}
+            DECLARE @meta char(4) = {format_sql_value(secfun)}
+            DECLARE @tipo_operacion char(2) = {format_sql_value(oper)}
+            DECLARE @cod_doc char(3) = {format_sql_value(tipdoc)}
+            DECLARE @num_doc varchar(20) = {format_sql_value(docum)}
+            DECLARE @glosa varchar(200) = {format_sql_value(obs)}
+            DECLARE @clasificador varchar(15) = {format_sql_value(clapre)}
+            DECLARE @certificado varchar(15) = {format_sql_value(siaf_certificado)}
+            DECLARE @proveedor varchar(100) = {format_sql_value(siaf_prov)}
+            DECLARE @ctacte varchar(12) = {format_sql_value(siaf_ctacte)}
+
+            EXEC BDSIAF.dbo.sf_seleccionar_registros @fecha1=@fecha1, @fecha2=@fecha2, @expediente=@expediente, @ciclo=@ciclo, @fase=@fase, @rubro=@rubro, @tipo_recurso=@tipo_recurso, @meta=@meta, @tipo_operacion=@tipo_operacion, @cod_doc=@cod_doc, @num_doc=@num_doc, @glosa=@glosa, @clasificador=@clasificador, @certificado=@certificado, @proveedor=@proveedor, @ctacte=@ctacte
+            """
+        if source == "siga.net":
+            sql = f"""
+            DECLARE @D_FECHA1 date = {format_sql_value(desde)}
+            DECLARE @D_FECHA2 date = {format_sql_value(hasta)}
+            DECLARE @C_CICLO char(1) = {format_sql_value(ciclo)}
+            DECLARE @C_FASE char(1) = {format_sql_value(fase)}
+            DECLARE @C_SECFUN varchar(50) = {format_sql_value(secfun)}
+            DECLARE @C_DEPEN varchar(50) = {format_sql_value(depen)}
+            DECLARE @C_PROV varchar(50) = {format_sql_value(siga_prov)}
+            DECLARE @C_CLAPRE varchar(50) = {format_sql_value(clapre)}
+            DECLARE @C_FUEFIN varchar(50) = {format_sql_value(fuefin)}
+            DECLARE @C_PLANCON varchar(50) = {format_sql_value(siga_plancon)}
+            DECLARE @C_OPER char(2) = {format_sql_value(oper)}            
+            DECLARE @T_OBS varchar(50) = {format_sql_value(obs)}
+            DECLARE @C_TIPDOC char(3) = {format_sql_value(tipdoc)}
+            DECLARE @C_DOCUM varchar(50) = {format_sql_value(docum)}
+            DECLARE @C_RECURSO char(2) = {format_sql_value(recurso)}
+            DECLARE @C_EXP_Q char(10) = {format_sql_value(siga_exp_q)}
+            DECLARE @C_EXPED_NRO varchar(50) = {format_sql_value(siga_exp)}
+            
+            EXEC SelectEjecucionDetallada @D_FECHA1=@D_FECHA1, @D_FECHA2=@D_FECHA2, @C_CICLO=@C_CICLO, @C_FASE=@C_FASE, @C_SECFUN=@C_SECFUN, @C_DEPEN=@C_DEPEN, @C_PROV=@C_PROV, @C_CLAPRE=@C_CLAPRE, @C_FUEFIN=@C_FUEFIN, @C_PLANCON=@C_PLANCON, @C_OPER=@C_OPER, @T_OBS=@T_OBS, @C_TIPDOC=@C_TIPDOC, @C_DOCUM=@C_DOCUM, @C_RECURSO=@C_RECURSO, @C_EXP_Q=@C_EXP_Q, 
+            @C_EXPED_NRO = @C_EXPED_NRO
+            """     
+
+        df = sql_to_pandas(sql)  
+
+        if len(df) > 0:
+            name_file = "Reporte"
+            full_path_file = f"{PATH_TEMP}/{name_file}.xlsx"
+            df.to_excel(full_path_file, index=False)
+            with open(full_path_file, 'rb') as excel_file:
+                response = HttpResponse(excel_file.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response['Content-Disposition'] = "attachment; filename={}".format(name_file)
+            os.remove(full_path_file)
+
+            return response
+
+            
+    except Exception as e:
+        return Response(
+            data={"message": str(e), "content": None},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    
+
