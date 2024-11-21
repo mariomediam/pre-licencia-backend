@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'app_tesorero',
     'app_abastec',
     'app_siaf',
+    'app_transporte',
     "rest_framework",
     'corsheaders'
 ]

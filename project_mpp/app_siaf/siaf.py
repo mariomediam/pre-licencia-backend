@@ -69,3 +69,46 @@ def sf_seleccionar_registros(**kwargs):
         
         cursor.execute(sql, [fecha1, fecha2, expediente, ciclo, fase, rubro, tipo_recurso, meta, tipo_operacion, cod_doc, num_doc, glosa, clasificador, certificado, proveedor, ctacte])        
         return dictfetchall(cursor)
+
+
+def sf_seleccionar_expediente_fase(**kwargs):
+
+    ano_eje = kwargs.get('ANO_EJE', None)
+    expediente = kwargs.get('expediente', None)
+    ciclo = kwargs.get('ciclo', None)
+    fase = kwargs.get('fase', None)
+
+    with connection.cursor() as cursor:
+        sql = """           
+        EXEC BDSIAF.dbo.sf_seleccionar_expediente_fase
+        @ANO_EJE = %s,
+        @expediente = %s,
+        @ciclo = %s,
+        @fase = %s;
+        """
+        
+        cursor.execute(sql, [ano_eje, expediente, ciclo, fase])        
+        return dictfetchall(cursor)
+
+
+def sf_seleccionar_expediente_fase(**kwargs):
+
+    ano_eje = kwargs.get('ano_eje', None)
+    expediente = kwargs.get('expediente', None)
+    ciclo = kwargs.get('ciclo', None)
+    fase = kwargs.get('fase', None)
+
+    print("expediente", expediente)
+
+    with connection.cursor() as cursor:
+        sql = """           
+        EXEC BDSIAF.dbo.sf_seleccionar_expediente_fase
+        @ANO_EJE = %s,
+        @expediente = %s,
+        @ciclo = %s,
+        @fase = %s;
+        """
+        
+        cursor.execute(sql, [ano_eje, expediente, ciclo, fase])        
+        return dictfetchall(cursor)
+

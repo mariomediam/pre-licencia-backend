@@ -30,6 +30,7 @@ urlpatterns = [
     path("api/abastec/", include("app_abastec.urls")),
     path("api/tesorero/", include("app_tesorero.urls")),
     path("api/siaf/", include("app_siaf.urls")),
+    path("api/transporte/", include("app_transporte.urls")),
     
 ]
 
