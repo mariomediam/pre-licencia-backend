@@ -34,3 +34,18 @@ def S05InfraccionesTransportexAnio(c_anio):
     with connection.cursor() as cursor:
         cursor.execute("exec SIAC.dbo.S05InfraccionesTransportexAnio @c_anio = %s", [c_anio])
         return dictfetchall(cursor)
+
+def S05ComparaInfraccTransportexAnio(m_dia, m_mes, c_anio01, c_anio02):
+    with connection.cursor() as cursor:
+        cursor.execute("exec SIAC.dbo.S05ComparaInfraccTransportexAnio @m_dia = %s, @m_mes = %s, @c_anio01 = %s, @c_anio02 = %s", [m_dia, m_mes, c_anio01, c_anio02])
+        result = dictfetchall(cursor)
+        if len(result) > 0:
+            return result[0]
+        
+        return result
+    
+def S09TranspAntigVehic():
+    with connection.cursor() as cursor:
+        cursor.execute("exec SIAC.dbo.S09TranspAntigVehic")
+        return dictfetchall(cursor)
+    
