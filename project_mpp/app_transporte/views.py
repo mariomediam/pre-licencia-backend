@@ -63,25 +63,53 @@ class TranspxAnioyMesView(RetrieveAPIView):
             status=status.HTTP_200_OK,
         )
 
-# def S05InfraccionesTransportexAnio(c_anio):
-#     with connection.cursor() as cursor:
-#         cursor.execute("exec SIAC.dbo.S05InfraccionesTransportexAnio @c_anio = %s", [c_anio])
-#         return dictfetchall(cursor)
-
 class InfraccionesTransportexAnioView(RetrieveAPIView):
     
-        def get(self, request: Request):        
-            c_anio = request.query_params.get("anio")
+    def get(self, request: Request):        
+        c_anio = request.query_params.get("anio")
 
-            if c_anio == None:
-                return Response(
-                    data={"message": "Faltan parametros"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            
-            data = S05InfraccionesTransportexAnio(c_anio)
-    
+        if c_anio == None:
             return Response(
-                data={"message": "Infracciones de transporte", "content": data},
-                status=status.HTTP_200_OK,
+                data={"message": "Faltan parametros"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
+        
+        data = S05InfraccionesTransportexAnio(c_anio)
+
+        return Response(
+            data={"message": "Infracciones de transporte", "content": data},
+            status=status.HTTP_200_OK,
+        )
+        
+class ComparaInfraccTransportexAnioView(RetrieveAPIView):
+
+    def get(self, request: Request):        
+        m_dia = request.query_params.get("dia")
+        m_mes = request.query_params.get("mes")
+        c_anio01 = request.query_params.get("anio01")
+        c_anio02 = request.query_params.get("anio02")
+
+        if m_dia ==None or m_mes == None or c_anio01 == None or c_anio02 == None:
+            return Response(
+                data={"message": "Faltan parametros"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+            
+        data = S05ComparaInfraccTransportexAnio(m_dia, m_mes, c_anio01, c_anio02)
+
+        return Response(
+            data={"message": "Comparacion de infracciones de transporte", "content": data},
+            status=status.HTTP_200_OK,
+        ) 
+
+class TranspAntigVehicView(RetrieveAPIView):
+
+    def get(self, request: Request):        
+        
+        
+        data = S09TranspAntigVehic()
+
+        return Response(
+            data={"message": "Vehiculos antiguos", "content": data},
+            status=status.HTTP_200_OK,
+        )
