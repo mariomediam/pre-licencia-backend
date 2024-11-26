@@ -926,7 +926,7 @@ class EjecucionDetalladaView(ListCreateAPIView):
             )
         try:
             detailed_execution = {}
-            if "siaf" in search_sources:                
+            if "siaf" in search_sources:                       
                 detailed_execution["siaf"] = sf_seleccionar_registros(**{
                     "fecha1": desde,
                     "fecha2": hasta,
@@ -942,9 +942,10 @@ class EjecucionDetalladaView(ListCreateAPIView):
                     "clasificador": clapre,
                     "certificado": siaf_certificado,
                     "proveedor": siaf_prov,
-                    "ctacte": siaf_ctacte
+                    "ctacte": siaf_ctacte,
+                    "expediente": siaf_expediente,
                 })
-                
+
             if "siga.net" in search_sources:
                 detailed_execution["siga.net"] = SelectEjecucionDetallada(D_FECHA1=desde, D_FECHA2=hasta, C_CICLO=ciclo, C_FASE=fase, C_SECFUN=secfun, C_DEPEN=depen, C_PROV=siga_prov, C_CLAPRE=clapre, C_FUEFIN=fuefin, C_PLANCON=siga_plancon, C_EXPED_NRO=siga_exp, C_CP=cp, C_OPER=oper, SCOMPRO=scompro, T_OBS=obs, C_TIPDOC=tipdoc, C_DOCUM=docum, C_RECURSO=recurso, C_EXP_Q=siga_exp_q)
 
