@@ -7,11 +7,11 @@ def S09TranspVigente():
         cursor.execute("exec SIAC.dbo.S09TranspVigente")
         return dictfetchall(cursor) 
 
-def S09ComparaTranspxAnio(m_dia, m_mes, c_anio01, c_anio02):
+def S09ComparaTranspxAnio(m_dia, m_mes, c_anio01, c_anio02, opcion = 1):
     with connection.cursor() as cursor:
-        cursor.execute("exec SIAC.dbo.S09ComparaTranspxAnio @m_dia = %s, @m_mes = %s, @c_anio01 = %s, @c_anio02 = %s", [m_dia, m_mes, c_anio01, c_anio02])        
+        cursor.execute("exec SIAC.dbo.S09ComparaTranspxAnio @m_dia = %s, @m_mes = %s, @c_anio01 = %s, @c_anio02 = %s, @opcion = %s", [m_dia, m_mes, c_anio01, c_anio02, opcion])        
         result = dictfetchall(cursor)
-        if len(result) > 0:
+        if opcion == 1 and len(result) > 0:            
             return result[0]
         
         return result
