@@ -38,14 +38,17 @@ class ComparaTranspxAnioView(RetrieveAPIView):
         m_mes = request.query_params.get("mes")
         c_anio01 = request.query_params.get("anio01")
         c_anio02 = request.query_params.get("anio02")
+        opcion = request.query_params.get("opcion", 1)
 
-        if m_dia ==None or m_mes == None or c_anio01 == None or c_anio02 == None:
+        opcion = int(opcion)
+
+        if opcion == 1 and (m_dia ==None or m_mes == None or c_anio01 == None or c_anio02 == None):
             return Response(
                 data={"message": "Faltan parametros"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
             
-        data = S09ComparaTranspxAnio(m_dia, m_mes, c_anio01, c_anio02)
+        data = S09ComparaTranspxAnio(m_dia, m_mes, c_anio01, c_anio02, opcion)        
 
         return Response(
             data={"message": "Comparacion de vehiculos autorizados", "content": data},
@@ -66,13 +69,7 @@ class TranspxAnioyMesView(RetrieveAPIView):
 class InfraccionesTransportexAnioView(RetrieveAPIView):
     
     def get(self, request: Request):        
-        c_anio = request.query_params.get("anio")
-
-        if c_anio == None:
-            return Response(
-                data={"message": "Faltan parametros"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        c_anio = request.query_params.get("anio")    
         
         data = S05InfraccionesTransportexAnio(c_anio)
 
