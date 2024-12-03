@@ -48,4 +48,8 @@ def S09TranspAntigVehic():
     with connection.cursor() as cursor:
         cursor.execute("exec SIAC.dbo.S09TranspAntigVehic")
         return dictfetchall(cursor)
-    
+
+def S09OcurrenciasxAnio(c_opcion, c_anio):
+    with connection.cursor() as cursor:
+        cursor.execute("exec SIAC.dbo.S09OcurrenciasxAnio @c_opcion = %s, @c_anio = %s", [c_opcion, c_anio])
+        return dictfetchall(cursor)
