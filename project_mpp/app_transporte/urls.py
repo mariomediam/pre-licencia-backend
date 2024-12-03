@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import TransporteVigenteView, TranspxAnioView, ComparaTranspxAnioView, TranspxAnioyMesView, InfraccionesTransportexAnioView, ComparaInfraccTransportexAnioView, TranspAntigVehicView
+from .views import TransporteVigenteView, TranspxAnioView, ComparaTranspxAnioView, TranspxAnioyMesView, InfraccionesTransportexAnioView, ComparaInfraccTransportexAnioView, TranspAntigVehicView, OcurrenciasxAnioView
 
 urlpatterns = [
     path("vehiculos-vigentes/", TransporteVigenteView.as_view()),
@@ -9,4 +9,5 @@ urlpatterns = [
     path("infracciones-transporte/", InfraccionesTransportexAnioView.as_view()),
     path("comparacion-infracciones-transporte/", ComparaInfraccTransportexAnioView.as_view()),
     path("antiguedad-vehiculos/", TranspAntigVehicView.as_view()),
+    path("ocurrencias-anio/", OcurrenciasxAnioView.as_view()),
 ]
