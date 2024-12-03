@@ -110,3 +110,22 @@ class TranspAntigVehicView(RetrieveAPIView):
             data={"message": "Vehiculos antiguos", "content": data},
             status=status.HTTP_200_OK,
         )
+    
+class OcurrenciasxAnioView(RetrieveAPIView):
+    
+        def get(self, request: Request):        
+            c_opcion = request.query_params.get("opcion")
+            c_anio = request.query_params.get("anio")
+    
+            if c_opcion == None or c_anio == None:
+                return Response(
+                    data={"message": "Faltan parametros"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+                
+            data = S09OcurrenciasxAnio(c_opcion, c_anio)
+    
+            return Response(
+                data={"message": "Ocurrencias por año", "content": data},
+                status=status.HTTP_200_OK,
+            )
