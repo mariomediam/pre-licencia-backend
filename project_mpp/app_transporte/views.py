@@ -129,3 +129,44 @@ class OcurrenciasxAnioView(RetrieveAPIView):
                 data={"message": "Ocurrencias por año", "content": data},
                 status=status.HTTP_200_OK,
             )
+        
+class MontosPapeletaTransitoView(RetrieveAPIView):
+    
+        def get(self, request: Request):        
+            anio = request.query_params.get("anio")
+            tipo_infraccion = request.query_params.get("tipo")
+            mes = request.query_params.get("mes")
+    
+            if anio == None or tipo_infraccion == None:
+                return Response(
+                    data={"message": "Faltan parametros"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+                
+            data = S09MontosPapeletaTransito(anio, tipo_infraccion, mes)
+    
+            return Response(
+                data={"message": "Montos de papeletas de transito", "content": data},
+                status=status.HTTP_200_OK,
+            )
+        
+class ComparaMontosPapeletaTransitoView(RetrieveAPIView):
+    
+        def get(self, request: Request):        
+            m_dia = request.query_params.get("dia")
+            m_mes = request.query_params.get("mes")
+            c_anio01 = request.query_params.get("anio01")
+            c_anio02 = request.query_params.get("anio02")
+    
+            if m_dia ==None or m_mes == None or c_anio01 == None or c_anio02 == None:
+                return Response(
+                    data={"message": "Faltan parametros"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+                
+            data = S05ComparaMontosPapeletaTransito(m_dia, m_mes, c_anio01, c_anio02)
+    
+            return Response(
+                data={"message": "Comparacion de montos de papeletas de transito", "content": data},
+                status=status.HTTP_200_OK,
+            )
