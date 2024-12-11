@@ -53,3 +53,26 @@ def S09OcurrenciasxAnio(c_opcion, c_anio):
     with connection.cursor() as cursor:
         cursor.execute("exec SIAC.dbo.S09OcurrenciasxAnio @c_opcion = %s, @c_anio = %s", [c_opcion, c_anio])
         return dictfetchall(cursor)
+
+def S09MontosPapeletaTransito(anio, tipo_infraccion, mes = None):
+    with connection.cursor() as cursor:
+        cursor.execute("exec SIAC.dbo.S09MontosPapeletaTransito @Annio = %s, @TipoInfraccion = %s, @Mes = %s", [anio, tipo_infraccion, mes])
+        return dictfetchall(cursor)
+    
+
+def S05ComparaMontosPapeletaTransito(m_dia, m_mes, c_anio01, c_anio02):
+    with connection.cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        exec SIAC.dbo.S05ComparaMontosPapeletaTransito @m_dia = %s, @m_mes = %s, @c_anio01 = %s, @c_anio02 = %s
+        """
+
+        cursor.execute(sql, [m_dia, m_mes, c_anio01, c_anio02])
+
+
+        # cursor.execute("exec SIAC.dbo.S05ComparaMontosPapeletaTransito @m_dia = %s, @m_mes = %s, @c_anio01 = %s, @c_anio02 = %s", [m_dia, m_mes, c_anio01, c_anio02])
+        result = dictfetchall(cursor)
+        if len(result) > 0:
+            return result[0]
+        
+        return result
