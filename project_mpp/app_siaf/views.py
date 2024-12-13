@@ -59,7 +59,7 @@ class SeleccionarExpedienteFase(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request):        
-        ano_eje = request.query_params.get("ano_eje")
+        ano_eje = request.query_params.get("anio")
         expediente = request.query_params.get("expediente")
         ciclo = request.query_params.get("ciclo")
         fase = request.query_params.get("fase")
