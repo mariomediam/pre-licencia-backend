@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>      
+      .text-right {
+        text-align: right;
+      }
+      /* TEXTO EN NEGRITA */
+        .bold {
+            font-weight: bold;
+        }
+        /* poner borde a tabla */
+        .table-border {
+            border-collapse: collapse;
+            border: 1px solid black;
+            margin: 0 auto;
+        }
+
+        .table-border, .table-border th, .table-border td {
+            border: 1px solid black;
+            padding: 5px;
+        }
+       
+    </style>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <td>FECHA</td>
+        <td>:</td>
+        <td>{{ FECHA_DOC|date:"d/m/Y" }}</td>
+      </tr>
+
+      <tr>
+        <td>TIPO DE OPERACIÓN</td>
+        <td>:</td>
+        <td>{{ TIPO_OPERACION }}</td>
+      </tr>
+
+      <tr>
+        <td>GASTO</td>
+        <td>:</td>
+        <td>PENDIENTE</td>
+      </tr>
+
+      <tr>
+        <td>COMP. SUNAT</td>
+        <td>:</td>
+        <td>{{ ABREVIATURA }}</td>
+      </tr>
+
+      <tr>
+        <td>PROVEEDOR</td>
+        <td>:</td>
+        <td>{{ RUC }} - {{ NOMBRE }}</td>
+      </tr>
+
+      <tr>
+        <td colspan="3"><small>GLOSA : {{ GLOSA }}</small></td>
+      </tr>
+    </table>
+
+    <h3>LIQUIDACIÓN DE PAGO</h3>
+
+    <table class="table-border">
+      <tr>
+        <td class="bold">IMPORTE S/.</td>
+        <td class="text-right bold">{{ MONTO_NACIONAL|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <td class="bold">MENOS RETENCIONES</td>
+        <td></td>
+      </tr>
+
+      {% for retention in retentions %}
+      <tr>
+        <td class="vertical-align-top">{{ retention.description }}</td>
+        <td class="vertical-align-top align-right text-right">
+          {{ retention.value|floatformat:2 }}
+        </td>
+      </tr>
+      {% endfor %}
+
+      <tr>
+        <td class="bold">TOTAL RETENCIONES</td>
+        <td class="vertical-align-top align-right text-right bold">{{ total_retentions|floatformat:2  }}</td>
+      </tr>
+
+      <tr>
+        <td class="bold">TOTAL A PAGAR</td>
+        <td class="vertical-align-top align-right text-right bold">{{ monto_final|floatformat:2  }}</td>
+      </tr>
+
+
+    </table>
+  </body>
+</html>
