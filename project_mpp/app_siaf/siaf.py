@@ -92,3 +92,30 @@ def sf_seleccionar_expediente_fase(**kwargs):
         cursor.execute(sql, [ano_eje, expediente, ciclo, fase])        
         return dictfetchall(cursor)
 
+
+
+def sf_seleccionar_expediente_secuencia(**kwargs):
+
+    ano_eje = kwargs.get('ano_eje', None)
+    expediente = kwargs.get('expediente', None)
+    secuencia = kwargs.get('secuencia', None)
+    correlativo = kwargs.get('correlativo', None)
+
+    with connection.cursor() as cursor:
+        sql = """           
+        EXEC BDSIAF.dbo.sf_seleccionar_expediente_secuencia
+        @ANO_EJE = %s,
+        @expediente = %s,
+        @secuencia = %s,
+        @correlativo = %s;
+        """
+        
+        cursor.execute(sql, [ano_eje, expediente, secuencia, correlativo])        
+        result = dictfetchall(cursor)
+
+        if len(result) > 0:
+            result = result[0]
+        else:   
+            result = None
+        
+        return result
