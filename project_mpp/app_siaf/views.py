@@ -126,8 +126,20 @@ class SeleccionarExpedienteSecuencia(RetrieveAPIView):
             status=status.HTTP_200_OK,
         )
     
-def get_context_secuencia(params):
-    data = sf_seleccionar_expediente_secuencia(**params)
+def get_context_secuencia(data, retentions):
+    total_retentions = 0
+    for retention in retentions:
+        total_retentions += retention["value"]
+
+    total_retentions_decimal = Decimal(str(total_retentions))
+    
+    monto_final = data["MONTO_NACIONAL"] - total_retentions_decimal
+
+
+    data["retentions"] = retentions
+    data["total_retentions"] = total_retentions_decimal
+    data["monto_final"] = monto_final
+    data["monto_final_text"] = number_to_word_currency(monto_final).upper()
     return data
     
 @api_view(['POST'])
@@ -185,22 +197,10 @@ def DownloadFormatoDevengadoController(request):
                 "correlativo": correlativo,
             }          
 
-            context = sf_seleccionar_expediente_secuencia(**filters)        
-
-            total_retentions = 0
-            for retention in retentions:
-                total_retentions += retention["value"]
-
-            total_retentions_decimal = Decimal(str(total_retentions))
+            data = sf_seleccionar_expediente_secuencia(**filters)     
             
-            monto_final = context["MONTO_NACIONAL"] - total_retentions_decimal
+            context = get_context_secuencia(data, retentions)   
 
-
-            context["retentions"] = retentions
-            context["total_retentions"] = total_retentions_decimal
-            context["monto_final"] = monto_final
-            context["monto_final_text"] = number_to_word_currency(monto_final).upper()
-            
             template = get_template('formato-devengado.html')            
             html = template.render(context = context)    
             
