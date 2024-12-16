@@ -1,3 +1,4 @@
+
 from django.http import FileResponse
 from io import BytesIO
 from django.shortcuts import render
@@ -18,6 +19,8 @@ from django.shortcuts import render# Define function to download pdf file using 
 from django.conf import settings
 from dotenv import load_dotenv
 from .general.consultasReniec import AgregarConsultaReniec, ValidaAccesoConsultaReniec
+
+from num2words import num2words
 
 from app_deploy.deploy import SelectJefeDepen
 
@@ -302,3 +305,18 @@ class SelectJefeDepenController(RetrieveAPIView):
                 data={"message": "Debe de ingresar año y código de dependencia buscado","content": None},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        
+def number_to_word_currency(amount):
+    # Separar la parte entera y la parte decimal
+    entero, decimal = str(amount).split('.')
+    
+    # Convertir la parte entera a palabras
+    entero_texto = num2words(int(entero), lang='es')
+    
+    # Formatear la parte decimal
+    decimal_texto = f"{int(decimal):02d}/100"
+    
+    # Combinar las partes en el formato deseado
+    resultado = f"{entero_texto} con {decimal_texto} nuevos soles"
+    
+    return resultado        
