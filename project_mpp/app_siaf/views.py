@@ -13,12 +13,13 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 
 from datetime import datetime
-
+from decimal import Decimal
 
 import pdfkit
 import uuid
 
 from .siaf import *
+from app_deploy.views import number_to_word_currency
 
 # Create your views here.
 class MaestroDocumentoView(RetrieveAPIView):
@@ -183,17 +184,22 @@ def DownloadFormatoDevengadoController(request):
                 "secuencia": secuencia,
                 "correlativo": correlativo,
             }          
-          
+
             context = sf_seleccionar_expediente_secuencia(**filters)        
 
             total_retentions = 0
             for retention in retentions:
                 total_retentions += retention["value"]
 
+            total_retentions_decimal = Decimal(str(total_retentions))
+            
+            monto_final = context["MONTO_NACIONAL"] - total_retentions_decimal
+
+
             context["retentions"] = retentions
-            context["total_retentions"] = total_retentions
-            context["monto_final"] = context["MONTO_NACIONAL"] - total_retentions
-            # print(context["total_retentions"])
+            context["total_retentions"] = total_retentions_decimal
+            context["monto_final"] = monto_final
+            context["monto_final_text"] = number_to_word_currency(monto_final).upper()
             
             template = get_template('formato-devengado.html')            
             html = template.render(context = context)    
