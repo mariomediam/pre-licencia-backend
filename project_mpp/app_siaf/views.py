@@ -6,7 +6,7 @@ from django.conf import settings
 from django.http import HttpResponse
 
 from rest_framework import status
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -244,3 +244,36 @@ def DownloadFormatoDevengadoController(request):
             data={"message": str(e), "content": None},
             status=status.HTTP_404_NOT_FOUND,
         )         
+    
+
+class ProcesoActualizarRegistroView(CreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request):        
+        ano_eje = request.data.get("anio")
+        expediente = request.data.get("expediente")
+
+        print("Ingreso *************")
+
+        if not ano_eje or not expediente:
+            return Response(
+                data={"message": "Faltan parametros"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )    
+        
+        try:
+            filters = {
+            "ano_eje": ano_eje,
+            "expediente": expediente,
+            }
+
+            sf_proceso_actualizar_01_registro(**filters)        
+            return Response(
+                data={"message": "Proceso actualizar registro", "content": "Expediente migrado exitosamente"},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )
