@@ -119,3 +119,20 @@ def sf_seleccionar_expediente_secuencia(**kwargs):
             result = None
         
         return result
+    
+
+def sf_proceso_actualizar_01_registro(**kwargs):
+
+    ano_eje = kwargs.get('ano_eje', None)
+    expediente = kwargs.get('expediente', None)
+
+    with connection.cursor() as cursor:
+        sql = """           
+        EXEC BDSIAF.dbo.sf_proceso_actualizar_01_registro
+        @ano_eje = %s,
+        @expediente = %s;
+        """
+        
+        cursor.execute(sql, [ano_eje, expediente])        
+        return dictfetchall(cursor)
+
