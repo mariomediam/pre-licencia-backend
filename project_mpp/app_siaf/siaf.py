@@ -136,3 +136,18 @@ def sf_proceso_actualizar_01_registro(**kwargs):
         cursor.execute(sql, [ano_eje, expediente])        
         return dictfetchall(cursor)
 
+
+def sf_buscar_carta_orden(**kwargs):
+
+    cod_doc = kwargs.get('cod_doc', None)
+    num_doc = kwargs.get('num_doc', None)
+
+    with connection.cursor() as cursor:
+        sql = """           
+        EXEC BDSIAF.dbo.sf_buscar_carta_orden
+        @cod_doc = %s,
+        @NUM_DOC = %s;
+        """
+        
+        cursor.execute(sql, [cod_doc, num_doc])        
+        return dictfetchall(cursor)
