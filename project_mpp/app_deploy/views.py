@@ -182,65 +182,69 @@ class BuscarSunatRUCController(RetrieveAPIView):
 
         if len(numero) == 11 and len(responsable) > 0:
 
-            data_contribuyente = requests.get("https://ws3.pide.gob.pe/Rest/Sunat/DatosPrincipales?numruc={}&out=json".format(numero)).json()            
-            contribuyente = data_contribuyente["list"]["multiRef"]
-
-            existe = False
-            ddp_numruc = ""
-            ddp_nombre = ""
-            ddp_nomzon = ""
-            ddp_nomvia = ""
-            ddp_numer1 = ""
-            ddp_refer1 = ""
-            desc_tipvia = ""
-            desc_dep = ""
-            desc_prov = ""
-            desc_dist = ""
-            desc_tpoemp = ""
-            desc_identi = ""
-            esActivo = False
-            esHabido = False
-
-            if "$" in contribuyente["ddp_numruc"]: 
-                existe = True           
-                ddp_numruc = str(contribuyente["ddp_numruc"].get("$", ""))
-                ddp_nombre = str(contribuyente["ddp_nombre"].get("$", ""))
-                ddp_nomzon = str(contribuyente["ddp_nomzon"].get("$", ""))
-                ddp_nomvia = str(contribuyente["ddp_nomvia"].get("$", ""))
-                ddp_numer1 = str(contribuyente["ddp_numer1"].get("$", ""))
-                ddp_refer1 = str(contribuyente["ddp_refer1"].get("$", ""))
-                desc_tipvia = str(contribuyente["desc_tipvia"].get("$", ""))
-                desc_dep = str(contribuyente["desc_dep"].get("$", ""))
-                desc_prov = str(contribuyente["desc_prov"].get("$", ""))
-                desc_dist = str(contribuyente["desc_dist"].get("$", ""))
-                desc_tpoemp = str(contribuyente["desc_tpoemp"].get("$", ""))
-                desc_identi = str(contribuyente["desc_identi"].get("$", ""))
-                esActivo = contribuyente["esActivo"].get("$", False)
-                esHabido = contribuyente["esHabido"].get("$", False)
             
-            contribuyente_json = {
-                "existe" : existe,
-                "ddp_numruc" : ddp_numruc,
-                "ddp_nombre" : ddp_nombre,
-                "ddp_nomzon" : ddp_nomzon,
-                "ddp_nomvia" : ddp_nomvia,
-                "ddp_numer1" : ddp_numer1,
-                "ddp_refer1" : ddp_refer1,
-                "desc_tipvia" : desc_tipvia,
-                "desc_dep" : desc_dep,
-                "desc_prov" : desc_prov,
-                "desc_dist" : desc_dist,
-                "desc_tpoemp" : desc_tpoemp,
-                "desc_identi" : desc_identi,
-                "esActivo" : esActivo,
-                "esHabido" : esHabido
-            }
+            contribuyente_json = BuscarSunat(numero)
             
             return Response(data=contribuyente_json, status=status.HTTP_200_OK)        
         else:
             return Response(data={
                     "message":"Debe de ingresar RUC valido y responsable de consulta"
                 }, status=status.HTTP_404_NOT_FOUND) 
+        
+def BuscarSunat(numero):
+    data_contribuyente = requests.get("https://ws3.pide.gob.pe/Rest/Sunat/DatosPrincipales?numruc={}&out=json".format(numero)).json()            
+    contribuyente = data_contribuyente["list"]["multiRef"]
+
+    existe = False
+    ddp_numruc = ""
+    ddp_nombre = ""
+    ddp_nomzon = ""
+    ddp_nomvia = ""
+    ddp_numer1 = ""
+    ddp_refer1 = ""
+    desc_tipvia = ""
+    desc_dep = ""
+    desc_prov = ""
+    desc_dist = ""
+    desc_tpoemp = ""
+    desc_identi = ""
+    esActivo = False
+    esHabido = False
+
+    if "$" in contribuyente["ddp_numruc"]: 
+        existe = True           
+        ddp_numruc = str(contribuyente["ddp_numruc"].get("$", ""))
+        ddp_nombre = str(contribuyente["ddp_nombre"].get("$", ""))
+        ddp_nomzon = str(contribuyente["ddp_nomzon"].get("$", ""))
+        ddp_nomvia = str(contribuyente["ddp_nomvia"].get("$", ""))
+        ddp_numer1 = str(contribuyente["ddp_numer1"].get("$", ""))
+        ddp_refer1 = str(contribuyente["ddp_refer1"].get("$", ""))
+        desc_tipvia = str(contribuyente["desc_tipvia"].get("$", ""))
+        desc_dep = str(contribuyente["desc_dep"].get("$", ""))
+        desc_prov = str(contribuyente["desc_prov"].get("$", ""))
+        desc_dist = str(contribuyente["desc_dist"].get("$", ""))
+        desc_tpoemp = str(contribuyente["desc_tpoemp"].get("$", ""))
+        desc_identi = str(contribuyente["desc_identi"].get("$", ""))
+        esActivo = contribuyente["esActivo"].get("$", False)
+        esHabido = contribuyente["esHabido"].get("$", False)
+    
+    return  {
+        "existe" : existe,
+        "ddp_numruc" : ddp_numruc,
+        "ddp_nombre" : ddp_nombre,
+        "ddp_nomzon" : ddp_nomzon,
+        "ddp_nomvia" : ddp_nomvia,
+        "ddp_numer1" : ddp_numer1,
+        "ddp_refer1" : ddp_refer1,
+        "desc_tipvia" : desc_tipvia,
+        "desc_dep" : desc_dep,
+        "desc_prov" : desc_prov,
+        "desc_dist" : desc_dist,
+        "desc_tpoemp" : desc_tpoemp,
+        "desc_identi" : desc_identi,
+        "esActivo" : esActivo,
+        "esHabido" : esHabido
+    }
       
 
 class GenerateQrImageController(RetrieveAPIView):
