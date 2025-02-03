@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MaestroDocumentoView, PersonaView, ProveedorSIGAView, SeleccionarExpedienteFase, SeleccionarExpedienteSecuencia, DownloadFormatoDevengadoController, ProcesoActualizarRegistroView
+from .views import MaestroDocumentoView, PersonaView, ProveedorSIGAView, SeleccionarExpedienteFase, SeleccionarExpedienteSecuencia, DownloadFormatoDevengadoController, ProcesoActualizarRegistroView, BuscarCartaOrdenView, DownloadCartaOrdenFideicomisoController
 
 urlpatterns = [
     path("maestro-documento/", MaestroDocumentoView.as_view()),
@@ -9,4 +9,6 @@ urlpatterns = [
     path("seleccionar-expediente-secuencia", SeleccionarExpedienteSecuencia.as_view()),
     path("download-formato-devengado", DownloadFormatoDevengadoController),
     path("proceso-actualizar-registro", ProcesoActualizarRegistroView.as_view()),
+    path("buscar-carta-orden", BuscarCartaOrdenView.as_view()),
+    path("download-carta-orden-fideicomiso", DownloadCartaOrdenFideicomisoController),
 ]
