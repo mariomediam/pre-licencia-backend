@@ -424,7 +424,7 @@ def create_excel_carta_orden(cartas):
         ruc = carta.get("RUC", "")
         monto_numerico = carta.get("MONTO_NACIONAL", 0.0)
         monto_en_letras = f"SON: {number_to_word_currency(monto_numerico).upper()}"
-        domicilio = carta.get("DOMICILIO", "")
+        domicilio = f"DOMICIO LEGAL: {carta.get('DOMICILIO', '')}" 
 
         # N° CUENTA / CCI
         cci = carta.get("CCI", "")
