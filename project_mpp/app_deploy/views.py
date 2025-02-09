@@ -310,12 +310,14 @@ class SelectJefeDepenController(RetrieveAPIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
         
-def number_to_word_currency(amount):
+def number_to_word_currency(amount):    
+    # Formatear el número a string con dos decimales
+    amount_str = f"{amount:.2f}"
     # Separar la parte entera y la parte decimal
-    entero, decimal = str(amount).split('.')
+    entero, decimal = amount_str.split('.')
     
-    # Convertir la parte entera a palabras
-    entero_texto = num2words(int(entero), lang='es')
+    # Convertir la parte entera a palabras (asegúrate de tener importado num2words)
+    entero_texto = num2words(int(entero), lang='es').upper()
     
     # Formatear la parte decimal
     decimal_texto = f"{int(decimal):02d}/100"
@@ -323,4 +325,4 @@ def number_to_word_currency(amount):
     # Combinar las partes en el formato deseado
     resultado = f"{entero_texto} con {decimal_texto} nuevos soles"
     
-    return resultado        
+    return resultado
