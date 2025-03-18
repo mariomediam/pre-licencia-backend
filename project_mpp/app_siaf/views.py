@@ -139,13 +139,25 @@ def get_context_secuencia(data, retentions):
     total_retentions_decimal = Decimal(str(total_retentions))
     
     monto_final = data["MONTO_NACIONAL"] - total_retentions_decimal
-
-
+    
     data["retentions"] = retentions
     data["total_retentions"] = total_retentions_decimal
     data["monto_final"] = monto_final
     data["monto_final_text"] = number_to_word_currency(monto_final).upper()
     return data
+
+def correct_supplier_name(data):    
+    nro_ruc = data.get("RUC", "")
+    if nro_ruc:
+        filters = {
+            "nro_ruc": nro_ruc
+        }
+        
+        result = sf_seleccionar_sigamef_contratista(**filters)
+        if result:
+            data["NOMBRE"] = result.get("NOMBRE_PROV", "")
+    return data
+
     
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -202,7 +214,10 @@ def DownloadFormatoDevengadoController(request):
                 "correlativo": correlativo,
             }          
 
-            data = sf_seleccionar_expediente_secuencia(**filters)     
+            data = sf_seleccionar_expediente_secuencia(**filters)  
+
+            if not data["NOMBRE"]:
+                data = correct_supplier_name(data)
             
             context = get_context_secuencia(data, retentions)   
 
