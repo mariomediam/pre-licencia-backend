@@ -151,3 +151,26 @@ def sf_buscar_carta_orden(**kwargs):
         
         cursor.execute(sql, [cod_doc, num_doc])        
         return dictfetchall(cursor)
+    
+
+ 
+
+def sf_seleccionar_sigamef_contratista(**kwargs):
+    
+    nro_ruc = kwargs.get('nro_ruc', None)
+
+    with connection.cursor() as cursor:
+        sql = """           
+        EXEC BDSIAF.dbo.sf_seleccionar_sigamef_contratista
+        @NRO_RUC = %s;
+        """
+        
+        cursor.execute(sql, [nro_ruc])        
+        result = dictfetchall(cursor)
+
+        if len(result) > 0:
+            result = result[0]
+        else:   
+            result = None
+        
+        return result
