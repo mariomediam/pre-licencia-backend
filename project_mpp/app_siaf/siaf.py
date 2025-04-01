@@ -45,9 +45,12 @@ def sf_seleccionar_registros(**kwargs):
     certificado = kwargs.get('certificado', None)
     proveedor = kwargs.get('proveedor', None)
     ctacte = kwargs.get('ctacte', None)
+    tipo_reporte = kwargs.get('tipo_reporte', "1")
 
     with connection.cursor() as cursor:
-        sql = """           
+        sql = """     
+        SET NOCOUNT ON;
+
         EXEC BDSIAF.dbo.sf_seleccionar_registros
         @fecha1 = %s,
         @fecha2 = %s,
@@ -64,10 +67,11 @@ def sf_seleccionar_registros(**kwargs):
         @clasificador = %s,
         @certificado = %s,
         @proveedor = %s,
-        @ctacte = %s;
+        @ctacte = %s,
+        @tipo_reporte = %s; 
         """
         
-        cursor.execute(sql, [fecha1, fecha2, expediente, ciclo, fase, rubro, tipo_recurso, meta, tipo_operacion, cod_doc, num_doc, glosa, clasificador, certificado, proveedor, ctacte])        
+        cursor.execute(sql, [fecha1, fecha2, expediente, ciclo, fase, rubro, tipo_recurso, meta, tipo_operacion, cod_doc, num_doc, glosa, clasificador, certificado, proveedor, ctacte, tipo_reporte])             
         return dictfetchall(cursor)
 
 
@@ -77,8 +81,6 @@ def sf_seleccionar_expediente_fase(**kwargs):
     expediente = kwargs.get('expediente', None)
     ciclo = kwargs.get('ciclo', None)
     fase = kwargs.get('fase', None)
-
-    print("expediente", expediente)
 
     with connection.cursor() as cursor:
         sql = """           
