@@ -480,6 +480,7 @@ def sql_to_pandas(sql):
     driver = 'ODBC Driver 17 for SQL Server'
     connection_string = f"mssql+pyodbc://{username}:{urllib.parse.quote_plus(password)}@{server}/{database}?driver={driver}"
 
+
     engine = create_engine(connection_string)
 
     df = pd.read_sql(sql, engine)
@@ -870,7 +871,7 @@ class TributoConciliaView(CreateAPIView):
 
                 df["diferencia"] = df["importe_satp"] - df["importe_mpp"]
 
-                print(df.head())
+                # print(df.head())
 
                 name_file = "Reporte"
                 full_path_file = f"{PATH_TEMP}/{name_file}.xlsx"
@@ -918,6 +919,8 @@ class EjecucionDetalladaView(ListCreateAPIView):
         siaf_ctacte = request.data.get("siafctacte")
         siaf_certificado = request.data.get("siafcertificado")
         siaf_expediente = request.data.get("siafexped")
+        tipo_reporte = request.data.get("tipo_reporte", "1")
+        
 
         if search_sources is None or desde is None or hasta is None or ciclo is None:
             return Response(
@@ -944,6 +947,7 @@ class EjecucionDetalladaView(ListCreateAPIView):
                     "proveedor": siaf_prov,
                     "ctacte": siaf_ctacte,
                     "expediente": siaf_expediente,
+                    "tipo_reporte": tipo_reporte
                 })
 
             if "siga.net" in search_sources:
@@ -994,12 +998,17 @@ def DownloadDetailedExecutionView(request):
     siaf_ctacte = request.data.get("siafctacte")
     siaf_certificado = request.data.get("siafcertificado")
     siaf_expediente = request.data.get("siafexped")
+    tipo_reporte = request.data.get("tipo_reporte", "1")
 
     try:
         sql = ""
 
+        
+
         if source == "siaf":
             sql = f"""
+            SET NOCOUNT ON;
+
             DECLARE @fecha1 date = {format_sql_value(desde)}
             DECLARE @fecha2 date = {format_sql_value(hasta)}
             DECLARE @expediente varchar(10) = {format_sql_value(siaf_expediente)}
@@ -1016,9 +1025,13 @@ def DownloadDetailedExecutionView(request):
             DECLARE @certificado varchar(15) = {format_sql_value(siaf_certificado)}
             DECLARE @proveedor varchar(100) = {format_sql_value(siaf_prov)}
             DECLARE @ctacte varchar(12) = {format_sql_value(siaf_ctacte)}
+            DECLARE @tipo_reporte char(1) = {format_sql_value(tipo_reporte)}
 
-            EXEC BDSIAF.dbo.sf_seleccionar_registros @fecha1=@fecha1, @fecha2=@fecha2, @expediente=@expediente, @ciclo=@ciclo, @fase=@fase, @rubro=@rubro, @tipo_recurso=@tipo_recurso, @meta=@meta, @tipo_operacion=@tipo_operacion, @cod_doc=@cod_doc, @num_doc=@num_doc, @glosa=@glosa, @clasificador=@clasificador, @certificado=@certificado, @proveedor=@proveedor, @ctacte=@ctacte
+            EXEC BDSIAF.dbo.sf_seleccionar_registros @fecha1=@fecha1, @fecha2=@fecha2, @expediente=@expediente, @ciclo=@ciclo, @fase=@fase, @rubro=@rubro, @tipo_recurso=@tipo_recurso, @meta=@meta, @tipo_operacion=@tipo_operacion, @cod_doc=@cod_doc, @num_doc=@num_doc, @glosa=@glosa, @clasificador=@clasificador, @certificado=@certificado, @proveedor=@proveedor, @ctacte=@ctacte, @tipo_reporte=@tipo_reporte
             """
+
+            print(sql)
+
         if source == "siga.net":
             sql = f"""
             DECLARE @D_FECHA1 date = {format_sql_value(desde)}
@@ -1041,7 +1054,8 @@ def DownloadDetailedExecutionView(request):
             
             EXEC SelectEjecucionDetallada @D_FECHA1=@D_FECHA1, @D_FECHA2=@D_FECHA2, @C_CICLO=@C_CICLO, @C_FASE=@C_FASE, @C_SECFUN=@C_SECFUN, @C_DEPEN=@C_DEPEN, @C_PROV=@C_PROV, @C_CLAPRE=@C_CLAPRE, @C_FUEFIN=@C_FUEFIN, @C_PLANCON=@C_PLANCON, @C_OPER=@C_OPER, @T_OBS=@T_OBS, @C_TIPDOC=@C_TIPDOC, @C_DOCUM=@C_DOCUM, @C_RECURSO=@C_RECURSO, @C_EXP_Q=@C_EXP_Q, 
             @C_EXPED_NRO = @C_EXPED_NRO
-            """     
+            """ 
+            
 
         df = sql_to_pandas(sql)  
 
