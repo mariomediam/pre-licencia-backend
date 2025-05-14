@@ -1,10 +1,12 @@
 import os
 import io
+import requests
 
 from django.shortcuts import render
 from django.template.loader import get_template
 from django.conf import settings
 from django.http import HttpResponse
+
 
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView, CreateAPIView
@@ -25,6 +27,9 @@ from openpyxl.utils import get_column_letter
 
 from .siaf import *
 from app_deploy.views import number_to_word_currency, BuscarSunat
+from .models import Sincronizacion, RegistroSincronizacion
+
+RESOURCE_ID = "35bdc5b5-017c-42c1-ba20-8820bf1248b7"
 
 # Create your views here.
 class MaestroDocumentoView(RetrieveAPIView):
@@ -549,5 +554,187 @@ def get_domicilio_carta_orden(cartas):
     
     return cartas
 
-    
-    
+
+class SincroGastoDiario(RetrieveAPIView):
+   permission_classes = [IsAuthenticated]
+
+   def get(self, request: Request):
+      try:
+        # Crear el objeto Sincronizacion antes de llamar a la API
+        sinc = Sincronizacion.objects.create()
+
+        ultima_actualizacion = getLastDataUpdate()
+        
+        # Obtener datos de la API
+        data = getGastoDiario()
+
+        # Pasar el objeto sincronizacion a la función saveGastoDiario
+        saveGastoDiario(data, sinc, ultima_actualizacion)
+
+        return Response(
+            data={"message": "Sincronización completada exitosamente", "content": sinc.idSincro},
+            status=status.HTTP_200_OK,
+        )
+                  
+      except Exception as e:               
+        return Response(
+            data={"message": str(e), "content": None},
+            status=status.HTTP_404_NOT_FOUND,
+        )     
+        
+
+def getGastoDiario():   
+
+      sql = (
+         'SELECT * '
+         'FROM "35bdc5b5-017c-42c1-ba20-8820bf1248b7" '
+         "WHERE \"SEC_EJEC\" = '301529' "            
+      )
+
+      resp = requests.get(
+         'https://api.datosabiertos.mef.gob.pe/DatosAbiertos/v1/datastore_search_sql',
+         params={'sql': sql}
+      )
+      
+      return resp.json()
+
+
+def saveGastoDiario(gasto_diario, sinc, ultima_actualizacion):
+    """
+    Guarda en BD los registros de gasto diario traídos desde la API.
+    Usa el objeto Sincronizacion creado previamente.
+    """
+    try:
+        registros = gasto_diario.get('records', [])
+        fila_error = None
+
+        # Insertar cada fila en RegistroSincronizacion
+        for fila in registros:
+            fila_error = fila
+            RegistroSincronizacion.objects.create(
+                sincronizacion=sinc,
+                ano_eje=fila.get('ANO_EJE'),
+                mes_eje=fila.get('MES_EJE'),
+                nivel_gobierno=fila.get('NIVEL_GOBIERNO'),
+                nivel_gobierno_nombre=fila.get('NIVEL_GOBIERNO_NOMBRE'),
+                sector=fila.get('SECTOR'),
+                sector_nombre=fila.get('SECTOR_NOMBRE'),
+                pliego=fila.get('PLIEGO'),
+                pliego_nombre=fila.get('PLIEGO_NOMBRE'),
+                sec_ejec=fila.get('SEC_EJEC'),
+                ejecutora=fila.get('EJECUTORA'),
+                ejecutora_nombre=fila.get('EJECUTORA_NOMBRE'),
+                departamento_ejecutora=fila.get('DEPARTAMENTO_EJECUTORA'),
+                departamento_ejecutora_nombre=fila.get('DEPARTAMENTO_EJECUTORA_NOMBRE'),
+                provincia_ejecutora=fila.get('PROVINCIA_EJECUTORA'),
+                provincia_ejecutora_nombre=fila.get('PROVINCIA_EJECUTORA_NOMBRE'),
+                distrito_ejecutora=fila.get('DISTRITO_EJECUTORA'),
+                distrito_ejecutora_nombre=fila.get('DISTRITO_EJECUTORA_NOMBRE'),
+                sec_func=fila.get('SEC_FUNC'),
+                programa_ppto=fila.get('PROGRAMA_PPTO'),
+                programa_ppto_nombre=fila.get('PROGRAMA_PPTO_NOMBRE'),
+                tipo_act_proy=fila.get('TIPO_ACT_PROY'),
+                tipo_act_proy_nombre=fila.get('TIPO_ACT_PROY_NOMBRE'),
+                producto_proyecto=fila.get('PRODUCTO_PROYECTO'),
+                producto_proyecto_nombre=fila.get('PRODUCTO_PROYECTO_NOMBRE'),
+                actividad_accion_obra=fila.get('ACTIVIDAD_ACCION_OBRA'),
+                actividad_accion_obra_nombre=fila.get('ACTIVIDAD_ACCION_OBRA_NOMBRE'),
+                funcion=fila.get('FUNCION'),
+                funcion_nombre=fila.get('FUNCION_NOMBRE'),
+                division_funcional=fila.get('DIVISION_FUNCIONAL'),
+                division_funcional_nombre=fila.get('DIVISION_FUNCIONAL_NOMBRE'),
+                grupo_funcional=fila.get('GRUPO_FUNCIONAL'),
+                grupo_funcional_nombre=fila.get('GRUPO_FUNCIONAL_NOMBRE'),
+                meta=fila.get('META'),
+                finalidad=fila.get('FINALIDAD'),
+                meta_nombre=fila.get('META_NOMBRE'),
+                departamento_meta=fila.get('DEPARTAMENTO_META'),
+                departamento_meta_nombre=fila.get('DEPARTAMENTO_META_NOMBRE'),
+                fuente_financiamiento=fila.get('FUENTE_FINANCIAMIENTO'),
+                fuente_financiamiento_nombre=fila.get('FUENTE_FINANCIAMIENTO_NOMBRE'),
+                rubro=fila.get('RUBRO'),
+                rubro_nombre=fila.get('RUBRO_NOMBRE'),
+                tipo_recurso=fila.get('TIPO_RECURSO'),
+                tipo_recurso_nombre=fila.get('TIPO_RECURSO_NOMBRE'),
+                categoria_gasto=fila.get('CATEGORIA_GASTO'),
+                categoria_gasto_nombre=fila.get('CATEGORIA_GASTO_NOMBRE'),
+                tipo_transaccion=fila.get('TIPO_TRANSACCION'),
+                generica=fila.get('GENERICA'),
+                generica_nombre=fila.get('GENERICA_NOMBRE'),
+                subgenerica=fila.get('SUBGENERICA'),
+                subgenerica_nombre=fila.get('SUBGENERICA_NOMBRE'),
+                subgenerica_det=fila.get('SUBGENERICA_DET'),
+                subgenerica_det_nombre=fila.get('SUBGENERICA_DET_NOMBRE'),
+                especifica=fila.get('ESPECIFICA'),
+                especifica_nombre=fila.get('ESPECIFICA_NOMBRE'),
+                especifica_det=fila.get('ESPECIFICA_DET'),
+                especifica_det_nombre=fila.get('ESPECIFICA_DET_NOMBRE'),
+                monto_pia=fila.get('MONTO_PIA'),
+                monto_pim=fila.get('MONTO_PIM'),
+                monto_certificado=fila.get('MONTO_CERTIFICADO'),
+                monto_comprometido_anual=fila.get('MONTO_COMPROMETIDO_ANUAL'),
+                monto_comprometido=fila.get('MONTO_COMPROMETIDO'),
+                monto_devengado=fila.get('MONTO_DEVENGADO'),
+                monto_girado=fila.get('MONTO_GIRADO'),
+            )
+        
+        # Éxito
+        sinc.comentarios = f'Sincronización exitosa ({len(registros)} registros).'
+        sinc.exitoso = True
+    except Exception as e:
+        print("************** error ***********")
+        print(fila_error)
+        # Cualquier excepción se graba en comentarios
+        sinc.comentarios = f'Error durante sincronización: {e}'
+        sinc.exitoso = False        
+    finally:
+        # Marcar fecha_fin y guardar
+        #sinc.fecha_fin = timezone.now()
+        sinc.fecha_fin = datetime.now()
+        sinc.ultima_actualizacion = ultima_actualizacion
+        sinc.save()
+
+
+def getLastDataUpdate(resource_id = RESOURCE_ID):
+   
+   url = "https://datosabiertos.mef.gob.pe/Rest/PortalWebRecursoDetalle/v1.0/getRecursoDetalle"
+   
+   # Datos para el body de la petición
+   payload = {
+       "dataset": "presupuesto-y-ejecucion-de-gasto",
+       "id_recurso": resource_id
+   }
+   
+   # Headers para la petición
+   headers = {
+       'Content-Type': 'application/json'
+   }
+
+   try:
+       response = requests.post(
+           url,
+           json=payload,
+           headers=headers,
+           verify=False  # Deshabilitar verificación SSL
+       )
+       response.raise_for_status()  # Verificar si hay errores HTTP
+       
+       # Obtener el JSON de la respuesta
+       data = response.json()
+       
+       # Obtener el valor de resource_last_modified
+       last_modified = data.get('resource_detail', {}).get('resource_last_modified')
+              
+       return last_modified
+       
+   except requests.exceptions.SSLError as e:
+       print(f"Error SSL: {e}")
+       raise Exception(f"Error de SSL: {str(e)}")
+   except requests.exceptions.RequestException as e:
+       print(f"Error en la petición: {e}")
+       raise Exception(f"Error en la petición: {str(e)}")
+   except Exception as e:
+       print(f"Error inesperado: {e}")
+       raise Exception(f"Error inesperado: {str(e)}")
+
+
