@@ -23,6 +23,24 @@ class Sincronizacion(models.Model):
         app_label = 'app_siaf'
         managed = True
 
+    @classmethod
+    def obtener_ultima_sincronizacion_completa(cls, ano_eje, sec_ejec):
+        """
+        Obtiene la última sincronización exitosa para un año y ejecutora específicos.
+        
+        Args:
+            ano_eje (str): Año de ejecución
+            sec_ejec (str): Código de la ejecutora
+            
+        Returns:
+            Sincronizacion: Objeto de la última sincronización exitosa o None si no existe
+        """
+        return cls.objects.filter(
+            registros__ano_eje=ano_eje,
+            registros__sec_ejec=sec_ejec,
+            exitoso=True
+        ).order_by('-idSincro').first()
+
 
 class RegistroSincronizacion(models.Model):
     idSincroReg = models.AutoField(primary_key=True)
@@ -65,8 +83,9 @@ class RegistroSincronizacion(models.Model):
         null=True, blank=True,
         db_column='PLIEGO_NOMBRE'
     )
-    sec_ejec = models.TextField(
+    sec_ejec = models.CharField(
         null=True, blank=True,
+        max_length=10,
         db_column='SEC_EJEC'
     )
     ejecutora = models.TextField(
@@ -366,6 +385,8 @@ class ProyectoInversion(models.Model):
         db_table = 'PROYECTOS_INVERSION'
         verbose_name = 'Proyecto de Inversión'
         verbose_name_plural = 'Proyectos de Inversión'
+
+    
 
 
 class ProgramacionProyectoInversion(models.Model):

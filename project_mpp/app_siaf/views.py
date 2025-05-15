@@ -30,6 +30,8 @@ from .siaf import *
 from app_deploy.views import number_to_word_currency, BuscarSunat
 from .models import Sincronizacion, RegistroSincronizacion
 
+
+
 RESOURCE_ID = "35bdc5b5-017c-42c1-ba20-8820bf1248b7"
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -740,4 +742,119 @@ def getLastDataUpdate(resource_id = RESOURCE_ID):
        print(f"Error inesperado: {e}")
        raise Exception(f"Error inesperado: {str(e)}")
 
+
+def getLastSincro():
+    return Sincronizacion.objects.filter(
+    exitoso=True
+    ).order_by('-idSincro').first()
+
+def getLastSincroByAnoEjecutora(ano_eje, sec_ejec):
+    """
+    Obtiene la última sincronización exitosa para un año y ejecutora específicos.
+    
+    Args:
+        ano_eje (str): Año de ejecución
+        sec_ejec (str): Código de la ejecutora
+        
+    Returns:
+        Sincronizacion: Objeto de la última sincronización exitosa o None si no existe
+    """
+    return Sincronizacion.objects.filter(
+        registros__ano_eje=ano_eje,
+        registros__sec_ejec=sec_ejec,
+        exitoso=True
+    ).order_by('-idSincro').first()
+
+class UltimaSincronizacionView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        try:
+            ano_eje = request.query_params.get('ano_eje')
+            sec_ejec = request.query_params.get('sec_ejec')
+
+            if not ano_eje or not sec_ejec:
+                return Response(
+                    data={"message": "Faltan parámetros ano_eje o sec_ejec"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            sincronizacion = Sincronizacion.obtener_ultima_sincronizacion_completa(ano_eje, sec_ejec)
+
+            if not sincronizacion:
+                return Response(
+                    data={"message": "No se encontró sincronización exitosa", "content": None},
+                    status=status.HTTP_200_OK
+                )
+
+            return Response(
+                data={
+                    "message": "Última sincronización encontrada",
+                    "content": {
+                        "idSincro": sincronizacion.idSincro,
+                        "fecha_inicio": sincronizacion.fecha_inicio,
+                        "fecha_fin": sincronizacion.fecha_fin,
+                        "ultima_actualizacion": sincronizacion.ultima_actualizacion,
+                        "comentarios": sincronizacion.comentarios,
+                        "exitoso": sincronizacion.exitoso
+                    }
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class ProgProyectosInversionMensualView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        try:
+            ano_eje = request.query_params.get('ano_eje')
+            mes_eje = request.query_params.get('mes_eje')
+            sec_ejec = request.query_params.get('sec_ejec')
+
+            if not all([ano_eje, mes_eje, sec_ejec]):
+                return Response(
+                    data={"message": "Faltan parámetros requeridos", "content": None},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+          
+            
+            # Obtener la última sincronización
+            ultima_sincro = Sincronizacion.obtener_ultima_sincronizacion_completa(ano_eje, sec_ejec)
+            
+            if not ultima_sincro:
+                return Response(
+                    data={"message": "No se encontró sincronización exitosa", "content": []},
+                    status=status.HTTP_200_OK
+                )
+            
+            filters = {
+                "ano_eje": ano_eje,
+                "mes_eje": mes_eje,
+                "sec_ejec": sec_ejec,
+                "sincronizacion_id": ultima_sincro.idSincro
+            }
+            
+            result = select_protectos_con_gasto_mensual(**filters)
+
+            return Response(
+                data={
+                    "message": "Proyectos de inversión encontrados",
+                    "content": result
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
 

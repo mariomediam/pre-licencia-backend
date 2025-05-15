@@ -176,3 +176,24 @@ def sf_seleccionar_sigamef_contratista(**kwargs):
             result = None
         
         return result
+    
+
+def select_protectos_con_gasto_mensual(**kwargs):
+
+    ano_eje = kwargs.get('ano_eje')
+    mes_eje = kwargs.get('mes_eje')
+    sec_ejec = kwargs.get('sec_ejec')
+    sincronizacion_id= kwargs.get('sincronizacion_id')
+
+    with connection.cursor() as cursor:
+        sql = """           
+        EXEC BDSIAF.dbo.SelectProyectosConGastosMensual
+        @ANO_EJE = %s,
+        @MES_EJE = %s,
+        @SEC_EJEC = %s,
+        @sincronizacion_id = %s;
+        """
+        
+        cursor.execute(sql, [ano_eje, mes_eje, sec_ejec, sincronizacion_id])        
+        return dictfetchall(cursor)
+

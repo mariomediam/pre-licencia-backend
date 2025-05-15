@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MaestroDocumentoView, PersonaView, ProveedorSIGAView, SeleccionarExpedienteFase, SeleccionarExpedienteSecuencia, DownloadFormatoDevengadoController, ProcesoActualizarRegistroView, BuscarCartaOrdenView, DownloadCartaOrdenFideicomisoController, SincroGastoDiario
+from .views import MaestroDocumentoView, PersonaView, ProveedorSIGAView, SeleccionarExpedienteFase, SeleccionarExpedienteSecuencia, DownloadFormatoDevengadoController, ProcesoActualizarRegistroView, BuscarCartaOrdenView, DownloadCartaOrdenFideicomisoController, SincroGastoDiario, UltimaSincronizacionView, ProgProyectosInversionMensualView
 
 urlpatterns = [
     path("maestro-documento/", MaestroDocumentoView.as_view()),
@@ -12,4 +12,6 @@ urlpatterns = [
     path("buscar-carta-orden", BuscarCartaOrdenView.as_view()),
     path("download-carta-orden-fideicomiso", DownloadCartaOrdenFideicomisoController),
     path("sincro-gasto-diario", SincroGastoDiario.as_view()),
+    path("ultima-sincro", UltimaSincronizacionView.as_view()),
+    path("proyectos-programacion-mensual", ProgProyectosInversionMensualView.as_view()),
 ]
