@@ -20,7 +20,8 @@ class Sincronizacion(models.Model):
         db_table = 'SINCRONIZACION'
         verbose_name = 'Sincronización'
         verbose_name_plural = 'Sincronizaciones'
-        
+        app_label = 'app_siaf'
+        managed = True
 
 
 class RegistroSincronizacion(models.Model):
@@ -308,3 +309,129 @@ class RegistroSincronizacion(models.Model):
         db_table = 'SINCRONIZACION_DETALLE'
         verbose_name = 'Registro de Sincronización'
         verbose_name_plural = 'Registros de Sincronización'
+        app_label = 'app_siaf'
+        managed = True
+
+
+#---------------------------------------
+
+class EstadoProyectoInversion(models.Model):
+    c_estado = models.AutoField(
+        primary_key=True,
+        db_column='c_estado'
+    )
+    n_estado_descrip = models.CharField(
+        max_length=50,
+        db_column='n_estado_descrip'
+    )
+    n_estado_color = models.CharField(
+        max_length=7,
+        db_column='n_estado_color'
+    )
+
+    class Meta:
+        db_table = 'ESTADOS_PROYECTO_INVERSION'
+        verbose_name = 'Estado de Proyecto de Inversión'
+        verbose_name_plural = 'Estados de Proyectos de Inversión'
+
+
+class ProyectoInversion(models.Model):
+    c_proinv = models.AutoField(
+        primary_key=True,
+        db_column='c_proinv'
+    )
+    ano_eje = models.IntegerField(
+        db_column='ANO_EJE'
+    )
+    c_proinv_codigo = models.CharField(
+        max_length=10,
+        db_column='c_proinv_codigo'
+    )
+    n_proinv_nombre = models.TextField(
+        db_column='n_proinv_nombre'
+    )
+    c_usuari_login = models.CharField(
+        max_length=20,
+        db_column='c_usuari_login'
+    )
+    n_proinv_pc = models.CharField(
+        max_length=20,
+        db_column='n_proinv_pc'
+    )
+    d_proinv_fecdig = models.DateTimeField(
+        db_column='d_proinv_fecdig'
+    )
+
+    class Meta:
+        db_table = 'PROYECTOS_INVERSION'
+        verbose_name = 'Proyecto de Inversión'
+        verbose_name_plural = 'Proyectos de Inversión'
+
+
+class ProgramacionProyectoInversion(models.Model):
+    c_prgpro = models.AutoField(
+        primary_key=True,
+        db_column='c_prgpro'
+    )
+    proyecto = models.ForeignKey(
+        ProyectoInversion,
+        on_delete=models.CASCADE,
+        db_column='c_proinv',
+        related_name='programaciones'
+    )
+    m_prgpro_mes = models.IntegerField(
+        db_column='m_prgpro_mes'
+    )
+    q_prgpro_financ = models.DecimalField(
+        max_digits=18,
+        decimal_places=2,
+        db_column='q_prgpro_financ'
+    )
+    p_prgpro_fisica = models.DecimalField(
+        max_digits=18,
+        decimal_places=2,
+        db_column='p_prgpro_fisica'
+    )
+    q_prgpro_caida = models.DecimalField(
+        max_digits=18,
+        decimal_places=2,
+        db_column='q_prgpro_caida'
+    )
+    q_prgpro_increm = models.DecimalField(
+        max_digits=18,
+        decimal_places=2,
+        db_column='q_prgpro_increm'
+    )
+    q_prgpro_riesgo = models.DecimalField(
+        max_digits=18,
+        decimal_places=2,
+        db_column='q_prgpro_riesgo'
+    )
+    t_prgpro_estsit = models.TextField(
+        db_column='t_prgpro_estsit'
+    )
+    t_prgpro_coment = models.TextField(
+        db_column='t_prgpro_coment'
+    )
+    estado = models.ForeignKey(
+        EstadoProyectoInversion,
+        on_delete=models.PROTECT,
+        db_column='c_estado',
+        related_name='programaciones'
+    )
+    c_usuari_login = models.CharField(
+        max_length=20,
+        db_column='c_usuari_login'
+    )
+    n_prgpro_pc = models.CharField(
+        max_length=20,
+        db_column='n_prgpro_pc'
+    )
+    d_prgpro_fecdig = models.DateTimeField(
+        db_column='d_prgpro_fecdig'
+    )
+
+    class Meta:
+        db_table = 'PROGRAMACION_PROYECTOS_INVERSION'
+        verbose_name = 'Programación de Proyecto de Inversión'
+        verbose_name_plural = 'Programaciones de Proyectos de Inversión'

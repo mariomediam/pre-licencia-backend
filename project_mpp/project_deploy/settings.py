@@ -146,7 +146,7 @@ DATABASES = {
         },
         'BDSIAF': {
             'ENGINE': 'mssql',
-            'NAME': environ.get('DB_SIGA'),
+            'NAME': environ.get('DB_SIAF'),
             'USER': environ.get('DB_USERNAME'),
             'PASSWORD': environ.get('DB_PASSWORD'),
             'HOST': environ.get('DB_HOST'),
@@ -158,6 +158,8 @@ DATABASES = {
         },
 
    }
+
+DATABASE_ROUTERS = ['app_siaf.routers.SincronizacionRouter']
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

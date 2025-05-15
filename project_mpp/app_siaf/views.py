@@ -1,6 +1,7 @@
 import os
 import io
 import requests
+import urllib3
 
 from django.shortcuts import render
 from django.template.loader import get_template
@@ -30,6 +31,8 @@ from app_deploy.views import number_to_word_currency, BuscarSunat
 from .models import Sincronizacion, RegistroSincronizacion
 
 RESOURCE_ID = "35bdc5b5-017c-42c1-ba20-8820bf1248b7"
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Create your views here.
 class MaestroDocumentoView(RetrieveAPIView):
