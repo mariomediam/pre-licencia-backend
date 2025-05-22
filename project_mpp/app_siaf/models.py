@@ -1,5 +1,5 @@
 from django.db import models
-
+from datetime import datetime
 class Sincronizacion(models.Model):
     idSincro = models.AutoField(primary_key=True)
     fecha_inicio = models.DateTimeField(auto_now_add=True)
@@ -378,7 +378,8 @@ class ProyectoInversion(models.Model):
         db_column='n_proinv_pc'
     )
     d_proinv_fecdig = models.DateTimeField(
-        db_column='d_proinv_fecdig'
+        db_column='d_proinv_fecdig',
+        default=datetime.now
     )
 
     class Meta:
@@ -413,32 +414,40 @@ class ProgramacionProyectoInversion(models.Model):
         decimal_places=2,
         db_column='p_prgpro_fisica'
     )
+    
     q_prgpro_caida = models.DecimalField(
         max_digits=18,
         decimal_places=2,
-        db_column='q_prgpro_caida'
+        db_column='q_prgpro_caida',
+        default=0
     )
     q_prgpro_increm = models.DecimalField(
         max_digits=18,
         decimal_places=2,
-        db_column='q_prgpro_increm'
+        db_column='q_prgpro_increm',
+        default=0
     )
     q_prgpro_riesgo = models.DecimalField(
         max_digits=18,
         decimal_places=2,
-        db_column='q_prgpro_riesgo'
+        db_column='q_prgpro_riesgo',
+        default=0
     )
     t_prgpro_estsit = models.TextField(
-        db_column='t_prgpro_estsit'
+        db_column='t_prgpro_estsit',
+        default=''
     )
     t_prgpro_coment = models.TextField(
-        db_column='t_prgpro_coment'
+        db_column='t_prgpro_coment',
+        default=''
     )
+    
     estado = models.ForeignKey(
         EstadoProyectoInversion,
         on_delete=models.PROTECT,
         db_column='c_estado',
-        related_name='programaciones'
+        related_name='programaciones',
+        default=2
     )
     c_usuari_login = models.CharField(
         max_length=20,
@@ -449,7 +458,8 @@ class ProgramacionProyectoInversion(models.Model):
         db_column='n_prgpro_pc'
     )
     d_prgpro_fecdig = models.DateTimeField(
-        db_column='d_prgpro_fecdig'
+        db_column='d_prgpro_fecdig',
+        default=datetime.now
     )
 
     class Meta:
