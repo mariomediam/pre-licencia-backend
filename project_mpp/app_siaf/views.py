@@ -9,6 +9,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.db.models import Sum
 from decimal import Decimal
+from django.db import transaction
 
 
 from rest_framework import status
@@ -30,8 +31,8 @@ from openpyxl.utils import get_column_letter
 
 from .siaf import *
 from app_deploy.views import number_to_word_currency, BuscarSunat
-from .models import Sincronizacion, RegistroSincronizacion
-
+from .models import Sincronizacion, RegistroSincronizacion, ProyectoInversion, ProgramacionProyectoInversion
+from .serializers import ProyectoInversionSerializer
 
 
 RESOURCE_ID = "35bdc5b5-017c-42c1-ba20-8820bf1248b7"
@@ -1003,3 +1004,108 @@ class ResumenProductoProyectoView(RetrieveAPIView):
             data={"message": "Resumen encontrado", "content": resumen},
             status=status.HTTP_200_OK
         )
+    
+
+
+# {
+#     "ano_eje": 2025,
+#     "c_proinv_codigo": "2331918",
+#     "n_proinv_nombre": "MEJORAMIENTO DEL SERVICIO DE TRANSITABILIDAD PEATONAL Y VEHICULAR DE LA UPIS LOS ANGELES EN EL DISTRITO DE PIURA, PROVINCIA DE PIURA - PIURA",
+#     "programacion": [
+#         {
+#             "m_prgpro_mes": 1,
+#             "q_prgpro_financ": 100,
+#             "p_prgpro_fisica": 1
+#         },
+#         {
+#             "m_prgpro_mes": 2,
+#             "q_prgpro_financ": 200,
+#             "p_prgpro_fisica": 2
+#         },
+#         {
+#             "m_prgpro_mes": 3,
+#             "q_prgpro_financ": 300,
+#             "p_prgpro_fisica": 3
+#         },
+#         {
+#             "m_prgpro_mes": 4,
+#             "q_prgpro_financ": 400,
+#             "p_prgpro_fisica": 4
+#         },
+#         {
+#             "m_prgpro_mes": 5,
+#             "q_prgpro_financ": 500,
+#             "p_prgpro_fisica": 5
+#         },
+#         {
+#             "m_prgpro_mes": 6,
+#             "q_prgpro_financ": 600,
+#             "p_prgpro_fisica": 6
+#         },
+#         {
+#             "m_prgpro_mes": 7,
+#             "q_prgpro_financ": 700,
+#             "p_prgpro_fisica": 7
+#         },
+#         {
+#             "m_prgpro_mes": 8,
+#             "q_prgpro_financ": 800,
+#             "p_prgpro_fisica": 8
+#         },
+#         {
+#             "m_prgpro_mes": 9,
+#             "q_prgpro_financ": 900,
+#             "p_prgpro_fisica": 9
+#         },
+#         {
+#             "m_prgpro_mes": 10,
+#             "q_prgpro_financ": 1000,
+#             "p_prgpro_fisica": 10
+#         },
+#         {
+#             "m_prgpro_mes": 11,
+#             "q_prgpro_financ": 1100,
+#             "p_prgpro_fisica": 11
+#         },
+#         {
+#             "m_prgpro_mes": 12,
+#             "q_prgpro_financ": 1200,
+#             "p_prgpro_fisica": 34
+#         }
+#     ]
+# }
+
+
+# Dado el JSON anterior, se debe grabar el registro en las tablas ProyectoInversion y ProgramacionProyectoInversion
+
+class ProyectoInversionView(CreateAPIView):    
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProyectoInversionSerializer
+
+    def post(self, request: Request):
+
+        data = request.data
+        data['c_usuari_login'] = request.user.username
+        data['n_proinv_pc'] = request.META.get('REMOTE_ADDR')
+
+        with transaction.atomic():
+            serializer = self.serializer_class(data=data)
+
+            if serializer.is_valid():
+                serializer.save()
+                proyecto = serializer.instance
+                print(proyecto.c_proinv)
+
+                for programacion in data['programacion']:
+                    
+                    programacion['proyecto'] = proyecto
+                    programacion['c_usuari_login'] = request.user.username
+                    programacion['n_prgpro_pc'] = request.META.get('REMOTE_ADDR')
+
+                    ProgramacionProyectoInversion.objects.create(**programacion)
+
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
