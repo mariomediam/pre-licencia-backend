@@ -7,6 +7,8 @@ from django.shortcuts import render
 from django.template.loader import get_template
 from django.conf import settings
 from django.http import HttpResponse
+from django.db.models import Sum
+from decimal import Decimal
 
 
 from rest_framework import status
@@ -858,3 +860,146 @@ class ProgProyectosInversionMensualView(RetrieveAPIView):
             )
         
 
+
+def obtener_producto_proyecto(ano_eje: float, producto_proyecto: float) -> dict:
+    """
+    Obtiene la información de un producto/proyecto específico para un año dado.
+    
+    Args:
+        ano_eje (float): Año de ejecución
+        producto_proyecto (float): Código del producto/proyecto
+        
+    Returns:
+        dict: Diccionario con la información del producto/proyecto o None si no se encuentra
+    """
+    registro = RegistroSincronizacion.objects.filter(
+        ano_eje=ano_eje,
+        producto_proyecto=producto_proyecto
+    ).values('ano_eje', 'producto_proyecto', 'producto_proyecto_nombre').first()
+    
+    return registro
+
+
+# CREAR UNA VISTA GET PARA OBTENER EL PRODUCTO PROYECTO
+class ProductoProyectoNombreView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        try:
+            ano_eje = request.query_params.get('ano_eje')
+            producto_proyecto = request.query_params.get('producto_proyecto')
+
+            if not ano_eje or not producto_proyecto:
+                return Response(
+                    data={"message": "Faltan parámetros requeridos", "content": None},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            result = obtener_producto_proyecto(ano_eje, producto_proyecto)
+            return Response(
+                data={
+                    "message": "Proyectos de inversión encontrados",
+                    "content": result
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+def obtener_ultima_sincronizacion_por_anio(ano_eje: float) -> int:
+    """
+    Obtiene el ID de la última sincronización exitosa para un año específico.
+    
+    Args:
+        ano_eje (float): Año de ejecución
+        
+    Returns:
+        int: ID de la última sincronización exitosa o None si no se encuentra
+    """
+    ultima_sincronizacion = Sincronizacion.objects.filter(
+        registros__ano_eje=ano_eje,
+        exitoso=True
+    ).order_by('-idSincro').first()
+    
+    return ultima_sincronizacion.idSincro if ultima_sincronizacion else None
+
+
+class UltimaSincronizacionAnioView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        ano_eje = request.query_params.get('ano_eje')
+
+        if not ano_eje:
+            return Response(
+                data={"message": "Faltan parámetros requeridos", "content": None},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        id_sincro = obtener_ultima_sincronizacion_por_anio(ano_eje)
+
+        return Response(
+            data={"message": "Última sincronización encontrada", "content": id_sincro},
+            status=status.HTTP_200_OK
+        )
+
+
+
+
+def obtener_resumen_producto_proyecto(producto_proyecto: Decimal, id_sincro: int) -> dict:
+    """
+    Obtiene el resumen de montos para un producto/proyecto específico de una sincronización.
+    
+    Args:
+        producto_proyecto (Decimal): Código del producto/proyecto
+        id_sincro (int): ID de la sincronización
+        
+    Returns:
+        dict: Diccionario con los montos resumidos o None si no se encuentra
+    """
+    resultado = RegistroSincronizacion.objects.filter(
+        sincronizacion_id=id_sincro,
+        producto_proyecto=producto_proyecto
+    ).values(
+        'ano_eje',
+        'producto_proyecto'
+    ).annotate(
+        MONTO_PIA=Sum('monto_pia'),
+        MONTO_PIM=Sum('monto_pim'),
+        MONTO_CERTIFICADO=Sum('monto_certificado'),
+        MONTO_COMPROMETIDO_ANUAL=Sum('monto_comprometido_anual'),
+        MONTO_COMPROMETIDO=Sum('monto_comprometido'),
+        MONTO_DEVENGADO=Sum('monto_devengado'),
+        MONTO_GIRADO=Sum('monto_girado')
+    ).order_by('ano_eje', 'producto_proyecto').first()
+    
+    return resultado
+
+
+
+class ResumenProductoProyectoView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        producto_proyecto = request.query_params.get('producto_proyecto')
+        ano_eje = request.query_params.get('ano_eje')
+
+        if not producto_proyecto or not ano_eje:
+            return Response(
+                data={"message": "Faltan parámetros requeridos", "content": None},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        id_sincro = obtener_ultima_sincronizacion_por_anio(ano_eje)
+
+        resumen = obtener_resumen_producto_proyecto(producto_proyecto, id_sincro)
+
+        return Response(
+            data={"message": "Resumen encontrado", "content": resumen},
+            status=status.HTTP_200_OK
+        )
