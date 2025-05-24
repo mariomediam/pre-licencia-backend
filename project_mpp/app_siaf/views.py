@@ -7,17 +7,18 @@ from django.shortcuts import render
 from django.template.loader import get_template
 from django.conf import settings
 from django.http import HttpResponse
-from django.db.models import Sum
+from django.db.models import Sum, F 
 from decimal import Decimal
 from django.db import transaction
 
 
 from rest_framework import status
-from rest_framework.generics import RetrieveAPIView, CreateAPIView
+from rest_framework.generics import RetrieveAPIView, CreateAPIView, UpdateAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.views import APIView
 
 from datetime import datetime
 from decimal import Decimal
@@ -819,6 +820,7 @@ class ProgProyectosInversionMensualView(RetrieveAPIView):
             ano_eje = request.query_params.get('ano_eje')
             mes_eje = request.query_params.get('mes_eje')
             sec_ejec = request.query_params.get('sec_ejec')
+            c_proinv_codigo = request.query_params.get('c_proinv_codigo')
 
             if not all([ano_eje, mes_eje, sec_ejec]):
                 return Response(
@@ -845,6 +847,9 @@ class ProgProyectosInversionMensualView(RetrieveAPIView):
             }
             
             result = select_protectos_con_gasto_mensual(**filters)
+
+            if c_proinv_codigo:
+                result = [item for item in result if item.get('c_proinv_codigo').strip()  == c_proinv_codigo.strip()]
 
             return Response(
                 data={
@@ -1107,5 +1112,215 @@ class ProyectoInversionView(CreateAPIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
     
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, c_prgpro):
+        try:
+            # Obtener el usuario y la IP del cliente
+            data = request.data.copy()
+            data['c_usuari_login'] = request.user.username
+            data['n_prgpro_pc'] = request.META.get('REMOTE_ADDR')
+            
+            resultado = actualizar_programacion_proyecto(c_prgpro, data)
+            
+            if resultado['success']:
+                return Response(
+                    data={
+                        "message": resultado['message'],
+                        "content": resultado['data']
+                    },
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return Response(
+                    data={
+                        "message": resultado['message'],
+                        "content": None
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        except Exception as e:
+            return Response(
+                data={
+                    "message": str(e),
+                    "content": None
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+def obtener_programacion_proyecto(c_prgpro: int) -> dict:
+    """
+    Obtiene la información detallada de una programación de proyecto de inversión.
+    
+    Args:
+        c_prgpro (int): ID de la programación del proyecto
+        
+    Returns:
+        dict: Diccionario con la información de la programación y el proyecto asociado
+    """
+    resultado = ProgramacionProyectoInversion.objects.filter(
+        c_prgpro=c_prgpro
+    ).select_related(
+        'proyecto',
+        'estado'
+    ).annotate(
+        c_proinv=F('proyecto__c_proinv'),
+        n_proinv_nombre=F('proyecto__n_proinv_nombre'),
+        ano_eje=F('proyecto__ano_eje'),
+        c_proinv_codigo=F('proyecto__c_proinv_codigo'),
+        c_estado=F('estado__c_estado')
+
+    ).values(
+        'c_prgpro',
+        'c_proinv',
+        'm_prgpro_mes',
+        'q_prgpro_financ',
+        'p_prgpro_fisica',
+        'q_prgpro_caida',
+        'q_prgpro_increm',
+        'q_prgpro_riesgo',
+        't_prgpro_estsit',
+        't_prgpro_coment',
+        'c_estado',
+        'c_usuari_login',
+        'n_prgpro_pc',
+        'd_prgpro_fecdig',
+        'ano_eje',
+        'c_proinv_codigo',
+        'n_proinv_nombre'
+    ).first()
+    
+    return resultado
+
+class ProgramacionProyectoInversionView(RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = ProgramacionProyectoInversion.objects.all()
+
+    def get(self, request, c_prgpro):
+        try:
+            resultado = obtener_programacion_proyecto(c_prgpro)
+            
+            if not resultado:
+                return Response(
+                    data={"message": "No se encontró la programación del proyecto"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            return Response(
+                data={
+                    "message": "Programación de proyecto encontrada",
+                    "content": resultado
+                },
+                status=status.HTTP_200_OK
+            )
+            
+        except Exception as e:
+            return Response(
+                data={"message": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def put(self, request, c_prgpro):
+        try:
+            # Obtener el usuario y la IP del cliente
+            data = request.data.copy()
+            data['c_usuari_login'] = request.user.username
+            data['n_prgpro_pc'] = request.META.get('REMOTE_ADDR')
+            data['d_prgpro_fecdig'] = datetime.now()
+            
+            resultado = actualizar_programacion_proyecto(c_prgpro, data)
+            
+            if resultado['success']:
+                return Response(
+                    data={
+                        "message": resultado['message'],
+                        "content": resultado['data']
+                    },
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return Response(
+                    data={
+                        "message": resultado['message'],
+                        "content": None
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        except Exception as e:
+            return Response(
+                data={
+                    "message": str(e),
+                    "content": None
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+def actualizar_programacion_proyecto(c_prgpro: int, data: dict) -> dict:
+    """
+    Actualiza un registro existente en la tabla PROGRAMACION_PROYECTOS_INVERSION.
+    
+    Args:
+        c_prgpro (int): ID de la programación a actualizar
+        data (dict): Diccionario con los datos a actualizar
+        
+    Returns:
+        dict: Diccionario con el resultado de la operación
+    """
+    try:
+        with transaction.atomic():
+            # Buscar la programación existente
+            programacion = ProgramacionProyectoInversion.objects.get(c_prgpro=c_prgpro)
+            
+            # Actualizar los campos
+            programacion.m_prgpro_mes = data.get('m_prgpro_mes', programacion.m_prgpro_mes)
+            programacion.q_prgpro_financ = data.get('q_prgpro_financ', programacion.q_prgpro_financ)
+            programacion.p_prgpro_fisica = data.get('p_prgpro_fisica', programacion.p_prgpro_fisica)
+            programacion.q_prgpro_caida = data.get('q_prgpro_caida', programacion.q_prgpro_caida)
+            programacion.q_prgpro_increm = data.get('q_prgpro_increm', programacion.q_prgpro_increm)
+            programacion.q_prgpro_riesgo = data.get('q_prgpro_riesgo', programacion.q_prgpro_riesgo)
+            programacion.t_prgpro_estsit = data.get('t_prgpro_estsit', programacion.t_prgpro_estsit)
+            programacion.t_prgpro_coment = data.get('t_prgpro_coment', programacion.t_prgpro_coment)
+            programacion.estado_id = data.get('c_estado', programacion.estado_id)
+            programacion.c_usuari_login = data.get('c_usuari_login', programacion.c_usuari_login)
+            programacion.n_prgpro_pc = data.get('n_prgpro_pc', programacion.n_prgpro_pc)
+            programacion.d_prgpro_fecdig = data.get('d_prgpro_fecdig', programacion.d_prgpro_fecdig)
+            
+            programacion.save()
+            
+            return {
+                'success': True,
+                'message': 'Programación actualizada exitosamente',
+                'data': {
+                    'c_prgpro': programacion.c_prgpro,
+                    'c_proinv': programacion.proyecto.c_proinv,
+                    'm_prgpro_mes': programacion.m_prgpro_mes,
+                    'q_prgpro_financ': programacion.q_prgpro_financ,
+                    'p_prgpro_fisica': programacion.p_prgpro_fisica,
+                    'q_prgpro_caida': programacion.q_prgpro_caida,
+                    'q_prgpro_increm': programacion.q_prgpro_increm,
+                    'q_prgpro_riesgo': programacion.q_prgpro_riesgo,
+                    't_prgpro_estsit': programacion.t_prgpro_estsit,
+                    't_prgpro_coment': programacion.t_prgpro_coment,
+                    'c_estado': programacion.estado.c_estado,
+                    'c_usuari_login': programacion.c_usuari_login,
+                    'n_prgpro_pc': programacion.n_prgpro_pc,
+                    'd_prgpro_fecdig': programacion.d_prgpro_fecdig
+                }
+            }
+            
+    except ProgramacionProyectoInversion.DoesNotExist:
+        return {
+            'success': False,
+            'message': 'La programación no existe',
+            'data': None
+        }
+    except Exception as e:
+        return {
+            'success': False,
+            'message': str(e),
+            'data': None
+        }
+
 
     
