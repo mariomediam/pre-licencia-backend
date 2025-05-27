@@ -2,6 +2,11 @@ import os
 import io
 import requests
 import urllib3
+import urllib
+
+import pandas as pd
+from sqlalchemy import create_engine
+
 
 from django.shortcuts import render
 from django.template.loader import get_template
@@ -28,6 +33,7 @@ import uuid
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Side, Border, PatternFill
 from openpyxl.utils import get_column_letter
+import openpyxl
 
 
 from .siaf import *
@@ -37,6 +43,36 @@ from .serializers import ProyectoInversionSerializer
 
 
 RESOURCE_ID = "35bdc5b5-017c-42c1-ba20-8820bf1248b7"
+PATH_TEMP = os.path.join(os.path.dirname(__file__),"temp")
+
+# c_proinv_codigo	=> CUI
+# n_proinv_nombre	=> Proyecto
+# q_prgpro_financ	=> Programacion inicial (a)
+# q_prgpro_caida	=> Caídas (b)
+# q_prgpro_increm	=> Incrementos (c) 
+# q_prgpro_financ - q_prgpro_caida + q_prgpro_increm	=> Proyección ajustada (d) = (a) - (b) + ©
+# MONTO_DEVENGADO_MES	=> Ejecución (e) 
+# (q_prgpro_financ - q_prgpro_caida + q_prgpro_increm) / MONTO_DEVENGADO_MES	=> Avance financiero
+# p_prgpro_fisica	=> Avance físico
+# q_prgpro_riesgo	=> Riesgo a fin de mes
+# t_prgpro_coment	=> Comentario
+
+RENAME_COLUMNS = {
+    "GASTO_MENSUAL": {
+        "c_proinv_codigo": "CUI",
+        "n_proinv_nombre": "Proyecto",
+        "q_prgpro_financ": "Programacion inicial (a)",
+        "q_prgpro_caida": "Caídas (b)",
+        "q_prgpro_increm": "Incrementos (c)",
+        "q_prgpro_financ - q_prgpro_caida + q_prgpro_increm": "Proyección ajustada (d) = (a) - (b) + ©",
+        "MONTO_DEVENGADO_MES": "Ejecución (e)",
+        "(q_prgpro_financ - q_prgpro_caida + q_prgpro_increm) / MONTO_DEVENGADO_MES": "Avance financiero",
+        "p_prgpro_fisica": "Avance físico",
+        "q_prgpro_riesgo": "Riesgo a fin de mes",
+        "t_prgpro_coment": "Comentario"
+    }
+}
+
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -529,12 +565,62 @@ def create_excel_carta_orden(cartas):
 
     ws.row_dimensions[start_row].height = 120
 
-    # Agregar un borde fino a todas las celdas, desde la celda A1 hasta la última celda con datos
+    # Aplicar borde a toda la tabla (encabezados, datos y fila de sumatoria)
     thin_side = Side(style='thin', color="000000")
     thin_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
-    for row in ws.iter_rows(min_row=1, max_row=start_row, min_col=1, max_col=8):
+    for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
         for cell in row:
             cell.border = thin_border
+
+    # Agregar una fila de sumatoria al final (excepto Avance financiero y Avance físico)
+    suma_dict = {}
+    for col_name in ws[1]:
+        header = col_name.value
+        if header not in ['Avance financiero', 'Avance físico', 'Proyecto', 'Comentario', 'CUI']:
+            idx = col_name.column
+            col_letter = col_name.column_letter
+            # Sumar solo si la columna es numérica
+            try:
+                suma = sum([cell.value for cell in ws[col_letter][1:] if isinstance(cell.value, (int, float))])
+                suma_dict[header] = suma
+            except:
+                suma_dict[header] = ''
+        else:
+            suma_dict[header] = ''
+    # Crear la fila de sumatoria
+    sum_row = []
+    for col_name in ws[1]:
+        header = col_name.value
+        if header == 'Proyecto':
+            sum_row.append('TOTAL')
+        elif header in suma_dict:
+            val = suma_dict[header]
+            # Si el valor es numérico, asegúrate de que sea float
+            if isinstance(val, (int, float)):
+                sum_row.append(float(val))
+            else:
+                sum_row.append('')
+        else:
+            sum_row.append('')
+    ws.append(sum_row)
+
+    # Aplicar borde a la fila de sumatoria
+    thin_side = Side(style='thin', color="000000")
+    thin_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
+    last_row = ws.max_row
+    for cell in ws[last_row]:
+        cell.border = thin_border
+
+    # Aplicar formato numérico y porcentaje a la fila de sumatoria (igual que a las filas de datos)
+    last_row = ws.max_row
+    for col_name in ws[1]:
+        header = col_name.value
+        idx = col_name.column
+        cell = ws.cell(row=last_row, column=idx)
+        if header in columnas_moneda:
+            cell.number_format = '#,##0.00'
+        elif header in columnas_porcentaje:
+            cell.number_format = '0.00%'
 
     output = io.BytesIO()
     wb.save(output)
@@ -1322,5 +1408,248 @@ def actualizar_programacion_proyecto(c_prgpro: int, data: dict) -> dict:
             'data': None
         }
 
+def format_sql_value(value):
+    if value is None:
+        return 'NULL'
+    elif isinstance(value, str):
+        return f"'{value}'"
+    else:
+        return value
+    
+
+def sql_to_pandas(sql):    
+    server = os.environ.get("DB_HOST")
+    database = "BDSIAF"
+    username = os.environ.get("DB_USERNAME")
+    password = os.environ.get("DB_PASSWORD")
+    driver = 'ODBC Driver 17 for SQL Server'
+    connection_string = f"mssql+pyodbc://{username}:{urllib.parse.quote_plus(password)}@{server}/{database}?driver={driver}"
+
+
+    engine = create_engine(connection_string)
+    
+
+    df = pd.read_sql(sql, engine)
+
+    # Cierra la conexión
+    engine.dispose()
+
+    return df
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])        
+def DownloadProyeccionMensualView(request):    
+    ano_eje = request.data.get("ano_eje")
+    mes_eje = request.data.get("mes_eje")
+    sec_ejec = request.data.get("sec_ejec")
+    
+    if not all([ano_eje, mes_eje, sec_ejec]):
+        return Response(
+            data={"message": "Faltan parámetros"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        sincronizacion_id = obtener_ultima_sincronizacion_por_anio(ano_eje)
+
+        if not sincronizacion_id:
+            return Response(
+                data={"message": "No se encontró la sincronización"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        sql = f"""
+        DECLARE @ANO_EJE decimal(18,2) = {format_sql_value(ano_eje)}
+        DECLARE @MES_EJE decimal(18,2)= {format_sql_value(mes_eje)}
+        DECLARE @SEC_EJEC char(10) = {format_sql_value(sec_ejec)}
+        DECLARE @sincronizacion_id int = {format_sql_value(sincronizacion_id)}
+        EXEC BDSIAF.DBO.SelectProyectosConGastosMensual @ANO_EJE=@ANO_EJE, @MES_EJE=@MES_EJE, @SEC_EJEC=@SEC_EJEC, @sincronizacion_id=@sincronizacion_id
+        """ 
+            
+        df = sql_to_pandas(sql)  
+
+        if len(df) > 0:
+            # Calcular columnas solicitadas
+            df['Proyección ajustada (d) = (a) - (b) + (c)'] = (
+                df['q_prgpro_financ'].fillna(0) - df['q_prgpro_caida'].fillna(0) + df['q_prgpro_increm'].fillna(0)
+            )
+            # Calcular Avance financiero como decimal
+            df['Avance financiero'] = (
+                df['MONTO_DEVENGADO_MES'].fillna(0) / df['Proyección ajustada (d) = (a) - (b) + (c)']
+            ).replace([float('inf'), -float('inf')], 0).fillna(0)
+
+            # Redondear Avance financiero y Avance físico a cero decimales en porcentaje
+            if 'Avance financiero' in df.columns:
+                df['Avance financiero'] = (df['Avance financiero'] * 100).round(0) / 100
+            if 'p_prgpro_fisica' in df.columns:
+                df['p_prgpro_fisica'] = (df['p_prgpro_fisica'] / 100)
+                df['p_prgpro_fisica'] = (df['p_prgpro_fisica'] * 100).round(0) / 100
+
+            # Redondear columnas numéricas a 2 decimales (excepto Avance financiero y p_prgpro_fisica)
+            columnas_redondear = [
+                'q_prgpro_financ',
+                'q_prgpro_caida',
+                'q_prgpro_increm',
+                'Proyección ajustada (d) = (a) - (b) + (c)',
+                'MONTO_DEVENGADO_MES',
+                'q_prgpro_riesgo'
+            ]
+            for col in columnas_redondear:
+                if col in df.columns:
+                    df[col] = df[col].round(2)
+
+            # Seleccionar y renombrar columnas
+            columnas = {
+                'c_proinv_codigo': 'CUI',
+                'n_proinv_nombre': 'Proyecto',
+                'q_prgpro_financ': 'Programacion inicial (a)',
+                'q_prgpro_caida': 'Caídas (b)',
+                'q_prgpro_increm': 'Incrementos (c)',
+                'Proyección ajustada (d) = (a) - (b) + (c)': 'Proyección ajustada (d) = (a) - (b) + (c)',
+                'MONTO_DEVENGADO_MES': 'Ejecución (e)',
+                'Avance financiero': 'Avance financiero',
+                'p_prgpro_fisica': 'Avance físico',
+                'q_prgpro_riesgo': 'Riesgo a fin de mes',
+                't_prgpro_coment': 'Comentario'
+            }
+            df = df[list(columnas.keys())]
+            df = df.rename(columns=columnas)
+
+            # Guardar el DataFrame a Excel
+            name_file = "ReporteGastosMensual"
+            full_path_file = f"{PATH_TEMP}/{name_file}.xlsx"
+            df.to_excel(full_path_file, index=False)
+
+            # Abrir el archivo con openpyxl para aplicar formatos
+            wb = openpyxl.load_workbook(full_path_file)
+            ws = wb.active
+
+            # Identificar las columnas por nombre
+            col_indices = {cell.value: idx+1 for idx, cell in enumerate(ws[1])}
+
+            # Columnas a formatear como moneda (separador de miles/millones)
+            columnas_moneda = [
+                'Programacion inicial (a)',
+                'Caídas (b)',
+                'Incrementos (c)',
+                'Proyección ajustada (d) = (a) - (b) + (c)',
+                'Ejecución (e)',
+                'Riesgo a fin de mes'
+            ]
+            # Columnas a formatear como porcentaje
+            columnas_porcentaje = [
+                'Avance financiero',
+                'Avance físico'
+            ]
+
+            # Aplicar formato a cada celda de las columnas correspondientes
+            for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+                for col_name in columnas_moneda:
+                    idx = col_indices.get(col_name)
+                    if idx:
+                        cell = row[idx-1]
+                        cell.number_format = '#,##0.00'
+                for col_name in columnas_porcentaje:
+                    idx = col_indices.get(col_name)
+                    if idx:
+                        cell = row[idx-1]
+                        cell.number_format = '0.00%'
+
+            # Ajustar el ancho de las columnas automáticamente (autofit)
+            for column_cells in ws.columns:
+                max_length = 0
+                column = column_cells[0].column_letter  # Letra de la columna
+                for cell in column_cells:
+                    try:
+                        cell_value = str(cell.value) if cell.value is not None else ''
+                        if len(cell_value) > max_length:
+                            max_length = len(cell_value)
+                    except:
+                        pass
+                adjusted_width = max_length + 2
+                ws.column_dimensions[column].width = adjusted_width
+
+            # Aplicar borde a toda la tabla (encabezados, datos y fila de sumatoria)
+            thin_side = Side(style='thin', color="000000")
+            thin_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
+            for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
+                for cell in row:
+                    cell.border = thin_border
+
+            # Agregar una fila de sumatoria al final (excepto Avance financiero y Avance físico)
+            suma_dict = {}
+            for col_name in ws[1]:
+                header = col_name.value
+                if header not in ['Avance financiero', 'Avance físico', 'Proyecto', 'Comentario', 'CUI']:
+                    idx = col_name.column
+                    col_letter = col_name.column_letter
+                    # Sumar solo si la columna es numérica
+                    try:
+                        suma = sum([cell.value for cell in ws[col_letter][1:] if isinstance(cell.value, (int, float))])
+                        suma_dict[header] = suma
+                    except:
+                        suma_dict[header] = ''
+                else:
+                    suma_dict[header] = ''
+            # Crear la fila de sumatoria
+            sum_row = []
+            for col_name in ws[1]:
+                header = col_name.value
+                if header == 'Proyecto':
+                    sum_row.append('TOTAL')
+                elif header in suma_dict:
+                    val = suma_dict[header]
+                    # Si el valor es numérico, asegúrate de que sea float
+                    if isinstance(val, (int, float)):
+                        sum_row.append(float(val))
+                    else:
+                        sum_row.append('')
+                else:
+                    sum_row.append('')
+            ws.append(sum_row)
+
+            # Aplicar borde a la fila de sumatoria
+            thin_side = Side(style='thin', color="000000")
+            thin_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
+            last_row = ws.max_row
+            for cell in ws[last_row]:
+                cell.border = thin_border
+
+            # Aplicar formato numérico y porcentaje a la fila de sumatoria (igual que a las filas de datos)
+            last_row = ws.max_row
+            for col_name in ws[1]:
+                header = col_name.value
+                idx = col_name.column
+                cell = ws.cell(row=last_row, column=idx)
+                if header in columnas_moneda:
+                    cell.number_format = '#,##0.00'
+                elif header in columnas_porcentaje:
+                    cell.number_format = '0.00%'
+
+            # Guardar el archivo con los formatos aplicados
+            wb.save(full_path_file)
+
+            with open(full_path_file, 'rb') as excel_file:
+                response = HttpResponse(
+                    excel_file.read(),
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+            response['Content-Disposition'] = f'attachment; filename={name_file}.xlsx'
+            os.remove(full_path_file)
+
+            return response
+
+        else:
+            return Response(
+                data={"message": "No hay datos para exportar"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    except Exception as e:
+        return Response(
+            data={"message": str(e), "content": None},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     
+
