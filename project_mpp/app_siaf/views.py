@@ -4,6 +4,9 @@ import requests
 import urllib3
 import urllib
 
+import numpy as np
+from statistics import mean, stdev
+
 import pandas as pd
 from sqlalchemy import create_engine
 
@@ -12,7 +15,7 @@ from django.shortcuts import render
 from django.template.loader import get_template
 from django.conf import settings
 from django.http import HttpResponse
-from django.db.models import Sum, F 
+from django.db.models import Sum, F, Max
 from decimal import Decimal
 from django.db import transaction
 
@@ -1651,5 +1654,237 @@ def DownloadProyeccionMensualView(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+def obtener_montos_por_ano(id_sincro: int):
+    """
+    Obtiene los montos PIA, PIM y DEVENGADO agrupados por año para una sincronización específica.
     
+    Args:
+        id_sincro (int): ID de la sincronización
+        
+    Returns:
+        QuerySet: Conjunto de resultados con los montos agrupados por año
+    """
+
+    print(id_sincro)
+    return RegistroSincronizacion.objects.filter(
+        sincronizacion_id=id_sincro,
+        tipo_act_proy=2
+    ).values('ano_eje').annotate(
+        MONTO_PIA=Sum('monto_pia'),
+        MONTO_PIM=Sum('monto_pim'),
+        MONTO_DEVENGADO=Sum('monto_devengado'),
+        MES_EJE=Max('mes_eje')
+    ).order_by('ano_eje')
+
+class ObtenerMontosPorAnioView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        anio =  request.query_params.get("anio")
+
+        if not anio:
+            return Response(
+                data={"message": "Faltan parámetros", "content": {}},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        id_sincro = obtener_ultima_sincronizacion_por_anio(anio)
+
+        if not id_sincro:
+            return Response(
+                data={"message": "No se encontró la sincronización", "content": {}},
+                status=status.HTTP_200_OK
+            )
+        montos = obtener_montos_por_ano(id_sincro)
+
+        if montos:
+            return Response(
+                data={"message": "Montos obtenidos correctamente", "content": montos.first()},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                data={"message": "No hay datos para exportar", "content": {}},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+def contar_proyectos__por_anio(id_sincro: int, sec_ejec: str) -> int:
+    """
+    Cuenta el número de proyectos que tienen una suma de PIA y PIM mayor a 0.
+    
+    Args:
+        id_sincro (int): ID de la sincronización
+        sec_ejec (str): Código de la ejecutora
+        
+    Returns:
+        int: Número de proyectos con montos positivos
+    """
+    
+    return RegistroSincronizacion.objects.filter(
+        sincronizacion_id=id_sincro,
+        sec_ejec=sec_ejec,
+        tipo_act_proy=2
+    ).values('ano_eje', 'producto_proyecto').annotate(
+        monto_presup=Sum('monto_pia') + Sum('monto_pim')
+    ).filter(
+        monto_presup__gt=0
+    ).count()
+
+class ContarProyectosPorAnioView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        anio = request.query_params.get("anio")
+        sec_ejec = request.query_params.get("sec_ejec")
+
+        if not anio or not sec_ejec:
+            return Response(
+                data={"message": "Faltan parámetros", "content": {}},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        id_sincro = obtener_ultima_sincronizacion_por_anio(anio)
+
+        if not id_sincro:
+            return Response(
+                data={"message": "No se encontró la sincronización", "content": {"total": 0}},
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            data={"message": "Proyectos contados correctamente", "content": {"total": contar_proyectos__por_anio(id_sincro, sec_ejec)}},
+            status=status.HTTP_200_OK
+        )   
+
+
+def predecir_ejecucion_futura(ejecucion_mes: list) -> list:
+    """
+    Predice la ejecución de meses futuros basándose en datos históricos usando estadísticas.
+    
+    Args:
+        ejecucion_mes (list): Lista de diccionarios con la ejecución mensual histórica
+            Cada diccionario debe tener: mes_eje, MONTO_DEVENGADO
+            
+    Returns:
+        list: Lista de diccionarios con las predicciones mensuales
+    """
+    # Convertir los datos a arrays de numpy para cálculos más eficientes    
+    meses = np.array([float(item['MesNumero']) for item in ejecucion_mes])    
+    montos = np.array([float(item['MONTO_DEVENGADO']) for item in ejecucion_mes])    
+    # Calcular la tendencia (pendiente de la línea de regresión)
+    n = len(meses)
+    if n < 2:
+        return []
+    
+    # Calcular la pendiente (tendencia)
+    x_mean = mean(meses)
+    y_mean = mean(montos)
+    numerador = sum((meses - x_mean) * (montos - y_mean))
+    denominador = sum((meses - x_mean) ** 2)
+    pendiente = numerador / denominador if denominador != 0 else 0    
+    # Calcular la desviación estándar para el intervalo de confianza
+    desviacion = float(stdev(montos)) if len(montos) > 1 else 0.0    
+    # Calcular el promedio móvil de los últimos 3 meses
+    ultimos_3_meses = montos[-3:] if len(montos) >= 3 else montos
+    promedio_movil = float(mean(ultimos_3_meses))    
+    # Nombres de los meses
+    nombres_meses = {
+        1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril',
+        5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto',
+        9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+    }
+    
+    # Generar predicciones para los meses restantes del año
+    ultimo_mes = int(max(meses))
+    predicciones = []    
+    for mes in range(ultimo_mes + 1, 13):
+        # Calcular la predicción base usando la tendencia
+        prediccion_base = float(y_mean + pendiente * (mes - x_mean))
+        # Ajustar la predicción usando el promedio móvil
+        prediccion_ajustada = float((prediccion_base + promedio_movil) / 2)
+        # Asegurar que la predicción no sea negativa
+        prediccion_final = max(0.0, prediccion_ajustada)            
+        # Calcular el intervalo de confianza
+        intervalo_superior = float(prediccion_final + (1.96 * desviacion))
+        intervalo_inferior = max(0.0, float(prediccion_final - (1.96 * desviacion)))        
+        predicciones.append({
+            'mes_eje': mes,
+            'mes_nombre': nombres_meses[mes],
+            'MONTO_DEVENGADO': round(prediccion_final, 2),
+            'MONTO_MINIMO': round(intervalo_inferior, 2),
+            'MONTO_MAXIMO': round(intervalo_superior, 2)
+        })
+    
+    return predicciones
+
+class EjecucionMesView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        anio = request.query_params.get("anio")
+        sec_ejec = request.query_params.get("sec_ejec")
+
+        if not anio or not sec_ejec:
+            return Response(
+                data={"message": "Faltan parámetros", "content": {}},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        id_sincro = obtener_ultima_sincronizacion_por_anio(anio)
+
+        if not id_sincro:
+            return Response(
+                data={"message": "No se encontró la sincronización", "content": {}},
+                status=status.HTTP_200_OK
+            )
+        
+        ejecucion_mes = select_ejecucion_mes(id_sincro=id_sincro, sec_ejec=sec_ejec)
+
+        if ejecucion_mes:
+            return Response(
+                data={"message": "Ejecución mes obtenida correctamente", "content": ejecucion_mes},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                data={"message": "No hay datos para exportar", "content": {}},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+class EjecucionEsperadaView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        anio = request.query_params.get("anio")
+        sec_ejec = request.query_params.get("sec_ejec")
+
+        if not anio or not sec_ejec:
+            return Response(
+                data={"message": "Faltan parámetros", "content": {}},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        id_sincro = obtener_ultima_sincronizacion_por_anio(anio)
+
+        if not id_sincro:
+            return Response(
+                data={"message": "No se encontró la sincronización", "content": {}},
+                status=status.HTTP_200_OK
+            )
+        
+        # Obtener datos históricos
+        ejecucion_mes = select_ejecucion_mes(id_sincro=id_sincro, sec_ejec=sec_ejec)
+
+        if ejecucion_mes:
+            # Obtener predicciones
+            predicciones = predecir_ejecucion_futura(ejecucion_mes)
+            return Response(
+                data={"message": "Ejecución esperada obtenida correctamente", "content": predicciones},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                data={"message": "No hay datos para exportar", "content": {}},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
