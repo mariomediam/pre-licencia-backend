@@ -197,3 +197,18 @@ def select_protectos_con_gasto_mensual(**kwargs):
         cursor.execute(sql, [ano_eje, mes_eje, sec_ejec, sincronizacion_id])        
         return dictfetchall(cursor)
 
+
+def select_ejecucion_mes(**kwargs):
+
+    id_sincro = kwargs.get('id_sincro')
+    sec_ejec = kwargs.get('sec_ejec')
+
+    with connection.cursor() as cursor:
+        sql = """           
+        EXEC BDSIAF.dbo.SelectEjecucionMes
+        @idSincro = %s,
+        @sec_ejec = %s;
+        """
+        
+        cursor.execute(sql, [id_sincro, sec_ejec])        
+        return dictfetchall(cursor) 
