@@ -331,6 +331,26 @@ class RegistroSincronizacion(models.Model):
         app_label = 'app_siaf'
         managed = True
 
+    @classmethod
+    def obtener_montos_por_ano(cls, id_sincro):
+        """
+        Obtiene los montos PIA, PIM y DEVENGADO agrupados por año para una sincronización específica.
+        
+        Args:
+            id_sincro (int): ID de la sincronización
+            
+        Returns:
+            QuerySet: Conjunto de resultados con los montos agrupados por año
+        """
+        return cls.objects.filter(
+            sincronizacion_id=id_sincro,
+            tipo_act_proy=2
+        ).values('ano_eje').annotate(
+            MONTO_PIA=models.Sum('monto_pia'),
+            MONTO_PIM=models.Sum('monto_pim'),
+            MONTO_DEVENGADO=models.Sum('monto_devengado')
+        ).order_by('ano_eje')
+
 
 #---------------------------------------
 
@@ -466,3 +486,5 @@ class ProgramacionProyectoInversion(models.Model):
         db_table = 'PROGRAMACION_PROYECTOS_INVERSION'
         verbose_name = 'Programación de Proyecto de Inversión'
         verbose_name_plural = 'Programaciones de Proyectos de Inversión'
+
+
