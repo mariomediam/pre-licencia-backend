@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MaestroDocumentoView, PersonaView, ProveedorSIGAView, SeleccionarExpedienteFase, SeleccionarExpedienteSecuencia, DownloadFormatoDevengadoController, ProcesoActualizarRegistroView, BuscarCartaOrdenView, DownloadCartaOrdenFideicomisoController, SincroGastoDiario, UltimaSincronizacionView, ProgProyectosInversionMensualView, ProductoProyectoNombreView, UltimaSincronizacionAnioView, ResumenProductoProyectoView, ProyectoInversionView, ProgramacionProyectoInversionView, DownloadProyeccionMensualView
+from .views import MaestroDocumentoView, PersonaView, ProveedorSIGAView, SeleccionarExpedienteFase, SeleccionarExpedienteSecuencia, DownloadFormatoDevengadoController, ProcesoActualizarRegistroView, BuscarCartaOrdenView, DownloadCartaOrdenFideicomisoController, SincroGastoDiario, UltimaSincronizacionView, ProgProyectosInversionMensualView, ProductoProyectoNombreView, UltimaSincronizacionAnioView, ResumenProductoProyectoView, ProyectoInversionView, ProgramacionProyectoInversionView, DownloadProyeccionMensualView, ObtenerMontosPorAnioView, ContarProyectosPorAnioView, EjecucionMesView, EjecucionEsperadaView
 
 urlpatterns = [
     path("maestro-documento/", MaestroDocumentoView.as_view()),
@@ -21,4 +21,8 @@ urlpatterns = [
     path("programacion-proyecto-inversion", ProgramacionProyectoInversionView.as_view()),
     path("programacion-proyecto-inversion/<int:c_prgpro>", ProgramacionProyectoInversionView.as_view()),
     path("download-proyeccion-mensual", DownloadProyeccionMensualView),
+    path("obtener-montos-por-anio", ObtenerMontosPorAnioView.as_view()),
+    path("contar-proyectos-por-anio", ContarProyectosPorAnioView.as_view()),
+    path("ejecucion-mes", EjecucionMesView.as_view()),
+    path("ejecucion-esperada", EjecucionEsperadaView.as_view()),
 ]
