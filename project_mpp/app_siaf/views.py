@@ -1888,3 +1888,81 @@ class EjecucionEsperadaView(RetrieveAPIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+def obtener_resumen_proyectos(id_sincro: int, sec_ejec: str):
+    """
+    Obtiene el resumen de proyectos por año, producto y montos.
+    
+    Args:
+        id_sincro (int): ID de la sincronización
+        sec_ejec (str): Código de la ejecutora
+        
+    Returns:
+        QuerySet: Conjunto de resultados con el resumen de proyectos
+    """
+    from django.db.models import F, Sum, Q
+
+    # Subconsulta para obtener los productos con suma de PIA + PIM > 0
+    subquery = RegistroSincronizacion.objects.filter(
+        sincronizacion_id=id_sincro,
+        sec_ejec=sec_ejec,
+        tipo_act_proy=2
+    ).values(
+        'producto_proyecto',
+        'sincronizacion_id',
+        'sec_ejec'
+    ).annotate(
+        total=Sum('monto_pia') + Sum('monto_pim')
+    ).filter(
+        total__gt=0
+    )
+
+    # Consulta principal usando INNER JOIN implícito
+    return RegistroSincronizacion.objects.filter(
+        sincronizacion_id=id_sincro,
+        sec_ejec=sec_ejec,
+        tipo_act_proy=2,
+        producto_proyecto__in=subquery.values('producto_proyecto')
+    ).values(
+        'ano_eje',
+        'producto_proyecto',
+        'producto_proyecto_nombre'
+    ).annotate(
+        MONTO_PIA=Sum('monto_pia'),
+        MONTO_PIM=Sum('monto_pim'),
+        MONTO_DEVENGADO=Sum('monto_devengado')
+    ).order_by('-MONTO_PIM')
+
+
+class ResumenProyectosView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request):
+        anio = request.query_params.get("anio")
+        sec_ejec = request.query_params.get("sec_ejec")
+
+        if not anio or not sec_ejec:
+            return Response(
+                data={"message": "Faltan parámetros", "content": {}},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        id_sincro = obtener_ultima_sincronizacion_por_anio(anio)
+
+        if not id_sincro:
+            return Response(
+                data={"message": "No se encontró la sincronización", "content": []},
+                status=status.HTTP_200_OK
+            )
+        
+        resumen = obtener_resumen_proyectos(id_sincro, sec_ejec)
+        
+        if resumen: 
+            return Response(
+                data={"message": "Resumen de proyectos obtenido correctamente", "content": resumen},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                data={"message": "No hay datos para exportar", "content": []},
+                status=status.HTTP_200_OK
+            )
