@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MaestroDocumentoView, PersonaView, ProveedorSIGAView, SeleccionarExpedienteFase, SeleccionarExpedienteSecuencia, DownloadFormatoDevengadoController, ProcesoActualizarRegistroView, BuscarCartaOrdenView, DownloadCartaOrdenFideicomisoController, SincroGastoDiario, UltimaSincronizacionView, ProgProyectosInversionMensualView, ProductoProyectoNombreView, UltimaSincronizacionAnioView, ResumenProductoProyectoView, ProyectoInversionView, ProgramacionProyectoInversionView, DownloadProyeccionMensualView, ObtenerMontosPorAnioView, ContarProyectosPorAnioView, EjecucionMesView, EjecucionEsperadaView
+from .views import MaestroDocumentoView, PersonaView, ProveedorSIGAView, SeleccionarExpedienteFase, SeleccionarExpedienteSecuencia, DownloadFormatoDevengadoController, ProcesoActualizarRegistroView, BuscarCartaOrdenView, DownloadCartaOrdenFideicomisoController, SincroGastoDiario, UltimaSincronizacionView, ProgProyectosInversionMensualView, ProductoProyectoNombreView, UltimaSincronizacionAnioView, ResumenProductoProyectoView, ProyectoInversionView, ProgramacionProyectoInversionView, DownloadProyeccionMensualView, ObtenerMontosPorAnioView, ContarProyectosPorAnioView, EjecucionMesView, EjecucionEsperadaView, ResumenProyectosView
 
 urlpatterns = [
     path("maestro-documento/", MaestroDocumentoView.as_view()),
@@ -25,4 +25,5 @@ urlpatterns = [
     path("contar-proyectos-por-anio", ContarProyectosPorAnioView.as_view()),
     path("ejecucion-mes", EjecucionMesView.as_view()),
     path("ejecucion-esperada", EjecucionEsperadaView.as_view()),
+    path("resumen-proyectos", ResumenProyectosView.as_view()),
 ]
