@@ -1834,7 +1834,7 @@ class EjecucionMesView(RetrieveAPIView):
 
         if not id_sincro:
             return Response(
-                data={"message": "No se encontró la sincronización", "content": {}},
+                data={"message": "No se encontró la sincronización", "content": []},
                 status=status.HTTP_200_OK
             )
         
@@ -1847,7 +1847,7 @@ class EjecucionMesView(RetrieveAPIView):
             )
         else:
             return Response(
-                data={"message": "No hay datos para exportar", "content": {}},
+                data={"message": "No hay datos para exportar", "content": []},
                 status=status.HTTP_404_NOT_FOUND
             )
 
@@ -1966,3 +1966,154 @@ class ResumenProyectosView(RetrieveAPIView):
                 data={"message": "No hay datos para exportar", "content": []},
                 status=status.HTTP_200_OK
             )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])        
+def DownloadResumenProyectosView(request):    
+    ano_eje = request.data.get("ano_eje")    
+    sec_ejec = request.data.get("sec_ejec")
+    
+    if not all([ano_eje, sec_ejec]):
+        return Response(
+            data={"message": "Faltan parámetros"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        sincronizacion_id = obtener_ultima_sincronizacion_por_anio(ano_eje)
+
+        if not sincronizacion_id:
+            return Response(
+                data={"message": "No se encontró la sincronización"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        data = obtener_resumen_proyectos(sincronizacion_id, sec_ejec)
+            
+        df = pd.DataFrame(data)
+
+        if len(df) > 0:
+            # Convertir todas las columnas numéricas a float
+            numeric_columns = ['MONTO_PIA', 'MONTO_PIM', 'MONTO_DEVENGADO']
+            for col in numeric_columns:
+                df[col] = df[col].astype(float)
+            
+            # Calcular Avance financiero como decimal, manejando división por cero
+            df['Avance'] = df.apply(
+                lambda row: (
+                    row['MONTO_DEVENGADO'] / row['MONTO_PIM']
+                    if row['MONTO_PIM'] != 0 else 0
+                ),
+                axis=1
+            ).fillna(0)
+
+            # Redondear Avance financiero a dos decimales en porcentaje
+            if 'Avance' in df.columns:
+                df['Avance'] = (df['Avance'] * 100).round(1) / 100
+
+            if 'producto_proyecto' in df.columns:
+                df['producto_proyecto'] = (df['producto_proyecto']).astype(int)
+            
+            # Redondear columnas numéricas a 2 decimales
+            columnas_redondear = [
+                'MONTO_PIA',
+                'MONTO_PIM',
+                'MONTO_DEVENGADO',                
+            ]
+            for col in columnas_redondear:
+                if col in df.columns:
+                    df[col] = df[col].round(2)
+
+            # Seleccionar y renombrar columnas
+            columnas = {                
+                'producto_proyecto': 'CUI',
+                'producto_proyecto_nombre': 'Descripción',
+                'MONTO_PIA': 'PIA',
+                'MONTO_PIM': 'PIM',
+                'MONTO_DEVENGADO': 'Ejecución',
+                'Avance': 'Avance',                
+            }
+            df = df[list(columnas.keys())]
+            df = df.rename(columns=columnas)
+
+            # Guardar el DataFrame a Excel
+            name_file = "ReporteResumenProyectos"
+            full_path_file = f"{PATH_TEMP}/{name_file}.xlsx"
+            df.to_excel(full_path_file, index=False)
+
+            # Abrir el archivo con openpyxl para aplicar formatos
+            wb = openpyxl.load_workbook(full_path_file)
+            ws = wb.active
+
+            # Identificar las columnas por nombre
+            col_indices = {cell.value: idx+1 for idx, cell in enumerate(ws[1])}
+
+            # Columnas a formatear como moneda (separador de miles/millones)
+            columnas_moneda = [
+                'PIA',
+                'PIM',
+                'Ejecución',                
+            ]
+            # Columnas a formatear como porcentaje
+            columnas_porcentaje = [
+                'Avance',
+            ]
+
+            # Aplicar formato a cada celda de las columnas correspondientes
+            for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+                for col_name in columnas_moneda:
+                    idx = col_indices.get(col_name)
+                    if idx:
+                        cell = row[idx-1]
+                        cell.number_format = '#,##0.00'
+                for col_name in columnas_porcentaje:
+                    idx = col_indices.get(col_name)
+                    if idx:
+                        cell = row[idx-1]
+                        cell.number_format = '0.00%'
+
+            # Ajustar el ancho de las columnas automáticamente (autofit)
+            # for column_cells in ws.columns:
+            #     max_length = 0
+            #     column = column_cells[0].column_letter  # Letra de la columna
+            #     for cell in column_cells:
+            #         try:
+            #             cell_value = str(cell.value) if cell.value is not None else ''
+            #             if len(cell_value) > max_length:
+            #                 max_length = len(cell_value)
+            #         except:
+            #             pass
+            #     adjusted_width = max_length + 2
+            #     ws.column_dimensions[column].width = adjusted_width
+
+            # Aplicar borde a toda la tabla
+            thin_side = Side(style='thin', color="000000")
+            thin_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
+            for row in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
+                for cell in row:
+                    cell.border = thin_border
+
+            # Guardar el archivo con los formatos aplicados
+            wb.save(full_path_file)
+
+            with open(full_path_file, 'rb') as excel_file:
+                response = HttpResponse(
+                    excel_file.read(),
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+            response['Content-Disposition'] = f'attachment; filename={name_file}.xlsx'
+            os.remove(full_path_file)
+
+            return response
+
+        else:
+            return Response(
+                data={"message": "No hay datos para exportar"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    except Exception as e:
+        return Response(
+            data={"message": str(e), "content": None},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
