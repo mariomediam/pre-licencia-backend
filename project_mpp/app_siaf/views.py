@@ -859,7 +859,7 @@ def getLastSincroByAnoEjecutora(ano_eje, sec_ejec):
     ).order_by('-idSincro').first()
 
 class UltimaSincronizacionView(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request: Request):
         try:
@@ -1025,7 +1025,7 @@ def obtener_ultima_sincronizacion_por_anio(ano_eje: float) -> int:
 
 
 class UltimaSincronizacionAnioView(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request: Request):
         ano_eje = request.query_params.get('ano_eje')
@@ -1677,7 +1677,7 @@ def obtener_montos_por_ano(id_sincro: int):
     ).order_by('ano_eje')
 
 class ObtenerMontosPorAnioView(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request: Request):
         anio =  request.query_params.get("anio")
@@ -1731,7 +1731,7 @@ def contar_proyectos__por_anio(id_sincro: int, sec_ejec: str) -> int:
     ).count()
 
 class ContarProyectosPorAnioView(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request: Request):
         anio = request.query_params.get("anio")
@@ -1818,7 +1818,7 @@ def predecir_ejecucion_futura(ejecucion_mes: list) -> list:
     return predicciones
 
 class EjecucionMesView(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request: Request):
         anio = request.query_params.get("anio")
@@ -1934,7 +1934,7 @@ def obtener_resumen_proyectos(id_sincro: int, sec_ejec: str):
 
 
 class ResumenProyectosView(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request: Request):
         anio = request.query_params.get("anio")
