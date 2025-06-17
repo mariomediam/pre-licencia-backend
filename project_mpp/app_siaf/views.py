@@ -1968,7 +1968,7 @@ class ResumenProyectosView(RetrieveAPIView):
             )
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])        
+# @permission_classes([IsAuthenticated])        
 def DownloadResumenProyectosView(request):    
     ano_eje = request.data.get("ano_eje")    
     sec_ejec = request.data.get("sec_ejec")
