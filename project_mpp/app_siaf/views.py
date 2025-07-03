@@ -44,6 +44,11 @@ from app_deploy.views import number_to_word_currency, BuscarSunat
 from .models import Sincronizacion, RegistroSincronizacion, ProyectoInversion, ProgramacionProyectoInversion
 from .serializers import ProyectoInversionSerializer
 
+from .siaf_token_manager import (SIAFTokenManager)
+
+
+URL_SIAF_API = "https://apps.mef.gob.pe/v1/siaf-services"
+
 
 RESOURCE_ID = "35bdc5b5-017c-42c1-ba20-8820bf1248b7"
 PATH_TEMP = os.path.join(os.path.dirname(__file__),"temp")
@@ -135,24 +140,36 @@ class SeleccionarExpedienteFase(RetrieveAPIView):
         ciclo = request.query_params.get("ciclo")
         fase = request.query_params.get("fase")
 
-        filters = {
-            "ano_eje": ano_eje,
-            "expediente": expediente,
-            "ciclo": ciclo,
-            "fase": fase,
-        }
-
-        if not ano_eje or not expediente or not ciclo or not fase:
+        try:
+                    
+            # data = SeleccionarExpedienteFaseLocal(ano_eje, expediente, ciclo, fase)
+            data = siaf_leer_devengado_web(ano_eje, expediente)
             return Response(
-                data={"message": "Faltan parametros"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )    
+                data={"message": "Expediente fase", "content": data},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
-        data = sf_seleccionar_expediente_fase(**filters)        
-        return Response(
-            data={"message": "Expediente fase", "content": data},
-            status=status.HTTP_200_OK,
-        )
+def SeleccionarExpedienteFaseLocal(ano_eje, expediente, ciclo, fase):
+    
+
+    filters = {
+        "ano_eje": ano_eje,
+        "expediente": expediente,
+        "ciclo": ciclo,
+        "fase": fase,
+    }
+
+    if not ano_eje or not expediente or not ciclo or not fase:
+        raise Exception("Faltan parametros")
+
+    data = sf_seleccionar_expediente_fase(**filters)        
+    return data
+
     
 # sf_seleccionar_expediente_secuencia    
 
@@ -267,7 +284,14 @@ def DownloadFormatoDevengadoController(request):
                 "correlativo": correlativo,
             }          
 
-            data = sf_seleccionar_expediente_secuencia(**filters)  
+            # data = sf_seleccionar_expediente_secuencia(**filters)  
+
+            devengado_web = siaf_buscar_devengado_by_secuencia(ano_eje, expediente, secuencia)
+
+            data = aplicar_formato_devengado(devengado_web)
+            data['FECHA_DOC'] = datetime.strptime(data['FECHA_DOC'], '%Y-%m-%d').date()            
+            data['MONTO_NACIONAL'] = Decimal(str(data['MONTO_NACIONAL'])).quantize(Decimal('0.00'))
+
 
             if not data["NOMBRE"]:
                 data = correct_supplier_name(data)
@@ -2072,20 +2096,6 @@ def DownloadResumenProyectosView(request):
                         cell = row[idx-1]
                         cell.number_format = '0.00%'
 
-            # Ajustar el ancho de las columnas automáticamente (autofit)
-            # for column_cells in ws.columns:
-            #     max_length = 0
-            #     column = column_cells[0].column_letter  # Letra de la columna
-            #     for cell in column_cells:
-            #         try:
-            #             cell_value = str(cell.value) if cell.value is not None else ''
-            #             if len(cell_value) > max_length:
-            #                 max_length = len(cell_value)
-            #         except:
-            #             pass
-            #     adjusted_width = max_length + 2
-            #     ws.column_dimensions[column].width = adjusted_width
-
             # Aplicar borde a toda la tabla
             thin_side = Side(style='thin', color="000000")
             thin_border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
@@ -2117,3 +2127,148 @@ def DownloadResumenProyectosView(request):
             data={"message": str(e), "content": None},
             status=status.HTTP_400_BAD_REQUEST,
         )
+    
+
+class SiafLeerDevengadoView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = None
+    serializer_class = None
+
+    def get(self, request):        
+        ano_eje = request.query_params.get('ano_eje', None)
+        expediente = request.query_params.get('expediente', None)        
+
+        if not ano_eje or not expediente:
+            return Response(
+                data={"message": "Faltan parámetros requeridos", "content": None},
+                status=status.HTTP_400_BAD_REQUEST
+            )            
+        
+        response_json = siaf_buscar_devengado(ano_eje, expediente)
+        
+        if not response_json:
+            return Response(
+                data={"message": "No se encontraron devengados", "content": []},
+                status=status.HTTP_200_OK
+            )
+        
+        devengados_list = []
+        for item in response_json:
+            secuencia = item.get("secuencia")
+            devengado = siaf_buscar_devengado_by_secuencia(ano_eje, expediente, secuencia)            
+            devengado["detalle"]["expediente"] = expediente
+            devengado["detalle"]["secuencia"] = secuencia
+            formatted_devengado = aplicar_formato_devengado(devengado)
+            devengados_list.append(formatted_devengado)
+
+        return Response(
+            data={"message": "", "content": devengados_list},
+            status=status.HTTP_200_OK
+        )
+    
+def siaf_leer_devengado_web(ano_eje, expediente):
+    
+    if not ano_eje or not expediente:
+        raise Exception("Faltan parámetros requeridos")
+        
+    response_json = siaf_buscar_devengado(ano_eje, expediente)
+    
+    if not response_json:
+        raise Exception("No se encontraron devengados")        
+    
+    devengados_list = []
+    for item in response_json:
+        secuencia = item.get("secuencia")
+        devengado = siaf_buscar_devengado_by_secuencia(ano_eje, expediente, secuencia)            
+        devengado["detalle"]["expediente"] = expediente
+        devengado["detalle"]["secuencia"] = secuencia
+        formatted_devengado = aplicar_formato_devengado(devengado)
+        devengados_list.append(formatted_devengado)
+
+    return devengados_list
+
+
+
+def siaf_buscar_devengado(ano_eje, expediente):
+    try:
+        siaf_manager = SIAFTokenManager()
+        access_token = siaf_manager.get_access_token()        
+
+        if not access_token:
+            raise Exception("No hay tokens almacenados")     
+        
+        url = f"{URL_SIAF_API}/devengado/devengados?anio={ano_eje}&expediente={expediente}&page=0&page_size=10&sort=-"
+        
+        headers = {
+            "Authorization": f"Bearer {access_token}",            
+        }
+        
+        response = requests.get(url, headers=headers)
+        response_json = response.json()                
+        content_list = response_json.get("content", [])
+        
+        if content_list and len(content_list) > 0:
+            # Tomar el primer elemento de la lista content
+            first_item = content_list[0]            
+            # Obtener la lista de contenido del primer item
+            contenido_list = first_item.get("contenido", [])            
+            # solo los que fase sea D
+            filtered_content = [item for item in contenido_list if item.get("fase") == "D"]            
+            return filtered_content
+        return []
+    
+    except Exception as e:
+        raise Exception(f"Error al buscar devengados: {e}")
+    
+
+    
+
+
+def siaf_buscar_devengado_by_secuencia(ano_eje, expediente, secuencia):
+    try:
+        siaf_manager = SIAFTokenManager()
+        access_token = siaf_manager.get_access_token()
+
+        if not access_token:
+            raise Exception("No hay tokens almacenados")
+        
+        url = f"{URL_SIAF_API}/devengado/devengados/{ano_eje}/{expediente}/{secuencia}"
+
+        headers = {
+            "Authorization": f"Bearer {access_token}",            
+        }
+        response = requests.get(url, headers=headers)
+        response_json = response.json()
+        return response_json
+    except Exception as e:
+        raise Exception(f"Error al buscar devengado por secuencia: {e}")
+    
+
+def aplicar_formato_devengado(devengado):
+    try:
+        detalle = devengado.get("detalle")
+        formatted_devengado = {            
+            "ANO_EJE": str(detalle.get("anio", 0)),
+            "EXPEDIENTE": detalle.get("expediente", "").rjust(10, "0"),
+            "CICLO": detalle.get("ciclo"),
+            "FASE": detalle.get("fase"),
+            "SECUENCIA": str(detalle.get("secuencia", "0")).rjust(4, "0"),
+            "CORRELATIVO": str(detalle.get("correlativo", "0")).rjust(4, "0"),
+            "COD_DOC": detalle.get("codDoc"),
+            "ABREVIATURA": detalle.get("codDocNombre"),
+            "SERIE_DOC": detalle.get("serie"),
+            "NUM_DOC": detalle.get("numDoc"),
+            "FECHA_DOC": detalle.get("fechaDoc"),
+            "FUENTE_FINANC": detalle.get("rubro"),
+            "TIPO_RECURSO": detalle.get("tipoRecurso"),
+            "RUC": str(detalle.get("proveedorNumeroDocumento", "0")),        
+            "NOMBRE": detalle.get("proveedorNombre"),
+            "MONTO_NACIONAL": detalle.get("totalFaseSiguiente"),
+            "GLOSA": detalle.get("notas"),
+            "TIPO_OPERACION": detalle.get("tipoOperacion"),
+            "NOMBRE_TIPO_OPERACION": detalle.get("tipoOperacionDescripcion")
+        }
+
+        return formatted_devengado
+    except Exception as e:
+        raise Exception(f"Error al aplicar formato a devengado: {e}")
