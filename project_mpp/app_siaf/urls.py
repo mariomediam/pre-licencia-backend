@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MaestroDocumentoView, PersonaView, ProveedorSIGAView, SeleccionarExpedienteFase, SeleccionarExpedienteSecuencia, DownloadFormatoDevengadoController, ProcesoActualizarRegistroView, BuscarCartaOrdenView, DownloadCartaOrdenFideicomisoController, SincroGastoDiario, UltimaSincronizacionView, ProgProyectosInversionMensualView, ProductoProyectoNombreView, UltimaSincronizacionAnioView, ResumenProductoProyectoView, ProyectoInversionView, ProgramacionProyectoInversionView, DownloadProyeccionMensualView, ObtenerMontosPorAnioView, ContarProyectosPorAnioView, EjecucionMesView, EjecucionEsperadaView, ResumenProyectosView, DownloadResumenProyectosView
+from .views import MaestroDocumentoView, PersonaView, ProveedorSIGAView, SeleccionarExpedienteFase, SeleccionarExpedienteSecuencia, DownloadFormatoDevengadoController, ProcesoActualizarRegistroView, BuscarCartaOrdenView, DownloadCartaOrdenFideicomisoController, SincroGastoDiario, UltimaSincronizacionView, ProgProyectosInversionMensualView, ProductoProyectoNombreView, UltimaSincronizacionAnioView, ResumenProductoProyectoView, ProyectoInversionView, ProgramacionProyectoInversionView, DownloadProyeccionMensualView, ObtenerMontosPorAnioView, ContarProyectosPorAnioView, EjecucionMesView, EjecucionEsperadaView, ResumenProyectosView, DownloadResumenProyectosView, SiafLeerDevengadoView
 
 urlpatterns = [
     path("maestro-documento/", MaestroDocumentoView.as_view()),
@@ -27,4 +27,5 @@ urlpatterns = [
     path("ejecucion-esperada", EjecucionEsperadaView.as_view()),
     path("resumen-proyectos", ResumenProyectosView.as_view()),
     path("download-resumen-proyectos", DownloadResumenProyectosView),
+    path("siafweb-buscar-devengado", SiafLeerDevengadoView.as_view()),
 ]
