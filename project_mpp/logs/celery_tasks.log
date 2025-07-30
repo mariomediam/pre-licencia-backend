@@ -1,0 +1,50 @@
+[2025-07-25 15:08:22,398] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:09:00,012] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:10:00,014] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-25 15:10:02,140] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:11:00,015] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:12:00,011] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:13:00,000] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:14:00,006] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:15:00,006] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-25 15:15:00,006] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:16:00,013] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:17:00,009] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:18:00,021] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:19:00,015] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:20:00,018] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:20:00,018] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-25 15:21:00,008] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:22:00,017] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:23:00,009] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:24:00,020] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:25:00,017] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:25:00,020] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-25 15:26:00,011] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-25 15:27:00,000] INFO app_siaf.tasks Ejecutando tarea de prueba
+[2025-07-30 09:24:07,020] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 09:25:00,003] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 09:30:00,005] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 09:35:00,019] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 09:40:00,024] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 09:45:00,015] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 09:50:00,024] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 09:55:00,008] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 10:00:00,020] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 10:05:00,014] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 10:10:00,016] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 10:15:00,010] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 10:20:00,015] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 10:25:00,017] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 10:30:00,018] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 10:35:00,033] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 10:40:00,033] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 10:45:00,014] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 10:50:00,012] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 10:55:00,029] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 11:00:00,021] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 11:05:00,014] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 11:10:00,017] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 11:15:00,019] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 11:20:00,019] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2025-07-30 11:25:00,021] INFO app_siaf.tasks Tarea para obtener token de SIAF

@@ -13,34 +13,50 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 from pathlib import Path
 from datetime import timedelta
+from celery.schedules import crontab
 
 import pdfkit
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ["*"]
-
 from os import environ
 from dotenv import load_dotenv
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
-
 load_dotenv(dotenv_path)
 
+# ========================
+# CONFIGURACIÃ“N POR ENTORNO
+# ========================
+
+# Obtener el entorno
+DJANGO_ENV = environ.get('DJANGO_ENV', 'development')
+
+# ConfiguraciÃ³n segÃºn el entorno
+if DJANGO_ENV == 'production':
+    DEBUG = False
+    WKHTMLTOPDF_CMD = '/usr/local/bin/wkhtmltopdf'
+    
+    # ConfiguraciÃ³n especÃ­fica para producciÃ³n
+    CELERY_WORKER_POOL = 'prefork'  # Usar prefork en Linux
+    CELERY_WORKER_CONCURRENCY = 4
+    FILE_UPLOAD_PERMISSIONS = 770
+    FILE_UPLOAD_DIRECTORY_PERMISSIONS = 770
+else:
+    DEBUG = True
+    WKHTMLTOPDF_CMD = 'C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe'
+    
+    # ConfiguraciÃ³n especÃ­fica para desarrollo/Windows
+    CELERY_WORKER_POOL = 'threads'  # Usar threads en Windows
+    CELERY_WORKER_CONCURRENCY = 4
+
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = environ.get('SECRET_KEY')
-
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -55,7 +71,6 @@ INSTALLED_APPS = [
     'app_licfunc',
     'app_contribuyente',
     'app_rrhh',
-    'app_planif',
     'app_tradoc',
     'app_tesorero',
     'app_abastec',
@@ -96,16 +111,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'project_deploy.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 DATABASES = {
         'default': {
@@ -183,7 +190,6 @@ AUTH_USER_MODEL = 'app_usuario.UsuarioModel'
 
 AUTHENTICATION_BACKENDS = ( 'app_usuario.auth.MyBackend','django.contrib.auth.backends.ModelBackend',)
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -197,7 +203,6 @@ USE_L10N = True
 
 USE_TZ = False
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
@@ -207,9 +212,13 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (            
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 2,
 }
+
+# En desarrollo agregar paginaciÃ³n
+if DJANGO_ENV != 'production':
+    REST_FRAMEWORK['DEFAULT_PAGINATION_CLASS'] = 'rest_framework.pagination.PageNumberPagination'
+    REST_FRAMEWORK['PAGE_SIZE'] = 2
+
 # encargada de la configuracion de mi libreria de DRF SIMPLE JWT
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'username',
@@ -249,15 +258,151 @@ EMAIL_HOST_USER = environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = environ.get('EMAIL_HOST_PASSWORD')
 RECIPIENT_ADDRESS= environ.get('RECIPIENT_ADDRESS')
 
-# FILE_UPLOAD_PERMISSIONS = 770
-# FILE_UPLOAD_DIRECTORY_PERMISSIONS =770
-
-WKHTMLTOPDF_CMD = 'C:/Program Files/wkhtmltopdf/bin/wkhtmltopdf.exe'
+# WKHTMLTOPDF_CMD = '/usr/local/bin/wkhtmltopdf'
 PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=WKHTMLTOPDF_CMD)
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
     }
 }
+
+# ========================
+# CONFIGURACIÃ“N DE CELERY
+# ========================
+
+CELERY_BEAT_SCHEDULE = {
+   # "sample_task": {
+   #     "task": "app_siaf.tasks.sample_task",
+   #     "schedule": crontab(minute="*/1"),
+   # },
+    "get_siaf_token_task": {
+        "task": "app_siaf.tasks.get_siaf_token_task",
+        "schedule": crontab(minute="*/5"),
+    },
+}
+
+# ConfiguraciÃ³n bÃ¡sica de Celery
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+
+# ConfiguraciÃ³n de rendimiento
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_SEND_SENT_EVENT = True
+CELERY_SEND_EVENTS = True
+CELERY_WORKER_SEND_TASK_EVENTS = True
+
+# ConfiguraciÃ³n especÃ­fica por entorno ya definida arriba
+CELERY_TASK_ALWAYS_EAGER = False
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+
+# Importar tareas explÃ­citamente
+CELERY_IMPORTS = ('app_siaf.tasks',)
+
+# ConfiguraciÃ³n del archivo de schedule segÃºn el entorno
+if DJANGO_ENV == 'production':
+    CELERY_BEAT_SCHEDULE_FILENAME = '/tmp/celerybeat-schedule'
+else:
+    CELERY_BEAT_SCHEDULE_FILENAME = 'celerybeat-schedule'
+
+# ConfiguraciÃ³n de retry para tareas crÃ­ticas
+CELERY_TASK_ANNOTATIONS = {
+    'app_siaf.tasks.get_siaf_token_task': {
+        'rate_limit': '10/m',  # MÃ¡ximo 10 por minuto
+        'retry_kwargs': {'max_retries': 3, 'countdown': 60},
+    },
+  #  'app_siaf.tasks.sample_task': {
+  #      'rate_limit': '60/m',  # MÃ¡ximo 60 por minuto
+  # }
+}   
+
+# ========================
+# CONFIGURACIÃ“N DE LOGGING
+# ========================
+
+# ConfiguraciÃ³n de logging segÃºn el entorno
+if DJANGO_ENV == 'production':
+    # En producciÃ³n: usar consola para evitar problemas de permisos
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '[{asctime}] {levelname} {name} {message}',
+                'style': '{',
+            },
+            'simple': {
+                'format': '{levelname} {message}',
+                'style': '{',
+            },
+        },
+        'handlers': {
+            'console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose',
+            },
+        },
+        'loggers': {
+            'celery.task': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'app_siaf.tasks': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+        },
+    }
+else:
+    # En desarrollo: usar archivos como antes
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '[{asctime}] {levelname} {name} {message}',
+                'style': '{',
+            },
+            'simple': {
+                'format': '{levelname} {message}',
+                'style': '{',
+            },
+        },
+        'handlers': {
+            'celery_file': {
+                'level': 'INFO',
+                'class': 'logging.FileHandler',
+                'filename': os.path.join(BASE_DIR, 'logs', 'celery_tasks.log'),
+                'formatter': 'verbose',
+            },
+            'celery_error_file': {
+                'level': 'ERROR',
+                'class': 'logging.FileHandler',
+                'filename': os.path.join(BASE_DIR, 'logs', 'celery_errors.log'),
+                'formatter': 'verbose',
+            },
+        },
+        'loggers': {
+            'celery.task': {
+                'handlers': ['celery_file', 'celery_error_file'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'app_siaf.tasks': {
+                'handlers': ['celery_file', 'celery_error_file'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+        },
+    }

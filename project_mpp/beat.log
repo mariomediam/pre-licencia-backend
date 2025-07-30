@@ -1,0 +1,4 @@
+[2025-07-22 15:29:54,867: INFO/MainProcess] beat: Starting...
+[2025-07-22 15:29:57,041: INFO/MainProcess] Scheduler: Sending due task sample_task (app_siaf.tasks.sample_task)
+[2025-07-22 15:30:01,172: INFO/MainProcess] Scheduler: Sending due task get_siaf_token_task (app_siaf.tasks.get_siaf_token_task)
+[2025-07-22 15:30:01,188: INFO/MainProcess] Scheduler: Sending due task sample_task (app_siaf.tasks.sample_task)

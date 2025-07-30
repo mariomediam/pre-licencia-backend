@@ -1,0 +1,8 @@
+[INFO] 2025-07-22 14:23:42,640 | django.utils.autoreload | 27180 | 14496 | Watching for file changes with StatReloader
+[INFO] 2025-07-22 14:23:42,640 | django.utils.autoreload | 27180 | 14496 | Watching for file changes with StatReloader
+[INFO] 2025-07-22 14:24:23,266 | django.utils.autoreload | 27180 | 14496 | E:\Mario\Python\Deploy\deploy1\project_mpp\app_siaf\tasks.py changed, reloading.
+[INFO] 2025-07-22 14:24:23,266 | django.utils.autoreload | 27180 | 14496 | E:\Mario\Python\Deploy\deploy1\project_mpp\app_siaf\tasks.py changed, reloading.
+[INFO] 2025-07-22 14:24:25,249 | django.utils.autoreload | 19544 | 18060 | Watching for file changes with StatReloader
+[INFO] 2025-07-22 14:24:25,249 | django.utils.autoreload | 19544 | 18060 | Watching for file changes with StatReloader
+[INFO] 2025-07-22 14:32:50,871 | django.utils.autoreload | 19544 | 18060 | E:\Mario\Python\Deploy\deploy1\project_mpp\project_deploy\settings.py changed, reloading.
+[INFO] 2025-07-22 14:32:50,871 | django.utils.autoreload | 19544 | 18060 | E:\Mario\Python\Deploy\deploy1\project_mpp\project_deploy\settings.py changed, reloading.

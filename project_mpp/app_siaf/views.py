@@ -43,8 +43,10 @@ from .siaf import *
 from app_deploy.views import number_to_word_currency, BuscarSunat
 from .models import Sincronizacion, RegistroSincronizacion, ProyectoInversion, ProgramacionProyectoInversion
 from .serializers import ProyectoInversionSerializer
-
+from .tasks import add, set_cache
 from .siaf_token_manager import (SIAFTokenManager)
+from django.core.cache import cache
+
 
 
 URL_SIAF_API = "https://apps.mef.gob.pe/v1/siaf-services"
@@ -143,7 +145,9 @@ class SeleccionarExpedienteFase(RetrieveAPIView):
         try:
                     
             # data = SeleccionarExpedienteFaseLocal(ano_eje, expediente, ciclo, fase)
+            
             data = siaf_leer_devengado_web(ano_eje, expediente)
+            
             return Response(
                 data={"message": "Expediente fase", "content": data},
                 status=status.HTTP_200_OK,
@@ -350,8 +354,7 @@ class ProcesoActualizarRegistroView(CreateAPIView):
         ano_eje = request.data.get("anio")
         expediente = request.data.get("expediente")
 
-        print("Ingreso *************")
-
+        
         if not ano_eje or not expediente:
             return Response(
                 data={"message": "Faltan parametros"},
@@ -1212,7 +1215,7 @@ class ProyectoInversionView(CreateAPIView):
             if serializer.is_valid():
                 serializer.save()
                 proyecto = serializer.instance
-                print(proyecto.c_proinv)
+                
 
                 for programacion in data['programacion']:
                     
@@ -1689,7 +1692,7 @@ def obtener_montos_por_ano(id_sincro: int):
         QuerySet: Conjunto de resultados con los montos agrupados por año
     """
 
-    print(id_sincro)
+    
     return RegistroSincronizacion.objects.filter(
         sincronizacion_id=id_sincro,
         tipo_act_proy=2
@@ -2167,6 +2170,8 @@ class SiafLeerDevengadoView(RetrieveAPIView):
         )
     
 def siaf_leer_devengado_web(ano_eje, expediente):
+
+    
     
     if not ano_eje or not expediente:
         raise Exception("Faltan parámetros requeridos")
@@ -2178,6 +2183,7 @@ def siaf_leer_devengado_web(ano_eje, expediente):
     
     devengados_list = []
     for item in response_json:
+        
         secuencia = item.get("secuencia")
         devengado = siaf_buscar_devengado_by_secuencia(ano_eje, expediente, secuencia)            
         devengado["detalle"]["expediente"] = expediente
@@ -2191,6 +2197,7 @@ def siaf_leer_devengado_web(ano_eje, expediente):
 
 def siaf_buscar_devengado(ano_eje, expediente):
     try:
+        
         siaf_manager = SIAFTokenManager()
         access_token = siaf_manager.get_access_token()        
 
@@ -2246,7 +2253,7 @@ def siaf_buscar_devengado_by_secuencia(ano_eje, expediente, secuencia):
 
 def aplicar_formato_devengado(devengado):
     try:
-        detalle = devengado.get("detalle")
+        detalle = devengado.get("detalle")        
         formatted_devengado = {            
             "ANO_EJE": str(detalle.get("anio", 0)),
             "EXPEDIENTE": detalle.get("expediente", "").rjust(10, "0"),
@@ -2255,15 +2262,15 @@ def aplicar_formato_devengado(devengado):
             "SECUENCIA": str(detalle.get("secuencia", "0")).rjust(4, "0"),
             "CORRELATIVO": str(detalle.get("correlativo", "0")).rjust(4, "0"),
             "COD_DOC": detalle.get("codDoc"),
-            "ABREVIATURA": detalle.get("codDocNombre"),
-            "SERIE_DOC": detalle.get("serie"),
+            "ABREVIATURA": detalle.get("codDocNombre", ""),
+            "SERIE_DOC": detalle.get("serie", ""),
             "NUM_DOC": detalle.get("numDoc"),
             "FECHA_DOC": detalle.get("fechaDoc"),
             "FUENTE_FINANC": detalle.get("rubro"),
             "TIPO_RECURSO": detalle.get("tipoRecurso"),
             "RUC": str(detalle.get("proveedorNumeroDocumento", "0")),        
             "NOMBRE": detalle.get("proveedorNombre"),
-            "MONTO_NACIONAL": detalle.get("totalFaseSiguiente"),
+            "MONTO_NACIONAL": detalle.get("totalFase", 0) + detalle.get("totalModificaciones", 0),
             "GLOSA": detalle.get("notas"),
             "TIPO_OPERACION": detalle.get("tipoOperacion"),
             "NOMBRE_TIPO_OPERACION": detalle.get("tipoOperacionDescripcion")
@@ -2272,3 +2279,71 @@ def aplicar_formato_devengado(devengado):
         return formatted_devengado
     except Exception as e:
         raise Exception(f"Error al aplicar formato a devengado: {e}")
+    
+
+class TestCeleryView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        resultado = add.delay(1, 2)
+        return Response(
+            data={"message": "Tarea en cola", "resultado": resultado.id},
+            status=status.HTTP_200_OK
+        )
+
+class SaveInCacheView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Crear tarea para guardar en cache
+        resultado = set_cache.delay("test", "Mario")        
+        return Response(
+            data={
+                "message": "Tarea creada para guardar en cache", 
+                "task_id": resultado.id,
+                "key": "test",
+                "value": "Mario"
+            },
+            status=status.HTTP_200_OK
+        )
+    
+class GetFromCacheView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Leer directamente del cache
+        resultado = cache.get("test")
+        return Response(
+            data={
+                "message": "Valor leído del cache", 
+                "key": "test",
+                "resultado": resultado
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class GetSiafTokenView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        resultado = cache.get("tokens_siaf", None)
+        return Response(
+            data={
+                "message": "Token SIAF obtenido", 
+                "token": resultado
+            },
+            status=status.HTTP_200_OK
+        )
+    
+# class SaveSiafTokenView(RetrieveAPIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         siaf_manager = SIAFTokenManager()
+#         siaf_manager.save_tokens(request.query_params.get("access_token"), request.query_params.get("refresh_token"))
+#         return Response(
+#             data={"message": "Token SIAF guardado"},
+#             status=status.HTTP_200_OK
+#         )
+    

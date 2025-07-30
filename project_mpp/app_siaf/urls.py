@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import MaestroDocumentoView, PersonaView, ProveedorSIGAView, SeleccionarExpedienteFase, SeleccionarExpedienteSecuencia, DownloadFormatoDevengadoController, ProcesoActualizarRegistroView, BuscarCartaOrdenView, DownloadCartaOrdenFideicomisoController, SincroGastoDiario, UltimaSincronizacionView, ProgProyectosInversionMensualView, ProductoProyectoNombreView, UltimaSincronizacionAnioView, ResumenProductoProyectoView, ProyectoInversionView, ProgramacionProyectoInversionView, DownloadProyeccionMensualView, ObtenerMontosPorAnioView, ContarProyectosPorAnioView, EjecucionMesView, EjecucionEsperadaView, ResumenProyectosView, DownloadResumenProyectosView, SiafLeerDevengadoView
+from .views import MaestroDocumentoView, PersonaView, ProveedorSIGAView, SeleccionarExpedienteFase, SeleccionarExpedienteSecuencia, DownloadFormatoDevengadoController, ProcesoActualizarRegistroView, BuscarCartaOrdenView, DownloadCartaOrdenFideicomisoController, SincroGastoDiario, UltimaSincronizacionView, ProgProyectosInversionMensualView, ProductoProyectoNombreView, UltimaSincronizacionAnioView, ResumenProductoProyectoView, ProyectoInversionView, ProgramacionProyectoInversionView, DownloadProyeccionMensualView, ObtenerMontosPorAnioView, ContarProyectosPorAnioView, EjecucionMesView, EjecucionEsperadaView, ResumenProyectosView, DownloadResumenProyectosView, SiafLeerDevengadoView, TestCeleryView, SaveInCacheView, GetFromCacheView, GetSiafTokenView
 
 urlpatterns = [
     path("maestro-documento/", MaestroDocumentoView.as_view()),
@@ -28,4 +28,8 @@ urlpatterns = [
     path("resumen-proyectos", ResumenProyectosView.as_view()),
     path("download-resumen-proyectos", DownloadResumenProyectosView),
     path("siafweb-buscar-devengado", SiafLeerDevengadoView.as_view()),
+    path("test-celery", TestCeleryView.as_view()),
+    path("save-in-cache", SaveInCacheView.as_view()),
+    path("get-from-cache", GetFromCacheView.as_view()),
+    path("get-siaf-token", GetSiafTokenView.as_view()),
 ]
