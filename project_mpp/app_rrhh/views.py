@@ -102,6 +102,13 @@ class GenerateBoletasPdfController(UpdateAPIView):
                         n_conlab_nombre = boleta_pago[i]["n_conlab_nombre"]
                         n_tser_reco = boleta_pago[i]["n_tser_reco"]
                         n_boleta_titulo = boleta_pago[i]["n_boleta_titulo"]
+                        c_conlab_id = boleta_pago[i]["c_conlab_id"]
+                        c_traba_clase = boleta_pago[i]["c_traba_clase"]
+                        n_traba_clase_desc = boleta_pago[i]["n_traba_clase_desc"]                        
+                        if c_conlab_id == 'CA' and c_traba_clase == 26:
+                            n_conlab_nombre_completo = f"{n_conlab_nombre} - {n_traba_clase_desc}"
+                        else:
+                            n_conlab_nombre_completo = n_conlab_nombre
 
                         array_ingresos = []
                         array_descuentos = []
@@ -147,7 +154,8 @@ class GenerateBoletasPdfController(UpdateAPIView):
                         "total_ingresos" : round(total_ingresos,2),
                         "total_descuentos" : round(total_descuentos,2),
                         "total_aportes" : round(total_aportes,2),
-                        "importe_liquido" : round(total_ingresos - total_descuentos,2)}
+                        "importe_liquido" : round(total_ingresos - total_descuentos,2),
+                        "n_conlab_nombre_completo" : n_conlab_nombre_completo}
                     
                         template = get_template('boleta.html')
                         html = template.render(context = context)                        
@@ -362,12 +370,12 @@ class SendEmailBoletaController(CreateAPIView):
                     <p>Adjuntamos en formato PDF su boleta de pago <b>{}-{}</b> correspondiente al mes de <b>{} - {}</b>. Este correo electrónico tiene el propósito de brindarle información necesaria de manera oportuna y conveniente.</p>
 
                    
-                    <p>Por favor, tenga en cuenta que este correo electrónico es generado automáticamente y se envía únicamente con fines informativos. Le informamos que debido a la naturaleza automatizada de este mensaje, cualquier consulta o respuesta que envíe no será leída ni atendida por nuestro personal. Si tiene alguna pregunta o inquietud relacionada con su boleta de pago, le recomendamos ponerse en contacto directamente con el personal de la Unidad de Remuneraciones, quienes estarán disponibles para brindarle la asistencia necesaria.</p>                   
-
+                    <p>Por favor, tenga en cuenta que este correo electrónico es generado automáticamente y se envía únicamente con fines informativos. Le informamos que debido a la naturaleza automatizada de este mensaje, cualquier consulta o respuesta que envíe no será leída ni atendida por nuestro personal. Si tiene alguna pregunta o inquietud relacionada con su boleta de pago, le recomendamos ponerse en contacto directamente con el personal de la Oficina de Remuneraciones, quienes estarán disponibles para brindarle la asistencia necesaria.</p>                   
+|
                     <p>Atentamente,</p>
                     
-                    <p>Unidad de Remuneraciones<br>
-                    Oficina de Personal<br>
+                    <p>Oficina de Remuneraciones<br>
+                    Oficina General de Gestión de Recursos Humanos<br>
                     Municipalidad Provincial de Piura</p>
                 '''.format( destinatario["n_traba_nombre"], tipo_planilla[0]["n_tippla_nombre"], numero, nombre_mes, anio)
 
