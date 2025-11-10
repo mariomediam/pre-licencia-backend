@@ -17,3 +17,8 @@ def SeleccDocInterno(c_docum):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIAC.dbo.S17SeleccDocInterno %s', [c_docum])
         return dictfetchall(cursor)
+
+def VerArbol(c_docum):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIAC.dbo.S17VerArbol %s', [c_docum])
+        return dictfetchall(cursor)
