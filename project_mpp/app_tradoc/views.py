@@ -10,7 +10,7 @@ from rest_framework.generics import (
 
 from .models import ExpedientesModel
 from .serializers import ExpedientesSerializer
-from .tradoc import SeleccDocumXNumero, SeleccDocInterno
+from .tradoc import SeleccDocumXNumero, SeleccDocInterno, VerArbol
 
 # Create your views here.
 
@@ -83,6 +83,61 @@ class SeleccDocumController(RetrieveAPIView):
 
             return Response(
                 data={"message": None, "content": data},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+class VerArbolController(RetrieveAPIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request):
+        try:
+            c_docum = request.query_params.get('c_docum')
+            data = VerArbol(c_docum)
+            return Response(
+                data={"message": None, "content": data},
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                data={"message": str(e), "content": None},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+class VerUltimaRamaArbolController(RetrieveAPIView):
+    permission_classes = (AllowAny,)
+    
+    def get(self, request):
+        try:
+            c_docum = request.query_params.get('c_docum')
+            arbol = VerArbol(c_docum)
+            
+            # Si no hay datos, retornar vacío
+            if not arbol:
+                return Response(
+                    data={"message": None, "content": []},
+                    status=status.HTTP_200_OK,
+                )
+            
+            # Tomar el último par de C_Docum y C_Docum_Ref
+            ultimo_c_docum = arbol[-1]['C_Docum']
+            ultimo_c_docum_ref = arbol[-1]['C_Docum_Ref']
+            
+            # Filtrar todas las filas que coincidan con el último par
+            ultima_rama = [
+                row for row in arbol 
+                if row['C_Docum'] == ultimo_c_docum and row['C_Docum_Ref'] == ultimo_c_docum_ref
+            ]
+            
+            # Ordenar por M_Mapeo_Nivel
+            ultima_rama.sort(key=lambda x: x['M_Mapeo_Nivel'])
+            
+            return Response(
+                data={"message": None, "content": ultima_rama},
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
