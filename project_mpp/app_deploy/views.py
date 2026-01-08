@@ -10,7 +10,7 @@ from rest_framework.request import Request
 from rest_framework import status
 from .serializers import LoginSerializer
 from . import trabajador
-from app_deploy.seguridad.usuario import login
+from app_deploy.seguridad.usuario import login, get_user_by_login
 from rest_framework.permissions import IsAuthenticated
 import mimetypes
 import os
@@ -126,51 +126,65 @@ class BuscarReniecDNIController(RetrieveAPIView):
 
     def get(self, request: Request):
         
-        numero = request.query_params.get('numero', '')                
-        responsable = request.user.username
+        dni_a_consultar = request.query_params.get('dniConsultar', '')                
+        clave_reniec = request.query_params.get('claveReniec')
+        login =  request.user.username
 
-        valida_acceso = ValidaAccesoConsultaReniec(responsable)
-        if valida_acceso["acceso"] == True:
+        if dni_a_consultar is None or len(dni_a_consultar) != 8:
+            return Response(data={
+                "message":"Debe de ingresar DNI a consultar valido"
+            }, status=status.HTTP_404_NOT_FOUND)
 
-            if len(numero) == 8 and len(responsable) > 0:
-                ap_primer = None
-                ap_segundo = None
-                direccion = None
-                estado_civil = None
-                foto = None
-                pre_nombres = None
-                restriccion = None
-                ubigeo = None
+        if clave_reniec is None:
+            return Response(data={
+                "message":"Debe de ingresar clave de RENIEC valido"
+            }, status=status.HTTP_404_NOT_FOUND)
 
-                # ciudadano_reniec = requests.get("https://ws5.pide.gob.pe/Rest/Reniec/Consultar?nuDniConsulta={}&nuDniUsuario={}&nuRucUsuario={}&password={}&out=json".format(numero, os.environ.get('RENIEC_NUDNIUSUARIO'), os.environ.get('RENIEC_NURUCUSUARIO'), os.environ.get('RENIEC_PASSWORD'))).json()
-                ciudadano_reniec = requests.get("https://ws2.pide.gob.pe/Rest/RENIEC/Consultar?nuDniConsulta={}&nuDniUsuario={}&nuRucUsuario={}&password={}&out=json".format(numero, os.environ.get('RENIEC_NUDNIUSUARIO'), os.environ.get('RENIEC_NURUCUSUARIO'), os.environ.get('RENIEC_PASSWORD'))).json()
-                
-                co_resultado = ciudadano_reniec["consultarResponse"]["return"]["coResultado"]    
+        usuario = get_user_by_login(login)
 
-                if (co_resultado == "0000"):
-                    datos_persona = ciudadano_reniec["consultarResponse"]["return"]["datosPersona"]                
-                    ap_primer = datos_persona["apPrimer"]                
-                    ap_segundo = datos_persona["apSegundo"]
-                    direccion = datos_persona["direccion"]
-                    estado_civil = datos_persona["estadoCivil"]
-                    foto = datos_persona["foto"]
-                    pre_nombres = datos_persona["prenombres"]
-                    restriccion = datos_persona["restriccion"]
-                    ubigeo = datos_persona["ubigeo"]
-                
-                de_resultado = ciudadano_reniec["consultarResponse"]["return"]["deResultado"]
+        if usuario is None:
+            return Response(data={
+                "message":"No tiene acceso para realizar consultas a RENIEC"
+            }, status=status.HTTP_404_NOT_FOUND)
 
-                AgregarConsultaReniec(responsable, numero, co_resultado, ap_primer, ap_segundo, direccion, estado_civil, foto, pre_nombres,restriccion, ubigeo, de_resultado)
-                
-                return Response(data=ciudadano_reniec, status=status.HTTP_200_OK)        
-            else:
-                return Response(data={
-                        "message":"Debe de ingresar DNI valido y responsable de consulta"
-                    }, status=status.HTTP_404_NOT_FOUND) 
-        else:
-                return Response(data={
-                        "message":"No tiene acceso para realizar consultas a RENIEC"
-                    }, status=status.HTTP_404_NOT_FOUND)     
+        usuario_dni = usuario["M_Usuari_DNI"]
+
+        if usuario_dni is None or len(usuario_dni) != 8:
+            return Response(data={
+                "message":"Debe de ingresar DNI valido"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        ap_primer = None
+        ap_segundo = None
+        direccion = None
+        estado_civil = None
+        foto = None
+        pre_nombres = None
+        restriccion = None
+        ubigeo = None
+
+        ciudadano_reniec = requests.get("https://ws2.pide.gob.pe/Rest/RENIEC/Consultar?nuDniConsulta={}&nuDniUsuario={}&nuRucUsuario={}&password={}&out=json".format(dni_a_consultar, usuario_dni, os.environ.get('RENIEC_NURUCUSUARIO'), clave_reniec)).json()
+        
+        co_resultado = ciudadano_reniec["consultarResponse"]["return"]["coResultado"]    
+
+        if (co_resultado == "0000"):
+            datos_persona = ciudadano_reniec["consultarResponse"]["return"]["datosPersona"]                
+            ap_primer = datos_persona["apPrimer"]                
+            ap_segundo = datos_persona["apSegundo"]
+            direccion = datos_persona["direccion"]
+            estado_civil = datos_persona["estadoCivil"]
+            foto = datos_persona["foto"]
+            pre_nombres = datos_persona["prenombres"]
+            restriccion = datos_persona["restriccion"]
+            ubigeo = datos_persona["ubigeo"]
+        
+        de_resultado = ciudadano_reniec["consultarResponse"]["return"]["deResultado"]
+
+        AgregarConsultaReniec(login, dni_a_consultar, co_resultado, ap_primer, ap_segundo, direccion, estado_civil, foto, pre_nombres,restriccion, ubigeo, de_resultado)
+        
+        return Response(data=ciudadano_reniec, status=status.HTTP_200_OK)        
+            
+          
         
 class BuscarSunatRUCController(RetrieveAPIView):    
     permission_classes = [IsAuthenticated]
