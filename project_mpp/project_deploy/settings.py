@@ -163,6 +163,18 @@ DATABASES = {
                 'driver': 'ODBC Driver 17 for SQL Server',
             },
         },
+        'BDSATP': {
+            'ENGINE': 'mssql',
+            'NAME': environ.get('DB_SIAT'),
+            'USER': environ.get('DB_USERNAME_SATP'),
+            'PASSWORD': environ.get('DB_PASSWORD_SATP'),
+            'HOST': environ.get('DB_HOST_SATP'),
+            'PORT': '',
+
+            'OPTIONS': {
+                'driver': 'ODBC Driver 17 for SQL Server',
+            },
+        },
 
    }
 

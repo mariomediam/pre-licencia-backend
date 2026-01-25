@@ -1,5 +1,5 @@
 import string
-from django.db import connection
+from django.db import connection, connections
 from app_deploy.general.ejecutar import dictfetchall, namedtuplefetchall
 
 def BuscarContribNombre(nombre_contrib):
@@ -446,3 +446,26 @@ def AgregarContribDocumento(codigo_contrib, codigo_docum, numero_docum):
         """
         cursor.execute(sql, [codigo_contrib, codigo_docum, numero_docum])
         
+
+# declare @tasaTransporte TasasMppTransporte
+
+# insert into @tasaTransporte
+# values('441', '567')
+
+# exec SATP.BDSIAT2.DBO.sp_ver_Pagos_TASA_MPP_MMCHT '2025', 1, @tasaTransporte
+def BuscarRecaudacionSATP(anio, mes, tasas):
+    with connections['BDSATP'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        USE BDSIAT2
+
+        DECLARE @tasaTransporte TasasMppTransporte
+
+        INSERT INTO @tasaTransporte
+        VALUES(%s)
+        SELECT @tasaTransporte AS tasaTransporte
+
+        EXEC sp_ver_Pagos_TASA_MPP_MMCHT %s, %s, @tasaTransporte
+        """
+        cursor.execute(sql, [anio, mes, tasas])
+        return dictfetchall(cursor)
