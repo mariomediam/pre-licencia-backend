@@ -153,6 +153,9 @@ class BuscarReniecDNIController(RetrieveAPIView):
             return Response(data={
                 "message":"Debe de ingresar DNI valido"
             }, status=status.HTTP_404_NOT_FOUND)
+            
+        # valores por defecto
+        # usuario_dni="40205800"
 
         ap_primer = None
         ap_segundo = None

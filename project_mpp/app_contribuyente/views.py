@@ -678,25 +678,3 @@ class AgregarContribDocumentoController(CreateAPIView):
                 }, status=400)                
 
 
-class BuscarRecaudacionSATPController(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request: Request):
-        anio = request.query_params.get('anio')
-        mes = request.query_params.get('mes')
-        tasas = request.query_params.get('tasas')
-
-        if not anio or not mes or not tasas:
-            return Response(data={
-                "message": "Faltan parámetros",
-                "content": None
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        recaudacion = BuscarRecaudacionSATP(anio, mes, tasas)
-
-        return Response(data={
-            "message": "Recaudación obtenida correctamente",
-            "content": recaudacion
-        }, status=status.HTTP_200_OK)
-
-

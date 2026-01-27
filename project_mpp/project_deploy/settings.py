@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'app_abastec',
     'app_siaf',
     'app_transporte',
+    'app_indicadores',
     "rest_framework",
     'corsheaders'
 ]

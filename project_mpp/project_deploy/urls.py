@@ -31,6 +31,7 @@ urlpatterns = [
     path("api/tesorero/", include("app_tesorero.urls")),
     path("api/siaf/", include("app_siaf.urls")),
     path("api/transporte/", include("app_transporte.urls")),
+    path("api/indicadores/", include("app_indicadores.urls")),
     
 ]
 
