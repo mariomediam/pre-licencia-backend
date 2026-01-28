@@ -297,6 +297,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "app_siaf.tasks.get_siaf_token_task",
         "schedule": crontab(minute="*/5"),
     },
+    "sincroniza_recaudacion_task": {
+        "task": "app_indicadores.tasks.sincroniza_recaudacion_task",
+        "schedule": crontab(minute="*/10"),
+    },
 }
 
 # ConfiguraciÃ³n bÃ¡sica de Celery
@@ -318,7 +322,7 @@ CELERY_TASK_ALWAYS_EAGER = False
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 
 # Importar tareas explÃ­citamente
-CELERY_IMPORTS = ('app_siaf.tasks',)
+CELERY_IMPORTS = ('app_siaf.tasks', 'app_indicadores.tasks')
 
 # ConfiguraciÃ³n del archivo de schedule segÃºn el entorno
 if DJANGO_ENV == 'production':
@@ -331,6 +335,10 @@ CELERY_TASK_ANNOTATIONS = {
     'app_siaf.tasks.get_siaf_token_task': {
         'rate_limit': '10/m',  # MÃ¡ximo 10 por minuto
         'retry_kwargs': {'max_retries': 3, 'countdown': 60},
+    },
+    "app_indicadores.tasks.sincroniza_recaudacion_task": {
+        "rate_limit": "10/m",
+        "retry_kwargs": {"max_retries": 3, "countdown": 60},
     },
   #  'app_siaf.tasks.sample_task': {
   #      'rate_limit': '60/m',  # MÃ¡ximo 60 por minuto
@@ -375,6 +383,11 @@ if DJANGO_ENV == 'production':
                 'level': 'INFO',
                 'propagate': False,
             },
+            'app_indicadores.tasks': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
         },
     }
 else:
@@ -413,6 +426,11 @@ else:
                 'propagate': False,
             },
             'app_siaf.tasks': {
+                'handlers': ['celery_file', 'celery_error_file'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'app_indicadores.tasks': {
                 'handlers': ['celery_file', 'celery_error_file'],
                 'level': 'INFO',
                 'propagate': False,

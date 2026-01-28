@@ -48,3 +48,156 @@
 [2025-07-30 11:15:00,019] INFO app_siaf.tasks Tarea para obtener token de SIAF
 [2025-07-30 11:20:00,019] INFO app_siaf.tasks Tarea para obtener token de SIAF
 [2025-07-30 11:25:00,021] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 00:41:48,422] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 00:45:00,017] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 00:50:00,014] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 00:50:02,086] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 00:51:56,392] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 00:53:50,917] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 00:55:00,024] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 00:55:07,250] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 00:57:03,446] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 01:01:37,111] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 01:01:37,111] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 01:05:00,021] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 01:10:00,024] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 01:10:00,027] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 01:15:00,021] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 01:20:00,027] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 01:20:00,030] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 01:25:00,020] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 01:30:00,022] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 01:30:00,024] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 01:35:00,024] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 01:40:00,012] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 01:40:00,016] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 01:45:00,023] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 01:50:00,017] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 01:50:00,020] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 01:55:00,030] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 02:00:00,023] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 02:00:00,024] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 02:05:00,015] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 02:10:00,024] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 02:10:00,027] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 02:15:00,025] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 02:20:00,021] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 02:20:00,022] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 02:25:00,010] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 02:30:00,025] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 02:30:00,029] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 02:35:00,029] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 02:40:00,047] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 02:40:00,050] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 02:45:00,022] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 02:50:00,013] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 02:50:00,014] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 02:55:00,013] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 03:00:00,011] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 03:00:00,012] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 03:05:00,027] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 03:10:00,024] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 03:10:00,028] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 03:15:00,024] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 03:20:00,017] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 03:20:00,021] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 03:25:00,018] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 03:30:00,032] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 03:30:00,034] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 03:35:00,098] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 03:40:00,026] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 03:40:00,029] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 03:45:00,015] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 03:50:00,022] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 03:50:00,025] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 03:55:00,005] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 04:00:00,020] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 04:00:00,023] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 04:05:00,023] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 04:10:00,022] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 04:10:00,024] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 04:15:00,012] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 04:20:00,009] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 04:20:00,014] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 04:25:00,016] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 04:30:00,083] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 04:30:00,085] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 04:35:00,018] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 04:40:00,022] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 04:40:00,025] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 04:45:00,022] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 04:50:00,009] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 04:50:00,014] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 04:55:00,022] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 05:00:00,020] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 05:00:00,023] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 05:05:00,013] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 05:10:00,013] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 05:10:00,015] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 05:15:00,021] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 05:20:00,025] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 05:20:00,027] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 05:25:00,021] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 05:30:00,013] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 05:30:00,017] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 05:35:00,009] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 05:40:00,006] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 05:40:00,012] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 05:45:00,009] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 05:50:00,020] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 05:50:00,023] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 05:55:00,023] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 06:00:00,023] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 06:00:00,026] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 06:05:00,012] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 06:10:00,014] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 06:10:00,015] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 06:15:00,019] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 06:20:00,022] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 06:20:00,025] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 06:25:00,026] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 06:30:00,025] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 06:30:00,028] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 06:35:00,018] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 06:40:00,021] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 06:40:00,023] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 06:45:00,027] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 06:50:00,013] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 06:50:00,017] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 06:55:00,019] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 07:00:00,009] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 07:00:00,012] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 07:05:00,016] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 07:10:00,024] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 07:10:00,027] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 07:15:00,023] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 07:20:00,013] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 07:20:00,013] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 07:25:00,012] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 07:30:00,018] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 07:30:00,022] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 07:35:00,009] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 07:40:00,024] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 07:40:00,027] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 07:45:00,026] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 07:50:00,016] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 07:50:00,019] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 07:55:00,023] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 08:00:00,011] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 08:00:00,018] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 08:05:00,026] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 08:10:00,018] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 08:10:00,022] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 08:15:00,009] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 08:20:00,028] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 08:20:00,031] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 08:25:00,025] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 08:30:00,035] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 08:30:00,040] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 08:35:00,031] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 08:40:00,030] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 08:40:00,033] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 08:45:00,029] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 08:50:00,024] INFO app_siaf.tasks Tarea para obtener token de SIAF
+[2026-01-28 08:50:00,028] INFO app_indicadores.tasks Tarea para sincronizar recaudación
+[2026-01-28 08:55:00,027] INFO app_siaf.tasks Tarea para obtener token de SIAF
