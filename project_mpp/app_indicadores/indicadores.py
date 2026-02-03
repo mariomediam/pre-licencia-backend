@@ -2,6 +2,7 @@ from django.db import connections
 from app_deploy.general.ejecutar import dictfetchall
 
 
+
 def BuscarRecaudacionSATP(anio, mes, tasas):
     with connections['BDSATP'].cursor() as cursor:
         sql = """
@@ -14,12 +15,6 @@ def BuscarRecaudacionSATP(anio, mes, tasas):
         return dictfetchall(cursor)
 
 
-# ALTER PROCEDURE [dbo].[S42SincronizaRecaudacion]
-# @Opcion char(2),
-# @Anio char(4),
-# @Valor varchar(max)
-# AS
-
 def S42SincronizaRecaudacion(opcion, anio, valor):
     with connections['default'].cursor() as cursor:
         sql = """
@@ -29,3 +24,26 @@ def S42SincronizaRecaudacion(opcion, anio, valor):
         """
         cursor.execute(sql, [opcion, anio, valor])
         return dictfetchall(cursor)
+
+
+def S42SelectRecaudacionPorAnioyDependencia(anio, dependencia):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42SelectRecaudacionPorAnioyDependencia %s, %s
+        """
+        cursor.execute(sql, [anio, dependencia])
+        return dictfetchall(cursor)
+
+
+def S42SelectProyeccionPorAnioyDependencia(opcion, anio, dependencia):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42SelectProyeccionPorAnioyDependencia %s, %s, %s
+        """
+        cursor.execute(sql, [opcion, anio, dependencia])
+        return dictfetchall(cursor)
+
