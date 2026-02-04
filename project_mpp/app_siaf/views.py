@@ -2209,8 +2209,12 @@ def siaf_buscar_devengado(ano_eje, expediente):
         headers = {
             "Authorization": f"Bearer {access_token}",            
         }
+
+        print("url", url)
+        print("headers", headers)
         
         response = requests.get(url, headers=headers)
+        print("response", response.text)
         response_json = response.json()                
         content_list = response_json.get("content", [])
         
