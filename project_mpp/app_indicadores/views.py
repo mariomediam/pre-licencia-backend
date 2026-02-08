@@ -123,7 +123,8 @@ class S42SelectTasaController(RetrieveAPIView):
     def get(self, request: Request):
         opcion = request.query_params.get('opcion')
         valor = request.query_params.get('valor')
-        if not opcion or not valor:
+
+        if not opcion or valor is None:
             return Response(data={
                 "message": "Faltan parámetros",
                 "content": None
