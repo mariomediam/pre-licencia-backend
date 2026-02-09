@@ -22,3 +22,9 @@ def VerArbol(c_docum):
     with connection.cursor() as cursor:
         cursor.execute('EXEC SIAC.dbo.S17VerArbol %s', [c_docum])
         return dictfetchall(cursor)
+
+def s17SelectDependencia(ano, field, valor, solo_activas):
+    with connection.cursor() as cursor:
+        cursor.execute('EXEC SIAC.dbo.s17SelectDependencia %s, %s, %s, %s', [ano, field, valor, solo_activas])
+        return dictfetchall(cursor)
+

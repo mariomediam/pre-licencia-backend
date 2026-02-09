@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
-from app_indicadores.indicadores import BuscarRecaudacionSATP, S42SelectRecaudacionPorAnioyDependencia, S42SelectProyeccionPorAnioyDependencia, S42SelectRecaudacionPorAnioyTasa, S42SelectProyeccionPorAnioyTasa, S42SelectTasa
+from app_indicadores.indicadores import BuscarRecaudacionSATP, S42SelectRecaudacionPorAnioyDependencia, S42SelectProyeccionPorAnioyDependencia, S42SelectRecaudacionPorAnioyTasa, S42SelectProyeccionPorAnioyTasa, S42SelectTasa, S42UpdateTasa
 
 # Create your views here.
 class BuscarRecaudacionSATPController(RetrieveAPIView):
@@ -135,4 +136,24 @@ class S42SelectTasaController(RetrieveAPIView):
         return Response(data={
             "message": "Tasa obtenida correctamente",
             "content": tasa
+        }, status=status.HTTP_200_OK)
+
+class S42UpdateTasaController(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def put(self, request: Request, tasa: int):
+        usuario = request.user.username
+        dependencia = request.data.get('dependencia')
+
+        if not dependencia:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        S42UpdateTasa(tasa, dependencia, usuario)
+
+        return Response(data={
+            "message": "Tasa actualizada correctamente",
+            "content": None
         }, status=status.HTTP_200_OK)

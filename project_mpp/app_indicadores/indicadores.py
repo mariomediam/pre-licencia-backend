@@ -92,3 +92,18 @@ def S42SelectTasa(opcion, valor):
         """
         cursor.execute(sql, [opcion, valor])
         return dictfetchall(cursor)
+
+# CREATE PROCEDURE S42UpdateTasa
+# @C_Tasa int,
+# @C_Depend int,
+# @C_Usuari_Login char(20)
+
+def S42UpdateTasa(tasa, dependencia, usuario):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42UpdateTasa %s, %s, %s
+        """
+        cursor.execute(sql, [tasa, dependencia, usuario])
+        return True

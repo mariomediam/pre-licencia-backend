@@ -6,11 +6,11 @@ from rest_framework.response import Response
 from rest_framework.generics import (
     ListCreateAPIView,  RetrieveAPIView
 )
-
-
+from rest_framework.request import Request
+from datetime import datetime
 from .models import ExpedientesModel
 from .serializers import ExpedientesSerializer
-from .tradoc import SeleccDocumXNumero, SeleccDocInterno, VerArbol
+from .tradoc import SeleccDocumXNumero, SeleccDocInterno, VerArbol, s17SelectDependencia
 
 # Create your views here.
 
@@ -145,3 +145,27 @@ class VerUltimaRamaArbolController(RetrieveAPIView):
                 data={"message": str(e), "content": None},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+
+class s17SelectDependenciaController(RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request: Request):
+        ano = request.query_params.get('ano', datetime.now().year)
+        field = request.query_params.get('field')
+        valor = request.query_params.get('valor')
+        solo_activas = request.query_params.get('solo_activas', 1)
+        if not ano or not field or valor is None or not solo_activas:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        dependencia = s17SelectDependencia(ano, field, valor, solo_activas)
+
+        print("dependencia", dependencia)
+        return Response(data={
+            "message": "Dependencia obtenida correctamente",
+            "content": dependencia
+        }, status=status.HTTP_200_OK)
