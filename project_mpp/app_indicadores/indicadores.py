@@ -107,3 +107,22 @@ def S42UpdateTasa(tasa, dependencia, usuario):
         """
         cursor.execute(sql, [tasa, dependencia, usuario])
         return True
+
+
+
+# CREATE PROCEDURE [dbo].[S42InsertarProyecciones]
+# @C_Tasa int,
+# @M_Anio smallint,
+# @C_Usuari_Login char(20),
+# @ProyeccionesXML XML
+
+
+def S42InsertarProyecciones(tasa, anio, usuario, proyecciones):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42InsertarProyecciones %s, %s, %s, %s
+        """
+        cursor.execute(sql, [tasa, anio, usuario, proyecciones])
+        return dictfetchall(cursor)

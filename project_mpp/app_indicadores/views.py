@@ -5,7 +5,11 @@ from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
-from app_indicadores.indicadores import BuscarRecaudacionSATP, S42SelectRecaudacionPorAnioyDependencia, S42SelectProyeccionPorAnioyDependencia, S42SelectRecaudacionPorAnioyTasa, S42SelectProyeccionPorAnioyTasa, S42SelectTasa, S42UpdateTasa
+
+import xml.etree.ElementTree as ET
+
+
+from app_indicadores.indicadores import BuscarRecaudacionSATP, S42SelectRecaudacionPorAnioyDependencia, S42SelectProyeccionPorAnioyDependencia, S42SelectRecaudacionPorAnioyTasa, S42SelectProyeccionPorAnioyTasa, S42SelectTasa, S42UpdateTasa, S42InsertarProyecciones
 
 # Create your views here.
 class BuscarRecaudacionSATPController(RetrieveAPIView):
@@ -155,5 +159,38 @@ class S42UpdateTasaController(APIView):
 
         return Response(data={
             "message": "Tasa actualizada correctamente",
+            "content": None
+        }, status=status.HTTP_200_OK)
+
+
+class S42InsertarProyeccionesController(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request: Request, tasa: int, anio: int):
+
+        usuario = request.user.username
+        proyecciones = request.data.get('proyecciones')
+
+        if not tasa or not anio or not proyecciones:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        
+        
+        # Construir XML
+        root = ET.Element('Proyecciones')
+        for item in proyecciones:
+            proy = ET.SubElement(root, 'Proyeccion')            
+            ET.SubElement(proy, 'M_Mes').text = str(item['M_Mes'])
+            ET.SubElement(proy, 'Q_Proyecc_Monto').text = str(item['Q_Proyecc_Monto'])            
+        
+        xml_proyecciones = ET.tostring(root, encoding='unicode')
+
+        S42InsertarProyecciones(tasa, anio, usuario, xml_proyecciones)
+
+        return Response(data={
+            "message": "Proyecciones insertadas correctamente",
             "content": None
         }, status=status.HTTP_200_OK)

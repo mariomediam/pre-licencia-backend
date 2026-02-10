@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import BuscarRecaudacionSATPController, S42SelectRecaudacionPorAnioyDependenciaController, S42SelectProyeccionPorAnioyDependenciaController, S42SelectRecaudacionPorAnioyTasaController, S42SelectProyeccionPorAnioyTasaController, S42SelectTasaController, S42UpdateTasaController   
+from .views import BuscarRecaudacionSATPController, S42SelectRecaudacionPorAnioyDependenciaController, S42SelectProyeccionPorAnioyDependenciaController, S42SelectRecaudacionPorAnioyTasaController, S42SelectProyeccionPorAnioyTasaController, S42SelectTasaController, S42UpdateTasaController, S42InsertarProyeccionesController   
 
 urlpatterns = [
     path('buscar-recaudacion-satp', BuscarRecaudacionSATPController.as_view()),
@@ -10,4 +10,5 @@ urlpatterns = [
     path('select-proyeccion-por-anio-y-tasa', S42SelectProyeccionPorAnioyTasaController.as_view()),
     path('select-tasa', S42SelectTasaController.as_view()),
     path('update-tasa/<int:tasa>', S42UpdateTasaController.as_view()),
+    path('insertar-proyecciones/<int:tasa>/<int:anio>', S42InsertarProyeccionesController.as_view()),
 ]
