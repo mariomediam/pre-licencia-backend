@@ -9,7 +9,7 @@ from rest_framework import status
 import xml.etree.ElementTree as ET
 
 
-from app_indicadores.indicadores import BuscarRecaudacionSATP, S42SelectRecaudacionPorAnioyDependencia, S42SelectProyeccionPorAnioyDependencia, S42SelectRecaudacionPorAnioyTasa, S42SelectProyeccionPorAnioyTasa, S42SelectTasa, S42UpdateTasa, S42InsertarProyecciones
+from app_indicadores.indicadores import BuscarRecaudacionSATP, S42SelectRecaudacionPorAnioyDependencia, S42SelectProyeccionPorAnioyDependencia, S42SelectRecaudacionPorAnioyTasa, S42SelectProyeccionPorAnioyTasa, S42SelectTasa, S42UpdateTasa, S42InsertarProyecciones, BuscarRecaudacionActasControlSATP
 
 # Create your views here.
 class BuscarRecaudacionSATPController(RetrieveAPIView):
@@ -193,4 +193,26 @@ class S42InsertarProyeccionesController(APIView):
         return Response(data={
             "message": "Proyecciones insertadas correctamente",
             "content": None
+        }, status=status.HTTP_200_OK)
+
+
+class BuscarRecaudacionActasControlSATPController(RetrieveAPIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request: Request):
+        anio = request.query_params.get('anio')
+        tipo_recaudacion = request.query_params.get('tipo')
+
+        if not anio or not tipo_recaudacion:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+        recaudacion = BuscarRecaudacionActasControlSATP(anio, tipo_recaudacion)
+
+        return Response(data={
+            "message": "Recaudación obtenida correctamente",
+            "content": recaudacion
         }, status=status.HTTP_200_OK)

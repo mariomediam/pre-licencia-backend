@@ -126,3 +126,17 @@ def S42InsertarProyecciones(tasa, anio, usuario, proyecciones):
         """
         cursor.execute(sql, [tasa, anio, usuario, proyecciones])
         return dictfetchall(cursor)
+
+
+
+# exec SATP.BDSIAT2.dbo.sp_Ver_Pagos_Actas_Control_MMCHT '2025',1
+
+def BuscarRecaudacionActasControlSATP(anio : int, tipoRecaudacion : int):
+    with connections['BDSATP'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec BDSIAT2.DBO.sp_Ver_Pagos_Actas_Control_MMCHT %s, %s
+        """
+        cursor.execute(sql, [anio, tipoRecaudacion])
+        return dictfetchall(cursor)
