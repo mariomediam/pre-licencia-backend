@@ -293,10 +293,10 @@ CELERY_BEAT_SCHEDULE = {
    #     "task": "app_siaf.tasks.sample_task",
    #     "schedule": crontab(minute="*/1"),
    # },
-    "get_siaf_token_task": {
-        "task": "app_siaf.tasks.get_siaf_token_task",
-        "schedule": crontab(minute="*/5"),
-    },
+    # "get_siaf_token_task": {
+    #     "task": "app_siaf.tasks.get_siaf_token_task",
+    #     "schedule": crontab(minute="*/5"),
+    # },
     "sincroniza_recaudacion_task": {
         "task": "app_indicadores.tasks.sincroniza_recaudacion_task",
         "schedule": crontab(minute="*/10"),
