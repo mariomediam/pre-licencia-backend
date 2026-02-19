@@ -1,4 +1,4 @@
-from django.db import connection
+from django.db import connection, connections
 from app_deploy.general.ejecutar import dictfetchall
 
 
@@ -76,3 +76,24 @@ def S05ComparaMontosPapeletaTransito(m_dia, m_mes, c_anio01, c_anio02):
             return result[0]
         
         return result
+
+
+def S42SelectCapacitacion(opcion, valor1 = None, valor2 = None):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42SelectCapacitacion %s, %s, %s
+        """
+        cursor.execute(sql, [opcion, valor1, valor2])
+        return dictfetchall(cursor)
+
+def S42SelectCapacitacionObservacion(opcion, valor1 = None, valor2 = None):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42SelectCapacitacionObservacion %s, %s, %s
+        """
+        cursor.execute(sql, [opcion, valor1, valor2])
+        return dictfetchall(cursor)

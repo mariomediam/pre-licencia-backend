@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import BuscarRecaudacionSATPController, S42SelectRecaudacionPorAnioyDependenciaController, S42SelectProyeccionPorAnioyDependenciaController, S42SelectRecaudacionPorAnioyTasaController, S42SelectProyeccionPorAnioyTasaController, S42SelectTasaController, S42UpdateTasaController, S42InsertarProyeccionesController, BuscarRecaudacionActasControlSATPController   
+from .views import BuscarRecaudacionSATPController, S42SelectRecaudacionPorAnioyDependenciaController, S42SelectProyeccionPorAnioyDependenciaController, S42SelectRecaudacionPorAnioyTasaController, S42SelectProyeccionPorAnioyTasaController, S42SelectTasaController, S42UpdateTasaController, S42InsertarProyeccionesController, BuscarRecaudacionActasControlSATPController, S42SelectCapacitacionTemaController, S42SelectCapacitacionModalidadController, S42SelectCapacitacionCapacitadorController
 
 urlpatterns = [
     path('buscar-recaudacion-satp', BuscarRecaudacionSATPController.as_view()),
@@ -12,4 +12,8 @@ urlpatterns = [
     path('update-tasa/<int:tasa>', S42UpdateTasaController.as_view()),
     path('insertar-proyecciones/<int:tasa>/<int:anio>', S42InsertarProyeccionesController.as_view()),
     path('buscar-recaudacion-actas-control-satp', BuscarRecaudacionActasControlSATPController.as_view()),
+    path('select-capacitacion-tema', S42SelectCapacitacionTemaController.as_view()),
+    path('select-capacitacion-modalidad', S42SelectCapacitacionModalidadController.as_view()),
+    path('select-capacitacion-capacitador', S42SelectCapacitacionCapacitadorController.as_view()),
+    
 ]

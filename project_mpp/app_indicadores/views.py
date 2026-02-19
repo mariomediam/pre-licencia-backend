@@ -9,7 +9,7 @@ from rest_framework import status
 import xml.etree.ElementTree as ET
 
 
-from app_indicadores.indicadores import BuscarRecaudacionSATP, S42SelectRecaudacionPorAnioyDependencia, S42SelectProyeccionPorAnioyDependencia, S42SelectRecaudacionPorAnioyTasa, S42SelectProyeccionPorAnioyTasa, S42SelectTasa, S42UpdateTasa, S42InsertarProyecciones, BuscarRecaudacionActasControlSATP
+from app_indicadores.indicadores import BuscarRecaudacionSATP, S42SelectRecaudacionPorAnioyDependencia, S42SelectProyeccionPorAnioyDependencia, S42SelectRecaudacionPorAnioyTasa, S42SelectProyeccionPorAnioyTasa, S42SelectTasa, S42UpdateTasa, S42InsertarProyecciones, BuscarRecaudacionActasControlSATP, S42SelectCapacitacionTema, S42SelectCapacitacionModalidad, S42SelectCapacitacionCapacitador
 
 # Create your views here.
 class BuscarRecaudacionSATPController(RetrieveAPIView):
@@ -216,3 +216,66 @@ class BuscarRecaudacionActasControlSATPController(RetrieveAPIView):
             "message": "Recaudación obtenida correctamente",
             "content": recaudacion
         }, status=status.HTTP_200_OK)
+
+
+class S42SelectCapacitacionTemaController(RetrieveAPIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request: Request):
+        opcion = request.query_params.get('opcion')
+        valor = request.query_params.get('valor')
+
+        if not opcion:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        capacitacion = S42SelectCapacitacionTema(opcion, valor)
+
+        return Response(data={
+            "message": "Capacitación obtenida correctamente",
+            "content": capacitacion
+        }, status=status.HTTP_200_OK)
+
+class S42SelectCapacitacionModalidadController(RetrieveAPIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request: Request):
+        opcion = request.query_params.get('opcion')
+        valor = request.query_params.get('valor')
+
+        if not opcion:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        capacitacion = S42SelectCapacitacionModalidad(opcion, valor)
+
+        return Response(data={
+            "message": "Capacitación obtenida correctamente",
+            "content": capacitacion
+        }, status=status.HTTP_200_OK)
+
+class S42SelectCapacitacionCapacitadorController(RetrieveAPIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request: Request):
+        opcion = request.query_params.get('opcion')
+        valor = request.query_params.get('valor')
+
+        if not opcion:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        capacitacion = S42SelectCapacitacionCapacitador(opcion, valor)
+
+        return Response(data={
+            "message": "Capacitación obtenida correctamente",
+            "content": capacitacion
+        }, status=status.HTTP_200_OK)
+
+

@@ -140,3 +140,34 @@ def BuscarRecaudacionActasControlSATP(anio : int, tipoRecaudacion : int):
         """
         cursor.execute(sql, [anio, tipoRecaudacion])
         return dictfetchall(cursor)
+
+def S42SelectCapacitacionTema(opcion, valor):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42SelectCapacitacionTema %s, %s
+        """
+        cursor.execute(sql, [opcion, valor])
+        return dictfetchall(cursor)
+
+def S42SelectCapacitacionModalidad(opcion, valor):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42SelectCapacitacionModalidad %s, %s
+        """
+        cursor.execute(sql, [opcion, valor])
+        return dictfetchall(cursor)
+
+def S42SelectCapacitacionCapacitador(opcion, valor):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42SelectCapacitacionCapacitador %s, %s
+        """
+        cursor.execute(sql, [opcion, valor])
+        return dictfetchall(cursor)
+

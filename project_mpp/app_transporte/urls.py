@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import TransporteVigenteView, TranspxAnioView, ComparaTranspxAnioView, TranspxAnioyMesView, InfraccionesTransportexAnioView, ComparaInfraccTransportexAnioView, TranspAntigVehicView, OcurrenciasxAnioView, MontosPapeletaTransitoView, ComparaMontosPapeletaTransitoView
+from .views import TransporteVigenteView, TranspxAnioView, ComparaTranspxAnioView, TranspxAnioyMesView, InfraccionesTransportexAnioView, ComparaInfraccTransportexAnioView, TranspAntigVehicView, OcurrenciasxAnioView, MontosPapeletaTransitoView, ComparaMontosPapeletaTransitoView, S42CapacitacionController, S42SelectCapacitacionObservacionController
 
 urlpatterns = [
     path("vehiculos-vigentes/", TransporteVigenteView.as_view()),
@@ -12,4 +12,6 @@ urlpatterns = [
     path("ocurrencias-anio/", OcurrenciasxAnioView.as_view()),
     path("montos-papeleta/", MontosPapeletaTransitoView.as_view()),
     path("comparacion-montos-papeleta/", ComparaMontosPapeletaTransitoView.as_view()),
+    path("capacitacion/", S42CapacitacionController.as_view()),
+    path("capacitacion-observacion/", S42SelectCapacitacionObservacionController.as_view()),
 ]

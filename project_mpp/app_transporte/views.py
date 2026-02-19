@@ -170,3 +170,47 @@ class ComparaMontosPapeletaTransitoView(RetrieveAPIView):
                 data={"message": "Comparacion de montos de papeletas de transito", "content": data},
                 status=status.HTTP_200_OK,
             )
+
+
+class S42CapacitacionController(RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request: Request):
+        opcion = request.query_params.get('opcion')
+        valor1 = request.query_params.get('valor1')
+        valor2 = request.query_params.get('valor2')
+
+        if not opcion:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        capacitacion = S42SelectCapacitacion(opcion, valor1, valor2)
+
+        return Response(data={
+            "message": "Capacitación obtenida correctamente",
+            "content": capacitacion
+        }, status=status.HTTP_200_OK)            
+
+
+class S42SelectCapacitacionObservacionController(RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request: Request):
+        opcion = request.query_params.get('opcion')
+        valor1 = request.query_params.get('valor1')
+        valor2 = request.query_params.get('valor2')
+
+        if not opcion:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        observacion = S42SelectCapacitacionObservacion(opcion, valor1, valor2)
+
+        return Response(data={
+            "message": "Observacion obtenida correctamente",
+            "content": observacion
+        }, status=status.HTTP_200_OK)
