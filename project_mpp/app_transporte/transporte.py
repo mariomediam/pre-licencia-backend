@@ -97,3 +97,17 @@ def S42SelectCapacitacionObservacion(opcion, valor1 = None, valor2 = None):
         """
         cursor.execute(sql, [opcion, valor1, valor2])
         return dictfetchall(cursor)
+
+def S42InsertarCapacitacion(fecha, tema, modalidad, capacitador, empresas, lugar, cantidad, observacion, usuario):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42InsertarCapacitacion %s, %s, %s, %s, %s, %s, %s, %s, %s
+        """
+        cursor.execute(sql, [fecha, tema, modalidad, capacitador, empresas, lugar, cantidad, observacion, usuario])
+        data = dictfetchall(cursor)
+        if len(data) > 0:
+            return data[0]
+        
+        return data

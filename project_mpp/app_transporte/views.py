@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -172,7 +173,7 @@ class ComparaMontosPapeletaTransitoView(RetrieveAPIView):
             )
 
 
-class S42CapacitacionController(RetrieveAPIView):
+class S42CapacitacionController(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request: Request):
@@ -191,10 +192,34 @@ class S42CapacitacionController(RetrieveAPIView):
         return Response(data={
             "message": "Capacitación obtenida correctamente",
             "content": capacitacion
-        }, status=status.HTTP_200_OK)            
+        }, status=status.HTTP_200_OK)     
+
+    def post(self, request: Request):
+        fecha = request.data.get('fecha')
+        tema = request.data.get('tema')
+        modalidad = request.data.get('modalidad')
+        capacitador = request.data.get('capacitador')
+        empresas = request.data.get('empresas')
+        lugar = request.data.get('lugar')
+        cantidad = request.data.get('cantidad')
+        observacion = request.data.get('observacion')
+        usuario = request.user.username
+
+        if not fecha or not tema or not modalidad or not capacitador or not empresas or not lugar or not cantidad or not observacion:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        capacitacion = S42InsertarCapacitacion(fecha, tema, modalidad, capacitador, empresas, lugar, cantidad, observacion, usuario)
+
+        return Response(data={
+            "message": "Capacitación insertada correctamente",
+            "content": capacitacion
+        }, status=status.HTTP_201_CREATED)       
 
 
-class S42SelectCapacitacionObservacionController(RetrieveAPIView):
+class S42CapacitacionObservacionController(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request: Request):
@@ -214,3 +239,7 @@ class S42SelectCapacitacionObservacionController(RetrieveAPIView):
             "message": "Observacion obtenida correctamente",
             "content": observacion
         }, status=status.HTTP_200_OK)
+
+
+   
+        
