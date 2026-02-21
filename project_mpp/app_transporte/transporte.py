@@ -123,11 +123,6 @@ def S42UpdateCapacitacion(capacitacion, fecha, tema, modalidad, capacitador, emp
         cursor.execute(sql, [capacitacion, fecha, tema, modalidad, capacitador, empresas, lugar, cantidad, observacion, usuario])
         return True
 
-
-# CREATE PROCEDURE S42DeleteCapacitacion
-# @C_Capacitacion int,
-# @C_Usuari_Login char(20)
-
 def S42DeleteCapacitacion(capacitacion, usuario):
     with connections['default'].cursor() as cursor:
         sql = """
@@ -136,4 +131,35 @@ def S42DeleteCapacitacion(capacitacion, usuario):
         exec S42DeleteCapacitacion %s, %s
         """
         cursor.execute(sql, [capacitacion, usuario])
+        return True
+
+
+def S42InsertarCapacitacionObservacion(anio, mes, observacion, usuario):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42InsertarCapacitacionObservacion %s, %s, %s, %s
+        """
+        cursor.execute(sql, [anio, mes, observacion, usuario])
+        data = dictfetchall(cursor)
+        if len(data) > 0:
+            return data[0]
+        
+        return data
+
+# ALTER PROCEDURE [dbo].[S42UpdateCapacitacionObservacion]
+# @C_Capacita_Observ int,
+# @T_Capacita_Observ varchar(max),
+# @C_Usuari_Login char(20)
+
+
+def S42UpdateCapacitacionObservacion(id_observacion, observacion, usuario):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42UpdateCapacitacionObservacion %s, %s, %s
+        """
+        cursor.execute(sql, [id_observacion, observacion, usuario])
         return True

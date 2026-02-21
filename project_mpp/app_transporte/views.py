@@ -274,6 +274,44 @@ class S42CapacitacionObservacionController(APIView):
             "content": observacion
         }, status=status.HTTP_200_OK)
 
+    def post(self, request: Request):
+        anio = request.data.get('anio')
+        mes = request.data.get('mes')
+        observacion = request.data.get('observacion')
+        usuario = request.user.username
+
+        if not anio or not mes or not observacion:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        observacion = S42InsertarCapacitacionObservacion(anio, mes, observacion, usuario)
+
+        return Response(data={
+            "message": "Observación insertada correctamente",
+            "content": observacion
+        }, status=status.HTTP_201_CREATED)
+
+
+    def put(self, request: Request, id_observacion: int):
+        observacion = request.data.get('observacion')
+        usuario = request.user.username
+
+        if observacion == None:
+            return Response(data={
+                "message": "Debe de ingresar observación",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        S42UpdateCapacitacionObservacion(id_observacion, observacion, usuario)
+
+        return Response(data={
+            "message": "Observación actualizada correctamente",
+            "content": None
+        }, status=status.HTTP_200_OK)
+
+
 
    
         
