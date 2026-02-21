@@ -122,3 +122,18 @@ def S42UpdateCapacitacion(capacitacion, fecha, tema, modalidad, capacitador, emp
         """
         cursor.execute(sql, [capacitacion, fecha, tema, modalidad, capacitador, empresas, lugar, cantidad, observacion, usuario])
         return True
+
+
+# CREATE PROCEDURE S42DeleteCapacitacion
+# @C_Capacitacion int,
+# @C_Usuari_Login char(20)
+
+def S42DeleteCapacitacion(capacitacion, usuario):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42DeleteCapacitacion %s, %s
+        """
+        cursor.execute(sql, [capacitacion, usuario])
+        return True

@@ -242,6 +242,17 @@ class S42CapacitacionController(APIView):
             "content": None
         }, status=status.HTTP_200_OK)
 
+
+    def delete(self, request: Request, capacitacion: int):
+        usuario = request.user.username
+
+        S42DeleteCapacitacion(capacitacion, usuario)
+
+        return Response(data={
+            "message": "Capacitación eliminada correctamente",
+            "content": None
+        }, status=status.HTTP_200_OK)
+
 class S42CapacitacionObservacionController(APIView):
     permission_classes = (IsAuthenticated,)
 
