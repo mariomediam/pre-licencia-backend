@@ -27,4 +27,5 @@ urlpatterns = [
     path("comparacion-montos-papeleta/", ComparaMontosPapeletaTransitoView.as_view()),
     path("capacitacion/", S42CapacitacionController.as_view()),
     path("capacitacion-observacion/", S42CapacitacionObservacionController.as_view()),
+    path("capacitacion/<int:capacitacion>", S42CapacitacionController.as_view()),
 ]

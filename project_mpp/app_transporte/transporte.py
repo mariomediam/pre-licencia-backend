@@ -111,3 +111,14 @@ def S42InsertarCapacitacion(fecha, tema, modalidad, capacitador, empresas, lugar
             return data[0]
         
         return data
+
+
+def S42UpdateCapacitacion(capacitacion, fecha, tema, modalidad, capacitador, empresas, lugar, cantidad, observacion, usuario):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42UpdateCapacitacion %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+        """
+        cursor.execute(sql, [capacitacion, fecha, tema, modalidad, capacitador, empresas, lugar, cantidad, observacion, usuario])
+        return True

@@ -216,8 +216,31 @@ class S42CapacitacionController(APIView):
         return Response(data={
             "message": "Capacitación insertada correctamente",
             "content": capacitacion
-        }, status=status.HTTP_201_CREATED)       
+        }, status=status.HTTP_201_CREATED)  
 
+    def put(self, request: Request, capacitacion: int):
+        fecha = request.data.get('fecha')
+        tema = request.data.get('tema')
+        modalidad = request.data.get('modalidad')
+        capacitador = request.data.get('capacitador')
+        empresas = request.data.get('empresas')
+        lugar = request.data.get('lugar')
+        cantidad = request.data.get('cantidad')
+        observacion = request.data.get('observacion')
+        usuario = request.user.username
+
+        if not fecha or not tema or not modalidad or not capacitador or not empresas or not lugar or not cantidad or not observacion:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        S42UpdateCapacitacion(capacitacion, fecha, tema, modalidad, capacitador, empresas, lugar, cantidad, observacion, usuario)
+
+        return Response(data={
+            "message": "Capacitación actualizada correctamente",
+            "content": None
+        }, status=status.HTTP_200_OK)
 
 class S42CapacitacionObservacionController(APIView):
     permission_classes = (IsAuthenticated,)
