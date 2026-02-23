@@ -3,7 +3,7 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -176,6 +176,11 @@ class ComparaMontosPapeletaTransitoView(RetrieveAPIView):
 class S42CapacitacionController(APIView):
     permission_classes = (IsAuthenticated,)
 
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
     def get(self, request: Request):
         opcion = request.query_params.get('opcion')
         valor1 = request.query_params.get('valor1')
@@ -255,6 +260,11 @@ class S42CapacitacionController(APIView):
 
 class S42CapacitacionObservacionController(APIView):
     permission_classes = (IsAuthenticated,)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get(self, request: Request):
         opcion = request.query_params.get('opcion')
