@@ -1,11 +1,17 @@
+import io
+from datetime import datetime
 from django.shortcuts import render
-
+from django.http import HttpResponse
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
+
+from openpyxl import Workbook
+from openpyxl.styles import Border, Side, Font, PatternFill, Alignment
 
 # Create your views here.
 
@@ -321,7 +327,93 @@ class S42CapacitacionObservacionController(APIView):
             "content": None
         }, status=status.HTTP_200_OK)
 
+def create_excel_capacitacion(capacitaciones):
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Capacitación"
+    
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    
+    header_font = Font(bold=True, color="FFFFFF", size=11)
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_alignment = Alignment(horizontal="center", vertical="center")
+    
+    sheet.append(["Fecha", "Tema", "Modalidad", "Capacitador", "Empresas", "Lugar", "Cantidad", "Observación"])
+    
+    for cell in sheet[1]:
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_alignment
+        cell.border = thin_border
+    
+    for capacitacion in capacitaciones:
+        fecha_original = capacitacion.get("D_Capacita_Fecha")
+        fecha_formateada = fecha_original
+        
+        if fecha_original:
+            try:
+                if isinstance(fecha_original, str):
+                    fecha_obj = datetime.strptime(fecha_original, "%Y-%m-%d")
+                    fecha_formateada = fecha_obj.strftime("%d/%m/%Y")
+                elif hasattr(fecha_original, 'strftime'):
+                    fecha_formateada = fecha_original.strftime("%d/%m/%Y")
+            except:
+                fecha_formateada = fecha_original
+        
+        sheet.append([fecha_formateada, capacitacion.get("N_Capacita_Tema"), capacitacion.get("N_Capacita_Modalidad"), capacitacion.get("N_Capacita_Capacitador"), capacitacion.get("N_Capacita_Empresas"), capacitacion.get("N_Capacita_Lugar"), capacitacion.get("Q_Capacita_Cantidad"), capacitacion.get("T_Capacita_Observ")])
 
+    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=sheet.max_column):
+        for cell in row:
+            cell.border = thin_border
+    
+    for column in sheet.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        sheet.column_dimensions[column_letter].width = adjusted_width
+
+    output = io.BytesIO()
+    workbook.save(output)
+    output.seek(0)
+    return output
+   
 
    
-        
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def DownloadCapacitacionController(request):
+    try:
+        anio = request.data.get('anio')
+        mes = request.data.get('mes')
+
+        if not anio:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if not mes:
+            capacitaciones= S42SelectCapacitacion("04", anio)
+        else:
+            capacitaciones = S42SelectCapacitacion("02", anio, mes)
+
+        output = create_excel_capacitacion(capacitaciones)
+        response = HttpResponse(output.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response['Content-Disposition'] = 'attachment; filename="capacitacion.xlsx"'
+        return response
+    except Exception as e:
+        return Response(data={
+            "message": str(e),
+            "content": None
+        }, status=status.HTTP_400_BAD_REQUEST)

@@ -11,7 +11,8 @@ from .views import (
     MontosPapeletaTransitoView,
     ComparaMontosPapeletaTransitoView,
     S42CapacitacionController,
-    S42CapacitacionObservacionController
+    S42CapacitacionObservacionController,
+    DownloadCapacitacionController
 )
 
 urlpatterns = [
@@ -29,4 +30,5 @@ urlpatterns = [
     path("capacitacion-observacion/", S42CapacitacionObservacionController.as_view()),
     path("capacitacion/<int:capacitacion>", S42CapacitacionController.as_view()),
     path("capacitacion-observacion/<int:id_observacion>", S42CapacitacionObservacionController.as_view()),
+    path("download-capacitacion/", DownloadCapacitacionController),
 ]
