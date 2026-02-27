@@ -69,8 +69,6 @@ def S05ComparaMontosPapeletaTransito(m_dia, m_mes, c_anio01, c_anio02):
 
         cursor.execute(sql, [m_dia, m_mes, c_anio01, c_anio02])
 
-
-        # cursor.execute("exec SIAC.dbo.S05ComparaMontosPapeletaTransito @m_dia = %s, @m_mes = %s, @c_anio01 = %s, @c_anio02 = %s", [m_dia, m_mes, c_anio01, c_anio02])
         result = dictfetchall(cursor)
         if len(result) > 0:
             return result[0]
@@ -148,11 +146,6 @@ def S42InsertarCapacitacionObservacion(anio, mes, observacion, usuario):
         
         return data
 
-# ALTER PROCEDURE [dbo].[S42UpdateCapacitacionObservacion]
-# @C_Capacita_Observ int,
-# @T_Capacita_Observ varchar(max),
-# @C_Usuari_Login char(20)
-
 
 def S42UpdateCapacitacionObservacion(id_observacion, observacion, usuario):
     with connections['default'].cursor() as cursor:
@@ -163,3 +156,42 @@ def S42UpdateCapacitacionObservacion(id_observacion, observacion, usuario):
         """
         cursor.execute(sql, [id_observacion, observacion, usuario])
         return True
+
+
+def SelectSenializa(opcion, valor1 = None, valor2 = None):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42SelectSenializa %s, %s, %s
+        """
+        cursor.execute(sql, [opcion, valor1, valor2])
+        return dictfetchall(cursor)
+
+
+def  SelectSenializaIndicador(opcion, valor1 = None, valor2 = None):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42SelectSenializaIndicador %s, %s, %s
+        """
+        cursor.execute(sql, [opcion, valor1, valor2])
+        return dictfetchall(cursor)
+
+
+# CREATE PROCEDURE [dbo].[S42InsertarSenializaciones]
+# @M_Anio int,
+# @M_Mes int,
+# @C_Usuari_Login char(20),
+# @SenializacionesXML XML
+
+def S42InsertarSenializaciones(anio, mes, usuario, senializaciones):
+    with connections['default'].cursor() as cursor:
+        sql = """
+        SET NOCOUNT ON
+        
+        exec S42InsertarSenializaciones %s, %s, %s, %s
+        """
+        cursor.execute(sql, [anio, mes, usuario, senializaciones])
+        return dictfetchall(cursor)

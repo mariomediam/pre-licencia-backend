@@ -12,6 +12,7 @@ from rest_framework.response import Response
 
 from openpyxl import Workbook
 from openpyxl.styles import Border, Side, Font, PatternFill, Alignment
+import xml.etree.ElementTree as ET
 
 # Create your views here.
 
@@ -417,3 +418,84 @@ def DownloadCapacitacionController(request):
             "message": str(e),
             "content": None
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SelectSenializaController(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get(self, request: Request):
+        opcion = request.query_params.get('opcion')
+        valor1 = request.query_params.get('valor1')
+        valor2 = request.query_params.get('valor2')
+
+        if not opcion:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        senializacion = SelectSenializa(opcion, valor1, valor2)
+
+        return Response(data={
+            "message": "Senializacion obtenida correctamente",
+            "content": senializacion
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request: Request, anio: int, mes: int):
+
+        usuario = request.user.username
+        senializaciones = request.data.get('senializaciones')
+
+        if not anio or not mes or not senializaciones:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Construir XML
+        root = ET.Element('Senializaciones')
+        for item in senializaciones:
+            sen = ET.SubElement(root, 'Senializacion')            
+            ET.SubElement(sen, 'C_Senializa_Indicador').text = str(item['C_Senializa_Indicador'])
+            ET.SubElement(sen, 'Q_Senializa_Cantidad').text = str(item['Q_Senializa_Cantidad'])            
+        
+        xml_senializaciones = ET.tostring(root, encoding='unicode')
+
+        S42InsertarSenializaciones(anio, mes, usuario, xml_senializaciones)
+
+        return Response(data={
+            "message": "Senializaciones insertadas correctamente",
+            "content": None
+        }, status=status.HTTP_200_OK)
+
+
+class SelectSenializaIndicadorController(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get(self, request: Request):
+        opcion = request.query_params.get('opcion')
+        valor1 = request.query_params.get('valor1')
+        valor2 = request.query_params.get('valor2')
+
+        if not opcion:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        senializacion_indicador = SelectSenializaIndicador(opcion, valor1, valor2)
+
+        return Response(data={
+            "message": "Senializacion indicador obtenida correctamente",
+            "content": senializacion_indicador
+        }, status=status.HTTP_200_OK)
