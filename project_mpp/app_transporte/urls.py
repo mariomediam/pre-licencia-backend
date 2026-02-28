@@ -14,7 +14,8 @@ from .views import (
     S42CapacitacionObservacionController,
     DownloadCapacitacionController,
     SelectSenializaController,
-    SelectSenializaIndicadorController
+    SelectSenializaIndicadorController,
+    DownloadSenializacionesController
 )
 
 urlpatterns = [
@@ -36,4 +37,5 @@ urlpatterns = [
     path("senializacion/", SelectSenializaController.as_view()),
     path("senializacion/<int:anio>/<int:mes>", SelectSenializaController.as_view()),
     path("senializacion-indicador/", SelectSenializaIndicadorController.as_view()),
+    path("download-senializacion/", DownloadSenializacionesController),
 ]

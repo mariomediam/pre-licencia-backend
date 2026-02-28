@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
-
+from app_deploy.general.utilitarios import getMonthName
 from openpyxl import Workbook
 from openpyxl.styles import Border, Side, Font, PatternFill, Alignment
 import xml.etree.ElementTree as ET
@@ -499,3 +499,87 @@ class SelectSenializaIndicadorController(APIView):
             "message": "Senializacion indicador obtenida correctamente",
             "content": senializacion_indicador
         }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def DownloadSenializacionesController(request):
+    try:
+        anio = request.data.get('anio')
+        mes = request.data.get('mes')
+
+        if not anio:
+            return Response(data={
+                "message": "Faltan parámetros",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if not mes:
+            senializaciones= SelectSenializa("03", anio)
+        else:
+            senializaciones = SelectSenializa("02", anio, mes)
+
+        output = create_excel_senializaciones(senializaciones)
+        response = HttpResponse(output.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response['Content-Disposition'] = 'attachment; filename="senializaciones.xlsx"'
+        return response
+    except Exception as e:
+        return Response(data={
+            "message": str(e),
+            "content": None
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+def create_excel_senializaciones(senializaciones):
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Senializaciones"
+    
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+    
+    header_font = Font(bold=True, color="FFFFFF", size=11)
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_alignment = Alignment(horizontal="center", vertical="center")
+    
+    sheet.append(["Año", "Mes", "Indicador", "Cantidad", "Unidad de medida"])
+    
+    for cell in sheet[1]:
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_alignment
+        cell.border = thin_border
+    
+    for senializacion in senializaciones:
+        anio = senializacion.get("M_Senializa_Anio")
+        mes = getMonthName(senializacion.get("M_Senializa_Mes"))
+        indicador = senializacion.get("N_Senializa_Indicador")
+        cantidad = senializacion.get("Q_Senializa_Cantidad")
+        unidad_medida = senializacion.get("N_unimed_desc")
+        
+        sheet.append([anio, mes, indicador, cantidad, unidad_medida])
+
+    for row in sheet.iter_rows(min_row=2, max_row=sheet.max_row, min_col=1, max_col=sheet.max_column):
+        for cell in row:
+            cell.border = thin_border
+    
+    for column in sheet.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        sheet.column_dimensions[column_letter].width = adjusted_width
+
+    output = io.BytesIO()
+    workbook.save(output)
+    output.seek(0)
+    return output
