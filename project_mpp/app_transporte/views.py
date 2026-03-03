@@ -393,7 +393,7 @@ def create_excel_capacitacion(capacitaciones):
 
    
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def DownloadCapacitacionController(request):
     try:
         anio = request.data.get('anio')
@@ -503,7 +503,7 @@ class SelectSenializaIndicadorController(APIView):
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def DownloadSenializacionesController(request):
     try:
         anio = request.data.get('anio')
