@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Exportar JSON a Excel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .example-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .example-btn {
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .example-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .info-box p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .info-box code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #e83e8c;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Test - Exportar JSON a Excel</h1>
+            <p>Prueba el endpoint de exportación enviando datos JSON y recibiendo un archivo Excel</p>
+        </div>
+
+        <div class="content">
+            <!-- Alertas -->
+            <div id="alertSuccess" class="alert alert-success"></div>
+            <div id="alertError" class="alert alert-error"></div>
+            <div id="alertInfo" class="alert alert-info"></div>
+
+            <!-- Información -->
+            <div class="info-box">
+                <h3>📋 Instrucciones</h3>
+                <p>
+                    1. Configura la URL del API y tu token de autenticación<br>
+                    2. Ingresa los datos JSON (debe ser un array de objetos)<br>
+                    3. Personaliza el nombre del archivo y la hoja (opcional)<br>
+                    4. Haz clic en "Exportar a Excel" y el archivo se descargará automáticamente
+                </p>
+            </div>
+
+            <!-- Configuración -->
+            <div class="section">
+                <h2>⚙️ Configuración</h2>
+                <div class="form-group">
+                    <label for="apiUrl">URL del API</label>
+                    <input type="text" id="apiUrl" value="http://localhost:8000/api/export-json-to-excel/" placeholder="http://localhost:8000/api/export-json-to-excel/">
+                </div>
+                <div class="form-group">
+                    <label for="token">Token de Autenticación (Bearer)</label>
+                    <input type="text" id="token" placeholder="Tu token aquí...">
+                </div>
+            </div>
+
+            <!-- Datos JSON -->
+            <div class="section">
+                <h2>📝 Datos JSON</h2>
+                <div class="form-group">
+                    <label for="jsonData">Array de objetos JSON</label>
+                    <textarea id="jsonData" placeholder='[{"nombre": "Juan", "edad": 30}, {"nombre": "María", "edad": 25}]'></textarea>
+                </div>
+                <div class="example-buttons">
+                    <button class="example-btn" onclick="cargarEjemplo1()">📊 Ejemplo 1: Datos Simples</button>
+                    <button class="example-btn" onclick="cargarEjemplo2()">👥 Ejemplo 2: Usuarios</button>
+                    <button class="example-btn" onclick="cargarEjemplo3()">🚗 Ejemplo 3: Vehículos</button>
+                    <button class="example-btn" onclick="cargarEjemplo4()">📈 Ejemplo 4: Ventas</button>
+                </div>
+            </div>
+
+            <!-- Opciones -->
+            <div class="section">
+                <h2>🎨 Opciones de Exportación</h2>
+                <div class="form-group">
+                    <label for="filename">Nombre del Archivo</label>
+                    <input type="text" id="filename" value="export.xlsx" placeholder="mi_archivo.xlsx">
+                </div>
+                <div class="form-group">
+                    <label for="sheetName">Nombre de la Hoja</label>
+                    <input type="text" id="sheetName" value="Datos" placeholder="Hoja1">
+                </div>
+                <div class="form-group">
+                    <label for="headers">Headers Personalizados (opcional, separados por coma)</label>
+                    <input type="text" id="headers" placeholder="Nombre,Edad,Ciudad">
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="section">
+                <div class="button-group">
+                    <button class="btn-primary" onclick="exportarAExcel()" id="btnExport">
+                        <span id="btnText">📥 Exportar a Excel</span>
+                    </button>
+                    <button class="btn-secondary" onclick="validarJSON()">
+                        ✅ Validar JSON
+                    </button>
+                    <button class="btn-success" onclick="limpiarFormulario()">
+                        🔄 Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para mostrar alertas
+        function mostrarAlerta(tipo, mensaje) {
+            const alertas = {
+                success: document.getElementById('alertSuccess'),
+                error: document.getElementById('alertError'),
+                info: document.getElementById('alertInfo')
+            };
+
+            // Ocultar todas las alertas
+            Object.values(alertas).forEach(alerta => {
+                alerta.classList.remove('show');
+            });
+
+            // Mostrar la alerta correspondiente
+            const alerta = alertas[tipo];
+            if (alerta) {
+                alerta.textContent = mensaje;
+                alerta.classList.add('show');
+
+                // Auto-ocultar después de 5 segundos
+                setTimeout(() => {
+                    alerta.classList.remove('show');
+                }, 5000);
+            }
+        }
+
+        // Función para validar JSON
+        function validarJSON() {
+            const jsonData = document.getElementById('jsonData').value.trim();
+
+            if (!jsonData) {
+                mostrarAlerta('error', '❌ Por favor ingresa datos JSON');
+                return false;
+            }
+
+            try {
+                const data = JSON.parse(jsonData);
+
+                if (!Array.isArray(data)) {
+                    mostrarAlerta('error', '❌ El JSON debe ser un array de objetos');
+                    return false;
+                }
+
+                if (data.length === 0) {
+                    mostrarAlerta('error', '❌ El array está vacío');
+                    return false;
+                }
+
+                if (!data.every(item => typeof item === 'object' && item !== null && !Array.isArray(item))) {
+                    mostrarAlerta('error', '❌ Todos los elementos del array deben ser objetos');
+                    return false;
+                }
+
+                mostrarAlerta('success', `✅ JSON válido! ${data.length} registros encontrados`);
+                return true;
+            } catch (error) {
+                mostrarAlerta('error', `❌ JSON inválido: ${error.message}`);
+                return false;
+            }
+        }
+
+        // Función principal para exportar
+        async function exportarAExcel() {
+            // Validar JSON primero
+            if (!validarJSON()) {
+                return;
+            }
+
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const token = document.getElementById('token').value.trim();
+            const jsonData = document.getElementById('jsonData').value.trim();
+            const filename = document.getElementById('filename').value.trim() || 'export.xlsx';
+            const sheetName = document.getElementById('sheetName').value.trim() || 'Datos';
+            const headersInput = document.getElementById('headers').value.trim();
+
+            // Validar configuración
+            if (!apiUrl) {
+                mostrarAlerta('error', '❌ Por favor ingresa la URL del API');
+                return;
+            }
+
+            if (!token) {
+                mostrarAlerta('error', '❌ Por favor ingresa el token de autenticación');
+                return;
+            }
+
+            // Parsear datos
+            const data = JSON.parse(jsonData);
+            const headers = headersInput ? headersInput.split(',').map(h => h.trim()) : null;
+
+            // Preparar el body
+            const body = {
+                data: data,
+                filename: filename,
+                sheet_name: sheetName
+            };
+
+            if (headers && headers.length > 0) {
+                body.headers = headers;
+            }
+
+            // Deshabilitar botón y mostrar spinner
+            const btnExport = document.getElementById('btnExport');
+            const btnText = document.getElementById('btnText');
+            btnExport.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span> Exportando...';
+
+            try {
+                mostrarAlerta('info', '⏳ Generando archivo Excel...');
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+                }
+
+                // Descargar el archivo
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+
+                // Limpiar
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                }, 100);
+
+                mostrarAlerta('success', `✅ Excel descargado exitosamente: ${filename}`);
+
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarAlerta('error', `❌ Error: ${error.message}`);
+            } finally {
+                // Rehabilitar botón
+                btnExport.disabled = false;
+                btnText.innerHTML = '📥 Exportar a Excel';
+            }
+        }
+
+        // Función para limpiar el formulario
+        function limpiarFormulario() {
+            document.getElementById('jsonData').value = '';
+            document.getElementById('filename').value = 'export.xlsx';
+            document.getElementById('sheetName').value = 'Datos';
+            document.getElementById('headers').value = '';
+            mostrarAlerta('info', 'ℹ️ Formulario limpiado');
+        }
+
+        // Ejemplos
+        function cargarEjemplo1() {
+            const ejemplo = [
+                { nombre: "Juan Pérez", edad: 30, ciudad: "Lima" },
+                { nombre: "María García", edad: 25, ciudad: "Arequipa" },
+                { nombre: "Pedro López", edad: 35, ciudad: "Cusco" }
+            ];
+            document.getElementById('jsonData').value = JSON.stringify(ejemplo, null, 2);
+            document.getElementById('filename').value = 'datos_simples.xlsx';
+            document.getElementById('sheetName').value = 'Personas';
+            mostrarAlerta('info', 'ℹ️ Ejemplo 1 cargado');
+        }
+
+        function cargarEjemplo2() {
+            const ejemplo = [
+                { id: 1, usuario: "jperez", email: "juan@example.com", rol: "Admin", activo: true },
+                { id: 2, usuario: "mgarcia", email: "maria@example.com", rol: "Usuario", activo: true },
+                { id: 3, usuario: "plopez", email: "pedro@example.com", rol: "Usuario", activo: false }
+            ];
+            document.getElementById('jsonData').value = JSON.stringify(ejemplo, null, 2);
+            document.getElementById('filename').value = 'usuarios.xlsx';
+            document.getElementById('sheetName').value = 'Usuarios';
+            document.getElementById('headers').value = 'ID,Usuario,Email,Rol,Estado';
+            mostrarAlerta('info', 'ℹ️ Ejemplo 2 cargado');
+        }
+
+        function cargarEjemplo3() {
+            const ejemplo = [
+                { placa: "ABC-123", marca: "Toyota", modelo: "Corolla", anio: 2020, estado: "Vigente" },
+                { placa: "DEF-456", marca: "Honda", modelo: "Civic", anio: 2019, estado: "Vigente" },
+                { placa: "GHI-789", marca: "Nissan", modelo: "Sentra", anio: 2021, estado: "Suspendido" }
+            ];
+            document.getElementById('jsonData').value = JSON.stringify(ejemplo, null, 2);
+            document.getElementById('filename').value = 'vehiculos.xlsx';
+            document.getElementById('sheetName').value = 'Vehículos';
+            mostrarAlerta('info', 'ℹ️ Ejemplo 3 cargado');
+        }
+
+        function cargarEjemplo4() {
+            const ejemplo = [
+                { fecha: "2024-01-15", producto: "Laptop", cantidad: 5, precio: 1200.50, total: 6002.50 },
+                { fecha: "2024-01-16", producto: "Mouse", cantidad: 20, precio: 25.00, total: 500.00 },
+                { fecha: "2024-01-17", producto: "Teclado", cantidad: 15, precio: 45.00, total: 675.00 }
+            ];
+            document.getElementById('jsonData').value = JSON.stringify(ejemplo, null, 2);
+            document.getElementById('filename').value = 'ventas.xlsx';
+            document.getElementById('sheetName').value = 'Ventas';
+            document.getElementById('headers').value = 'Fecha,Producto,Cantidad,Precio Unitario,Total';
+            mostrarAlerta('info', 'ℹ️ Ejemplo 4 cargado');
+        }
+
+        // Cargar ejemplo 1 por defecto
+        window.onload = function() {
+            cargarEjemplo1();
+        };
+    </script>
+</body>
+</html>

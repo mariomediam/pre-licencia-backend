@@ -11,7 +11,7 @@ from rest_framework import status
 from .serializers import LoginSerializer
 from . import trabajador
 from app_deploy.seguridad.usuario import login, get_user_by_login
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 import mimetypes
 import os
 from django.http.response import HttpResponse
@@ -26,6 +26,14 @@ from app_deploy.deploy import SelectJefeDepen
 
 import urllib.parse
 import segno
+
+# ============================================
+# EXPORTACIÓN DE JSON A EXCEL - GENÉRICO
+# ============================================
+
+from rest_framework.decorators import api_view, permission_classes
+from .general.excel_utils import create_excel_from_json, create_excel_with_multiple_sheets
+
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 
@@ -343,3 +351,176 @@ def number_to_word_currency(amount):
     resultado = f"{entero_texto} con {decimal_texto} nuevos soles"
     
     return resultado
+
+
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def ExportJsonToExcelController(request):
+    """
+    Endpoint genérico para exportar cualquier JSON a Excel
+    
+    Este endpoint puede ser utilizado desde cualquier app del proyecto.
+    
+    Body esperado:
+    {
+        "data": [...],  // Array de objetos JSON (requerido)
+        "filename": "archivo.xlsx",  // Opcional, nombre del archivo
+        "sheet_name": "Hoja1",  // Opcional, nombre de la hoja
+        "headers": ["Col1", "Col2"]  // Opcional, headers personalizados
+    }
+    
+    Returns:
+        HttpResponse: Archivo Excel para descargar
+        
+    Example:
+        POST /api/export-json-to-excel/
+        {
+            "data": [
+                {"nombre": "Juan", "edad": 30},
+                {"nombre": "María", "edad": 25}
+            ],
+            "filename": "usuarios.xlsx",
+            "sheet_name": "Usuarios"
+        }
+    """
+    try:
+        data = request.data.get('data')
+        filename = request.data.get('filename', 'export.xlsx')
+        sheet_name = request.data.get('sheet_name', 'Datos')
+        headers = request.data.get('headers')
+        
+        if data is None:
+            return Response(data={
+                "message": "El parámetro 'data' es requerido",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not isinstance(data, list):
+            return Response(data={
+                "message": "El parámetro 'data' debe ser un array",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Asegurar que el filename tenga extensión .xlsx
+        if not filename.endswith('.xlsx'):
+            filename += '.xlsx'
+        
+        # Crear el Excel usando la utilidad genérica
+        output = create_excel_from_json(data, sheet_name, headers)
+        
+        # Retornar el archivo
+        response = HttpResponse(
+            output.getvalue(), 
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
+        
+    except Exception as e:
+        return Response(data={
+            "message": f"Error al generar el Excel: {str(e)}",
+            "content": None
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def ExportJsonToExcelMultipleSheetsController(request):
+    """
+    Endpoint genérico para exportar múltiples hojas a un archivo Excel
+    
+    Body esperado:
+    {
+        "sheets": [
+            {
+                "sheet_name": "Hoja1",
+                "data": [...],
+                "headers": ["Col1", "Col2"]  // Opcional
+            },
+            {
+                "sheet_name": "Hoja2",
+                "data": [...]
+            }
+        ],
+        "filename": "archivo.xlsx"  // Opcional
+    }
+    
+    Returns:
+        HttpResponse: Archivo Excel con múltiples hojas para descargar
+        
+    Example:
+        POST /api/export-json-to-excel-multiple/
+        {
+            "sheets": [
+                {
+                    "sheet_name": "Usuarios",
+                    "data": [{"nombre": "Juan", "edad": 30}]
+                },
+                {
+                    "sheet_name": "Productos",
+                    "data": [{"producto": "Laptop", "precio": 1200}]
+                }
+            ],
+            "filename": "reporte_completo.xlsx"
+        }
+    """
+    try:
+        sheets_data = request.data.get('sheets')
+        filename = request.data.get('filename', 'export.xlsx')
+        
+        if sheets_data is None:
+            return Response(data={
+                "message": "El parámetro 'sheets' es requerido",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not isinstance(sheets_data, list):
+            return Response(data={
+                "message": "El parámetro 'sheets' debe ser un array",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        if len(sheets_data) == 0:
+            return Response(data={
+                "message": "Debe proporcionar al menos una hoja",
+                "content": None
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validar que cada hoja tenga los datos requeridos
+        for i, sheet in enumerate(sheets_data):
+            if 'data' not in sheet:
+                return Response(data={
+                    "message": f"La hoja en posición {i} no tiene el campo 'data'",
+                    "content": None
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            if not isinstance(sheet['data'], list):
+                return Response(data={
+                    "message": f"El campo 'data' de la hoja en posición {i} debe ser un array",
+                    "content": None
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Asegurar que el filename tenga extensión .xlsx
+        if not filename.endswith('.xlsx'):
+            filename += '.xlsx'
+        
+        # Crear el Excel con múltiples hojas
+        output = create_excel_with_multiple_sheets(sheets_data)
+        
+        # Retornar el archivo
+        response = HttpResponse(
+            output.getvalue(), 
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
+        
+    except Exception as e:
+        return Response(data={
+            "message": f"Error al generar el Excel: {str(e)}",
+            "content": None
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
