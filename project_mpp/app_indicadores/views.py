@@ -9,7 +9,7 @@ from rest_framework import status
 import xml.etree.ElementTree as ET
 
 
-from app_indicadores.indicadores import BuscarRecaudacionSATP, S42SelectRecaudacionPorAnioyDependencia, S42SelectProyeccionPorAnioyDependencia, S42SelectRecaudacionPorAnioyTasa, S42SelectProyeccionPorAnioyTasa, S42SelectTasa, S42UpdateTasa, S42InsertarProyecciones, BuscarRecaudacionActasControlSATP, S42SelectCapacitacionTema, S42SelectCapacitacionModalidad, S42SelectCapacitacionCapacitador
+from app_indicadores.indicadores import BuscarRecaudacionSATP, S42SelectRecaudacionPorAnioyDependencia, S42SelectProyeccionPorAnioyDependencia, S42SelectRecaudacionPorAnioyTasa, S42SelectProyeccionPorAnioyTasa, S42SelectTasa, S42UpdateTasa, S42InsertarProyecciones, BuscarPagosActasControlSATP, S42SelectCapacitacionTema, S42SelectCapacitacionModalidad, S42SelectCapacitacionCapacitador
 
 # Create your views here.
 class BuscarRecaudacionSATPController(RetrieveAPIView):
@@ -196,7 +196,7 @@ class S42InsertarProyeccionesController(APIView):
         }, status=status.HTTP_200_OK)
 
 
-class BuscarRecaudacionActasControlSATPController(RetrieveAPIView):
+class BuscarPagosActasControlSATPController(RetrieveAPIView):
     permission_classes = (AllowAny,)
 
     def get(self, request: Request):
@@ -210,7 +210,7 @@ class BuscarRecaudacionActasControlSATPController(RetrieveAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-        recaudacion = BuscarRecaudacionActasControlSATP(anio, tipo_recaudacion)
+        recaudacion = BuscarPagosActasControlSATP(anio, tipo_recaudacion)
 
         return Response(data={
             "message": "Recaudación obtenida correctamente",
